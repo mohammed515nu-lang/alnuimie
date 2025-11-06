@@ -117,8 +117,15 @@ router.post('/login', async (req, res) => {
 // Google OAuth - Get redirect URL
 router.get('/google/url', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  // Frontend callback URL (not backend)
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  // Frontend callback URL (not backend) - Production only
+  const frontendUrl = process.env.FRONTEND_URL;
+  
+  if (!frontendUrl) {
+    return res.status(500).json({ 
+      error: 'FRONTEND_URL not configured. Please set FRONTEND_URL environment variable with your Vercel URL.' 
+    });
+  }
+  
   const redirectUri = `${frontendUrl}/auth/google/callback`;
   const scope = 'openid email profile';
   const responseType = 'code';
@@ -149,7 +156,14 @@ router.post('/google/callback', async (req, res) => {
 
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL;
+    
+    if (!frontendUrl) {
+      return res.status(500).json({ 
+        error: 'FRONTEND_URL not configured. Please set FRONTEND_URL environment variable with your Vercel URL.' 
+      });
+    }
+    
     const redirectUri = `${frontendUrl}/auth/google/callback`;
 
     // Check if credentials are configured

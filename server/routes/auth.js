@@ -118,13 +118,21 @@ router.post('/login', async (req, res) => {
 router.get('/google/url', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   // Frontend callback URL (not backend) - Production only
-  const frontendUrl = process.env.FRONTEND_URL;
+  let frontendUrl = process.env.FRONTEND_URL;
   
   if (!frontendUrl) {
     return res.status(500).json({ 
       error: 'FRONTEND_URL not configured. Please set FRONTEND_URL environment variable with your Vercel URL.' 
     });
   }
+  
+  // Ensure https:// is present
+  if (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://')) {
+    frontendUrl = `https://${frontendUrl}`;
+  }
+  
+  // Remove trailing slash
+  frontendUrl = frontendUrl.replace(/\/$/, '');
   
   const redirectUri = `${frontendUrl}/auth/google/callback`;
   const scope = 'openid email profile';
@@ -156,13 +164,21 @@ router.post('/google/callback', async (req, res) => {
 
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const frontendUrl = process.env.FRONTEND_URL;
+    let frontendUrl = process.env.FRONTEND_URL;
     
     if (!frontendUrl) {
       return res.status(500).json({ 
         error: 'FRONTEND_URL not configured. Please set FRONTEND_URL environment variable with your Vercel URL.' 
       });
     }
+    
+    // Ensure https:// is present
+    if (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://')) {
+      frontendUrl = `https://${frontendUrl}`;
+    }
+    
+    // Remove trailing slash
+    frontendUrl = frontendUrl.replace(/\/$/, '');
     
     const redirectUri = `${frontendUrl}/auth/google/callback`;
 

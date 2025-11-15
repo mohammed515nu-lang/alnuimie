@@ -3,12 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import logo from "./company-logo.jpeg";
 
 const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
+  primary: '#4caf50',
+  accent: '#66bb6a',
+  secondary: '#388e3c',
+  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
   light: '#f8fafc',
-  dark: '#0f172a',
-  muted: '#64748b',
+  dark: '#2e7d32',
+  muted: '#6c757d',
 };
 
 const baseMenu = [
@@ -58,7 +60,7 @@ export default function Sidebar() {
         borderRadius: 20,
         overflow: 'hidden',
         margin: '32px 0 16px',
-        boxShadow: '0 6px 25px rgba(30,58,95,0.3)',
+        boxShadow: '0 6px 25px rgba(76,175,80,0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -112,7 +114,7 @@ export default function Sidebar() {
                 gap: 12,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: isActive
-                  ? '0 4px 15px rgba(42,157,143,0.3)'
+                  ? '0 4px 15px rgba(76,175,80,0.4)'
                   : 'none',
                 position: 'relative',
                 border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)'
@@ -225,17 +227,17 @@ export default function Sidebar() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 6px 25px rgba(42,157,143,0.4)',
+            boxShadow: '0 6px 25px rgba(76,175,80,0.4)',
             cursor: 'pointer',
             transition: 'all 0.3s ease'
           }}
           onMouseOver={e => {
             e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
-            e.currentTarget.style.boxShadow = '0 8px 30px rgba(42,157,143,0.5)';
+            e.currentTarget.style.boxShadow = '0 8px 30px rgba(76,175,80,0.5)';
           }}
           onMouseOut={e => {
             e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
-            e.currentTarget.style.boxShadow = '0 6px 25px rgba(42,157,143,0.4)';
+            e.currentTarget.style.boxShadow = '0 6px 25px rgba(76,175,80,0.4)';
           }}
           aria-label="القائمة الجانبية"
         >
@@ -248,7 +250,7 @@ export default function Sidebar() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(30,58,95,0.8)',
+            background: 'rgba(76,175,80,0.8)',
             backdropFilter: 'blur(8px)',
             zIndex: 30,
             display: 'flex',
@@ -299,7 +301,7 @@ export default function Sidebar() {
               position: 'sticky',
               top: 0,
               zIndex: 10,
-              background: 'rgba(30,58,95,0.3)',
+              background: 'rgba(76,175,80,0.3)',
               backdropFilter: 'blur(10px)',
               padding: '20px 0 12px',
               display: 'flex',

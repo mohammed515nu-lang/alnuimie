@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import "./assets/styles/landing.css";
 
 const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  secondary: '#264653',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  gradientLight: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 100%)',
-  dark: '#0f172a',
-  light: '#f8fafc',
-  muted: '#64748b',
-  success: '#10b981',
-  warning: '#f59e0b',
+  primary: '#6a11cb',
+  accent: '#2575fc',
+  secondary: '#6a11cb',
+  gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+  gradientLight: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+  dark: '#2c3e50',
+  light: '#f8f9fa',
+  muted: '#6c757d',
+  success: '#2575fc',
+  warning: '#ff9800',
 };
 
 export default function LandingPage() {
@@ -23,10 +24,10 @@ export default function LandingPage() {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   const stats = [
-    { value: 250, suffix: '+', label: 'مشروع منجز', icon: '🏗️' },
-    { value: 98, suffix: '%', label: 'رضا العملاء', icon: '⭐' },
-    { value: 20, suffix: '+', label: 'سنوات خبرة', icon: '🎯' },
-    { value: 500, suffix: '+', label: 'عميل سعيد', icon: '👥' },
+    { value: 14, suffix: '+', label: 'محافظة سورية', icon: '🗺️' },
+    { value: 1500, suffix: '+', label: 'مشروع منجز', icon: '🏗️' },
+    { value: 15, suffix: '+', label: 'سنة خبرة', icon: '🎯' },
+    { value: 3000, suffix: '+', label: 'مقاول مسجل', icon: '👥' },
   ];
 
   useEffect(() => {
@@ -79,52 +80,52 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: '⚡',
-      title: 'سرعة التنفيذ',
-      desc: 'نوفر حلول سريعة مع الحفاظ على أعلى معايير الجودة',
-      color: '#1e3a5f'
+      icon: '🗺️',
+      title: 'تغطية جميع المحافظات',
+      desc: 'نوفر خدماتنا في جميع المحافظات السورية مع فهم كامل للوائح المحلية',
+      color: '#6a11cb'
     },
     {
-      icon: '🔒',
-      title: 'ضمان الجودة',
-      desc: 'معايير عالمية وضمان شامل على جميع المشاريع',
-      color: '#10b981'
+      icon: '🏛️',
+      title: 'مطابقة للمعايير السورية',
+      desc: 'جميع مشاريعنا تتوافق مع المعايير واللوائح الحكومية السورية',
+      color: '#2575fc'
     },
     {
-      icon: '💎',
-      title: 'مواد عالية الجودة',
-      desc: 'نستخدم أفضل المواد والتقنيات الحديثة',
-      color: '#f59e0b'
+      icon: '👷',
+      title: 'كوادر محلية مدربة',
+      desc: 'نعتمد على كوادر سورية متخصصة ومدربة على أحدث التقنيات',
+      color: '#6a11cb'
     },
     {
-      icon: '📊',
-      title: 'إدارة متطورة',
-      desc: 'نظام إدارة متكامل لمتابعة المشاريع',
-      color: '#2a9d8f'
+      icon: '💰',
+      title: 'أسعار تنافسية',
+      desc: 'نقدم أسعاراً تنافسية تناسب السوق السوري مع الحفاظ على الجودة',
+      color: '#ff9800'
     },
   ];
 
   const projects = [
     {
       id: 1,
-      title: 'برج إداري متطور',
-      category: 'مباني إدارية',
-      image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1400&h=900&fit=crop&q=85',
-      stats: { area: '5000 م²', floors: '20 طابق', duration: '18 شهر' }
+      title: 'مجمع سكني في دمشق',
+      category: 'مباني سكنية',
+      image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1400&h=900&fit=crop&q=85',
+      stats: { area: '6500 م²', floors: '12 طابق', duration: '20 شهر' }
     },
     {
       id: 2,
-      title: 'مجمع سكني فاخر',
-      category: 'مباني سكنية',
-      image: 'https://images.unsplash.com/photo-1600585154526-990dac4d53ef?w=1400&h=900&fit=crop&q=85',
-      stats: { area: '8000 م²', floors: '15 طابق', duration: '24 شهر' }
+      title: 'مركز تجاري في حلب',
+      category: 'مراكز تجارية',
+      image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1400&h=900&fit=crop&q=85',
+      stats: { area: '10000 م²', floors: '4 طابق', duration: '18 شهر' }
     },
     {
       id: 3,
-      title: 'مركز تجاري',
-      category: 'مراكز تجارية',
-      image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1400&h=900&fit=crop&q=85',
-      stats: { area: '12000 م²', floors: '5 طابق', duration: '30 شهر' }
+      title: 'فندق في اللاذقية',
+      category: 'فنادق ومنتجعات',
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&h=900&fit=crop&q=85',
+      stats: { area: '8500 م²', floors: '8 طابق', duration: '24 شهر' }
     },
   ];
 
@@ -137,7 +138,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div dir="rtl" style={{ fontFamily: 'Cairo, system-ui, Arial', background: '#fff', minHeight: '100vh' }}>
+    <div dir="rtl" className="landing-page">
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -236,16 +237,16 @@ export default function LandingPage() {
               <div style={{
                 color: isScrolled ? '#fff' : BRAND.primary,
                 fontWeight: 900,
-                fontSize: 22,
+                fontSize: 24,
                 letterSpacing: '-0.5px',
                 transition: 'color 0.3s ease'
-              }}>المستقبل لإدارة المقاولات</div>
+              }}>مقاول سوريا</div>
               <div style={{
                 color: isScrolled ? '#94a3b8' : BRAND.muted,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: 600,
                 transition: 'color 0.3s ease'
-              }}>بناء المستقبل</div>
+              }}>منصة إدارة المشاريع السورية</div>
             </div>
           </div>
           <nav style={{
@@ -278,7 +279,7 @@ export default function LandingPage() {
             ))}
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/register')}
                 style={{
                   background: 'transparent',
                   color: isScrolled ? '#e2e8f0' : BRAND.primary,
@@ -334,15 +335,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section style={{
-        minHeight: '100vh',
-        background: BRAND.gradient,
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        paddingTop: 80
-      }}>
+      <section className="hero">
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -382,7 +375,7 @@ export default function LandingPage() {
                 marginBottom: 24,
                 backdropFilter: 'blur(10px)'
               }}>
-                🚀 رائدون في مجال البناء والتشييد
+                🏗️ المنصة الأولى لإدارة المشاريع في سوريا
               </div>
               <h1 style={{
                 fontSize: isMobile ? 36 : 64,
@@ -393,13 +386,13 @@ export default function LandingPage() {
                 letterSpacing: '-2px',
                 textShadow: '0 4px 30px rgba(0,0,0,0.2)'
               }}>
-                نحن نبني<br />
+                إدارة المشاريع<br />
                 <span style={{
-                  background: 'linear-gradient(135deg, #2a9d8f 0%, #1e3a5f 100%)',
+                  background: 'linear-gradient(135deg, #43a047 0%, #2e7d32 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
-                }}>المستقبل</span>
+                }}>في سوريا</span>
               </h1>
               <p style={{
                 fontSize: isMobile ? 16 : 20,
@@ -408,8 +401,8 @@ export default function LandingPage() {
                 marginBottom: 40,
                 maxWidth: 600
               }}>
-                نقدم حلول بناء متكاملة ومتطورة تجمع بين الجودة العالية والسرعة في التنفيذ. 
-                خبرة أكثر من 20 عاماً في إنشاء المباني والبنية التحتية.
+                المنصة الأولى من نوعها في سوريا لإدارة المشاريع والمقاولات، تدعم جميع المحافظات السورية 
+                وتوفر حلولاً متخصصة للسوق المحلي مع فهم كامل للوائح والمعايير السورية.
               </p>
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 <button
@@ -604,11 +597,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="section-2" style={{
-        background: '#fff',
-        padding: '100px 32px',
-        position: 'relative'
-      }}>
+      <section id="section-2" className="features">
         <div style={{
           maxWidth: 1400,
           margin: '0 auto',
@@ -695,6 +684,67 @@ export default function LandingPage() {
               }}>
                 {feature.desc}
               </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials">
+        <div className="section-title">
+          <h2>آراء عملائنا</h2>
+          <p>ماذا يقول عملاؤنا عن منصتنا</p>
+        </div>
+        <div style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 30
+        }}>
+          {[
+            {
+              id: 1,
+              name: "أحمد محمد",
+              position: "مدير مشروع",
+              company: "شركة البناء المتقدم",
+              text: "منصة ممتازة ساعدتنا في إدارة مشاريعنا بكفاءة عالية. واجهة الاستخدام سهلة والميزات متكاملة.",
+              avatar: "avatar1.jpg"
+            },
+            {
+              id: 2,
+              name: "فاطمة علي",
+              position: "مهندسة معمارية",
+              company: "مكتب التصميم الحديث",
+              text: "أفضل منصة لإدارة المشاريع في سوريا. ساعدتنا في تتبع التقدم والتنسيق مع المقاولين بسهولة.",
+              avatar: "avatar2.jpg"
+            },
+            {
+              id: 3,
+              name: "خالد سعيد",
+              position: "مقاول",
+              company: "شركة المقاولات المتحدة",
+              text: "منصة رائعة سهلة الاستخدام وفعالة جداً في تنظيم العمل اليومي. أوصي بها بشدة لجميع المقاولين.",
+              avatar: "avatar3.jpg"
+            }
+          ].map(testimonial => (
+            <div key={testimonial.id} className="testimonial-card">
+              <div className="testimonial-text">
+                "{testimonial.text}"
+              </div>
+              <div className="testimonial-author">
+                <img 
+                  src={`./assets/images/${testimonial.avatar}`} 
+                  alt={testimonial.name}
+                  className="author-avatar"
+                />
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: 5 }}>{testimonial.name}</div>
+                  <div style={{ fontSize: 14, color: BRAND.muted }}>
+                    {testimonial.position}, {testimonial.company}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -825,6 +875,138 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="pricing">
+        <div className="section-title">
+          <h2>خططنا الأسعار</h2>
+          <p>اختر الخطة التي تناسب احتياجاتك</p>
+        </div>
+        <div style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 30
+        }}>
+          {[
+            {
+              id: 1,
+              name: "أساسي",
+              price: "مجاني",
+              period: "",
+              features: [
+                "إدارة 3 مشاريع",
+                "5 مستخدمين",
+                "تخزين 2 جيجابايت",
+                "دعم عبر البريد الإلكتروني"
+              ],
+              featured: false
+            },
+            {
+              id: 2,
+              name: "احترافي",
+              price: "99",
+              period: "شهرياً",
+              features: [
+                "إدارة مشاريع غير محدودة",
+                "20 مستخدم",
+                "تخزين 50 جيجابايت",
+                "دعم فني على مدار الساعة",
+                "تقارير متقدمة"
+              ],
+              featured: true
+            },
+            {
+              id: 3,
+              name: "مؤسسة",
+              price: "299",
+              period: "شهرياً",
+              features: [
+                "جميع ميزات الخطة الاحترافية",
+                "مستخدمون غير محدودون",
+                "تخزين غير محدود",
+                "مدير حساب مخصص",
+                "تدريب مخصص للفريق"
+              ],
+              featured: false
+            }
+          ].map(plan => (
+            <div key={plan.id} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
+              <h3>{plan.name}</h3>
+              <div className="price">
+                {plan.price}
+                {plan.period && <span style={{ fontSize: 18, fontWeight: 'normal' }}>/{plan.period}</span>}
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '30px 0' }}>
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} style={{ marginBottom: 12, display: 'flex', alignItems: 'center' }}>
+                    <span style={{ color: BRAND.success, marginLeft: 10 }}>✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => navigate('/login')}
+                className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: 8,
+                  border: plan.featured ? 'none' : `2px solid ${BRAND.primary}`,
+                  background: plan.featured ? BRAND.gradient : 'transparent',
+                  color: plan.featured ? 'white' : BRAND.primary,
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {plan.featured ? 'ابدأ الآن' : 'اختر الخطة'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="faq">
+        <div className="section-title">
+          <h2>الأسئلة الشائعة</h2>
+          <p>إجابات على الأسئلة الأكثر شيوعاً</p>
+        </div>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          {[
+            {
+              question: "كيف يمكنني البدء باستخدام المنصة؟",
+              answer: "يمكنك البدء بإنشاء حساب مجاني عبر الضغط على زر 'إنشاء حساب' في أعلى الصفحة. بعد تسجيل الدخول، يمكنك البدء في إدارة مشاريعك فوراً."
+            },
+            {
+              question: "هل المنصة متوافقة مع اللوائح السورية؟",
+              answer: "نعم، تم تصميم المنصة بالكامل لتتوافق مع اللوائح والمعايير الحكومية السورية، وتدعم جميع المتطلبات المحلية لإدارة المشاريع."
+            },
+            {
+              question: "هل يمكنني الوصول إلى بياناتي من خارج سوريا؟",
+              answer: "نعم، يمكن الوصول إلى المنصة من أي مكان في العالم عبر الإنترنت، مما يتيح لك إدارة مشاريعك حتى أثناء السفر."
+            },
+            {
+              question: "هل تقدمون تدريباً على استخدام المنصة؟",
+              answer: "نعم، نقدم مواد تدريبية ودليل استخدام شامل، بالإضافة إلى جلسات تدريب مخصص للعملاء في الخطط المدفوعة."
+            }
+          ].map((faq, idx) => (
+            <div key={idx} className="faq-item">
+              <div className="faq-question" onClick={() => {
+                const faqItems = document.querySelectorAll('.faq-item');
+                faqItems.forEach(item => item.classList.remove('active'));
+                document.querySelectorAll('.faq-item')[idx].classList.toggle('active');
+              }}>
+                {faq.question}
+                <span className="faq-icon">▼</span>
+              </div>
+              <div className="faq-answer">{faq.answer}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section style={{
         background: BRAND.gradient,
@@ -888,6 +1070,50 @@ export default function LandingPage() {
           >
             ابدأ الآن مجاناً 🚀
           </button>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="how-it-works">
+        <div className="section-title">
+          <h2>كيف يعمل النظام؟</h2>
+          <p>خطوات بسيطة للبدء في إدارة مشاريعك</p>
+        </div>
+        <div style={{
+          maxWidth: 1000,
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+          gap: 30
+        }}>
+          {[
+            {
+              number: 1,
+              title: "إنشاء حساب",
+              description: "سجل حسابك المجاني في أقل من دقيقة"
+            },
+            {
+              number: 2,
+              title: "إضافة مشروع",
+              description: "أضف مشروعك الأول مع جميع التفاصيل"
+            },
+            {
+              number: 3,
+              title: "إدارة المهام",
+              description: "وزع المهام على فريقك وتابع التقدم"
+            },
+            {
+              number: 4,
+              title: "متابعة التقارير",
+              description: "احصل على تقارير دقيقة عن أداء المشروع"
+            }
+          ].map((step, idx) => (
+            <div key={idx} className="step">
+              <div className="step-number">{step.number}</div>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -1034,12 +1260,7 @@ export default function LandingPage() {
 
 
       {/* Footer */}
-      <footer style={{
-        background: BRAND.dark,
-        color: 'rgba(255,255,255,0.7)',
-        padding: '60px 32px 40px',
-        borderTop: '1px solid rgba(255,255,255,0.1)'
-      }}>
+      <footer className="footer">
         <div style={{
           maxWidth: 1400,
           margin: '0 auto',

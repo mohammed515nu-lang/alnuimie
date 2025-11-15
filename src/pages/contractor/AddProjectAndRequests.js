@@ -13,6 +13,7 @@ const BRAND = {
 
 export default function AddProjectAndRequests(){
   const notifications = useNotifications();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [projectForm, setProjectForm] = useState({ 
     name: '', 
     client: '',
@@ -49,6 +50,12 @@ export default function AddProjectAndRequests(){
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -390,7 +397,7 @@ export default function AddProjectAndRequests(){
   };
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: 'Cairo, system-ui, Arial' }}>
+    <div style={{ direction: 'rtl', fontFamily: 'Cairo, system-ui, Arial', padding: isMobile ? '16px 8px' : 0 }}>
       {/* Header */}
       <div style={{
         display: 'flex',
@@ -398,19 +405,20 @@ export default function AddProjectAndRequests(){
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: 16,
-        marginBottom: 30
+        marginBottom: isMobile ? 20 : 30,
+        padding: isMobile ? '0 8px' : 0
       }}>
         <div>
           <h2 style={{
             fontWeight: 900,
             color: BRAND.primary,
-            fontSize: 32,
+            fontSize: isMobile ? 24 : 32,
             margin: '0 0 8px 0',
             letterSpacing: '-1px'
           }}>
             إضافة مشروع + طلبات العملاء
           </h2>
-          <p style={{ color: BRAND.muted, fontSize: 15, margin: 0 }}>
+          <p style={{ color: BRAND.muted, fontSize: isMobile ? 13 : 15, margin: 0 }}>
             إضافة مشروع جديد أو إدارة طلبات العملاء المعلقة
           </p>
         </div>
@@ -419,46 +427,51 @@ export default function AddProjectAndRequests(){
       {/* Two Column Layout */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: 24
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: isMobile ? 16 : 24
       }}>
         {/* Add Project Form */}
         <div style={{
           background: '#fff',
-          borderRadius: 20,
+          borderRadius: isMobile ? 16 : 20,
           boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
-          padding: 28,
+          padding: isMobile ? 16 : 28,
           border: '1px solid rgba(30,58,95,0.05)'
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 24,
+            flexWrap: 'wrap',
+            gap: 12,
+            marginBottom: isMobile ? 16 : 24,
             paddingBottom: 16,
             borderBottom: '2px solid ' + BRAND.light
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 12
+              gap: 12,
+              flex: 1,
+              minWidth: isMobile ? '100%' : 'auto'
           }}>
             <div style={{
-              width: 40,
-              height: 40,
+              width: isMobile ? 36 : 40,
+              height: isMobile ? 36 : 40,
               borderRadius: 12,
               background: BRAND.gradient,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 20
+              fontSize: isMobile ? 18 : 20,
+              flexShrink: 0
             }}>
               ➕
             </div>
             <h3 style={{
               margin: 0,
               color: BRAND.primary,
-              fontSize: 22,
+              fontSize: isMobile ? 18 : 22,
               fontWeight: 800
             }}>
               إضافة مشروع جديد
@@ -468,16 +481,18 @@ export default function AddProjectAndRequests(){
               <button
                 onClick={() => setShowProjectForm(true)}
                 style={{
-                  padding: '12px 24px',
+                  padding: isMobile ? '10px 20px' : '12px 24px',
                   background: BRAND.gradient,
                   color: '#fff',
                   border: 'none',
                   borderRadius: 12,
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: isMobile ? 13 : 14,
                   cursor: 'pointer',
                   boxShadow: '0 4px 12px rgba(30,58,95,0.3)',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  width: isMobile ? '100%' : 'auto',
+                  marginTop: isMobile ? 8 : 0
                 }}
                 onMouseOver={e => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
@@ -500,11 +515,13 @@ export default function AddProjectAndRequests(){
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: 32,
-                padding: '20px',
+                marginBottom: isMobile ? 20 : 32,
+                padding: isMobile ? '12px 8px' : '20px',
                 background: BRAND.light,
                 borderRadius: 16,
-                position: 'relative'
+                position: 'relative',
+                overflowX: isMobile ? 'auto' : 'visible',
+                overflowY: 'hidden'
               }}>
                 {[
                   { id: 1, label: 'معلومات أساسية', icon: '📋' },
@@ -518,16 +535,17 @@ export default function AddProjectAndRequests(){
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 8,
+                      gap: isMobile ? 4 : 8,
                       flex: 1,
                       position: 'relative',
-                      zIndex: 2
+                      zIndex: 2,
+                      minWidth: isMobile ? 60 : 'auto'
                     }}>
                       <div
                         onClick={() => handleTabChange(tab.id)}
                         style={{
-                          width: 50,
-                          height: 50,
+                          width: isMobile ? 40 : 50,
+                          height: isMobile ? 40 : 50,
                           borderRadius: '50%',
                           background: completedTabs.has(tab.id) 
                             ? BRAND.accent 
@@ -538,12 +556,13 @@ export default function AddProjectAndRequests(){
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: completedTabs.has(tab.id) ? 24 : 20,
+                          fontSize: completedTabs.has(tab.id) ? (isMobile ? 18 : 24) : (isMobile ? 16 : 20),
                           fontWeight: 700,
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
-                          border: completedTabs.has(tab.id) || activeTab === tab.id ? '3px solid #fff' : '3px solid transparent',
-                          boxShadow: activeTab === tab.id ? '0 4px 12px rgba(42,157,143,0.4)' : 'none'
+                          border: completedTabs.has(tab.id) || activeTab === tab.id ? (isMobile ? '2px solid #fff' : '3px solid #fff') : (isMobile ? '2px solid transparent' : '3px solid transparent'),
+                          boxShadow: activeTab === tab.id ? '0 4px 12px rgba(42,157,143,0.4)' : 'none',
+                          flexShrink: 0
                         }}
                         onMouseOver={e => {
                           if (activeTab !== tab.id) {
@@ -559,16 +578,17 @@ export default function AddProjectAndRequests(){
                         {completedTabs.has(tab.id) ? '✓' : tab.icon}
                       </div>
                       <div style={{
-                        fontSize: 11,
+                        fontSize: isMobile ? 9 : 11,
                         color: activeTab === tab.id ? BRAND.primary : BRAND.muted,
                         fontWeight: activeTab === tab.id ? 700 : 500,
                         textAlign: 'center',
-                        maxWidth: 80
+                        maxWidth: isMobile ? 60 : 80,
+                        lineHeight: 1.2
                       }}>
                         {tab.label}
                       </div>
                     </div>
-                    {index < 4 && (
+                    {index < 4 && !isMobile && (
                       <div style={{
                         position: 'absolute',
                         top: '50%',
@@ -590,11 +610,15 @@ export default function AddProjectAndRequests(){
               {/* Tabs */}
               <div style={{
                 display: 'flex',
-                gap: 8,
-                marginBottom: 24,
+                gap: isMobile ? 4 : 8,
+                marginBottom: isMobile ? 16 : 24,
                 borderBottom: '2px solid ' + BRAND.light,
-                overflowX: 'auto'
-              }}>
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+              >
                 {[
                   { id: 1, label: 'معلومات أساسية', icon: '📋' },
                   { id: 2, label: 'المواد اللازمة', icon: '🧱' },
@@ -606,19 +630,20 @@ export default function AddProjectAndRequests(){
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
                     style={{
-                      padding: '12px 20px',
+                      padding: isMobile ? '10px 12px' : '12px 20px',
                       border: 'none',
                       background: 'transparent',
                       color: activeTab === tab.id ? BRAND.primary : BRAND.muted,
                       fontWeight: activeTab === tab.id ? 700 : 500,
-                      fontSize: 14,
+                      fontSize: isMobile ? 12 : 14,
                       cursor: 'pointer',
-                      borderBottom: activeTab === tab.id ? `3px solid ${BRAND.accent}` : '3px solid transparent',
+                      borderBottom: activeTab === tab.id ? (isMobile ? `2px solid ${BRAND.accent}` : `3px solid ${BRAND.accent}`) : (isMobile ? '2px solid transparent' : '3px solid transparent'),
                       transition: 'all 0.3s ease',
                       whiteSpace: 'nowrap',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 6
+                      gap: isMobile ? 4 : 6,
+                      flexShrink: 0
                     }}
                     onMouseOver={e => {
                       if (activeTab !== tab.id) {
@@ -813,9 +838,9 @@ export default function AddProjectAndRequests(){
                     color: '#fff',
                     border: 0,
                     borderRadius: 12,
-                    padding: '14px 24px',
+                    padding: isMobile ? '12px 20px' : '14px 24px',
                     fontWeight: 700,
-                    fontSize: 16,
+                    fontSize: isMobile ? 14 : 16,
                     cursor: 'pointer',
                     boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
                     transition: 'all 0.3s ease',
@@ -845,7 +870,7 @@ export default function AddProjectAndRequests(){
                   border: `2px solid ${BRAND.accent}`
                 }}>
                   <h4 style={{ margin: '0 0 12px 0', color: BRAND.primary, fontSize: 16 }}>إضافة مادة جديدة</h4>
-                  <form onSubmit={handleAddMaterial} style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '2fr 1fr 1fr 1fr auto' : '1fr', gap: 12 }}>
+                  <form onSubmit={handleAddMaterial} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1fr auto', gap: 12 }}>
                     <input
                       type="text"
                       placeholder="اسم المادة"
@@ -1006,9 +1031,9 @@ export default function AddProjectAndRequests(){
                       color: '#fff',
                       border: 0,
                       borderRadius: 12,
-                      padding: '14px 24px',
+                      padding: isMobile ? '12px 16px' : '14px 24px',
                       fontWeight: 700,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       cursor: 'pointer',
                       boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
                       transition: 'all 0.3s ease'
@@ -1039,7 +1064,7 @@ export default function AddProjectAndRequests(){
                 }}>
                   <h4 style={{ margin: '0 0 12px 0', color: BRAND.primary, fontSize: 16 }}>إضافة مهندس</h4>
                   <form onSubmit={handleAddEngineer} style={{ display: 'grid', gap: 12 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '2fr 1fr' : '1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: 12 }}>
                       <input
                         type="text"
                         placeholder="اسم المهندس *"
@@ -1070,7 +1095,7 @@ export default function AddProjectAndRequests(){
                         <option value="كهرباء">كهرباء</option>
                       </select>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr 1fr' : '1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 12 }}>
                       <input
                         type="number"
                         placeholder="الراتب *"
@@ -1276,16 +1301,16 @@ export default function AddProjectAndRequests(){
                 <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                   <button
                     type="button"
-                    onClick={() => handleTabChange(3)}
+                    onClick={() => handleTabChange(2)}
                     style={{
                       flex: 1,
                       background: BRAND.light,
                       color: BRAND.primary,
                       border: `2px solid ${BRAND.primary}`,
                       borderRadius: 12,
-                      padding: '14px 24px',
+                      padding: isMobile ? '12px 16px' : '14px 24px',
                       fontWeight: 700,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
@@ -1304,16 +1329,16 @@ export default function AddProjectAndRequests(){
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleTabChange(5)}
+                    onClick={() => handleTabChange(4)}
                     style={{
                       flex: 1,
                       background: BRAND.gradient,
                       color: '#fff',
                       border: 0,
                       borderRadius: 12,
-                      padding: '14px 24px',
+                      padding: isMobile ? '12px 16px' : '14px 24px',
                       fontWeight: 700,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       cursor: 'pointer',
                       boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
                       transition: 'all 0.3s ease'
@@ -1374,8 +1399,8 @@ export default function AddProjectAndRequests(){
                 ) : (
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                    gap: 12
+                    gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(100px, 1fr))' : 'repeat(auto-fill, minmax(150px, 1fr))',
+                    gap: isMobile ? 8 : 12
                   }}>
                     {images.map((img, index) => (
                       <div
@@ -1467,9 +1492,9 @@ export default function AddProjectAndRequests(){
                       color: '#fff',
                       border: 0,
                       borderRadius: 12,
-                      padding: '14px 24px',
+                      padding: isMobile ? '12px 16px' : '14px 24px',
                       fontWeight: 700,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       cursor: 'pointer',
                       boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
                       transition: 'all 0.3s ease'
@@ -1531,7 +1556,7 @@ export default function AddProjectAndRequests(){
               />
             </div>
             
-                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                   <div>
                     <label style={{
                       display: 'block',
@@ -1655,9 +1680,9 @@ export default function AddProjectAndRequests(){
                       color: BRAND.primary,
                       border: `2px solid ${BRAND.primary}`,
                       borderRadius: 12,
-                      padding: '14px 24px',
+                      padding: isMobile ? '12px 16px' : '14px 24px',
                       fontWeight: 700,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
@@ -1687,9 +1712,9 @@ export default function AddProjectAndRequests(){
                 color: '#fff',
                 border: 0,
                 borderRadius: 12,
-                padding: '14px 24px',
+                padding: isMobile ? '12px 16px' : '14px 24px',
                 fontWeight: 700,
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
                 transition: 'all 0.3s ease',
@@ -1730,9 +1755,9 @@ export default function AddProjectAndRequests(){
         {/* Client Requests */}
         <div style={{
           background: '#fff',
-          borderRadius: 20,
+          borderRadius: isMobile ? 16 : 20,
           boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
-          padding: 28,
+          padding: isMobile ? 16 : 28,
           border: '1px solid rgba(30,58,95,0.05)'
         }}>
           <div style={{

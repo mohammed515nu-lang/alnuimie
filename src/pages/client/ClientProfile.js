@@ -3,12 +3,14 @@ import { usersAPI, getUser } from "../../utils/api";
 import { useNotifications } from "../../components/NotificationSystem";
 
 const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
+  primary: '#4caf50',
+  accent: '#66bb6a',
+  secondary: '#388e3c',
+  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
   light: '#f8fafc',
-  dark: '#0f172a',
-  muted: '#64748b',
+  dark: '#2e7d32',
+  muted: '#6c757d',
 };
 
 export default function ClientProfile() {
@@ -117,103 +119,219 @@ export default function ClientProfile() {
 
   return (
     <div style={{ direction: 'rtl', fontFamily: 'Cairo, system-ui, Arial' }}>
-      {/* Header */}
+      {/* Header with Profile Picture */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 16,
-        marginBottom: 24
+        background: BRAND.gradientLight,
+        borderRadius: 24,
+        padding: 40,
+        marginBottom: 32,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 8px 30px rgba(76, 175, 80, 0.2)'
       }}>
-        <div>
-          <h2 style={{
-            fontWeight: 900,
+        {/* Decorative circles */}
+        <div style={{
+          position: 'absolute',
+          top: -50,
+          right: -50,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.1)',
+          filter: 'blur(40px)'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: -30,
+          left: -30,
+          width: 150,
+          height: 150,
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.08)',
+          filter: 'blur(30px)'
+        }} />
+        
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 24,
+          flexWrap: 'wrap',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          {/* Profile Picture */}
+          <div style={{
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 48,
+            fontWeight: 700,
             color: BRAND.primary,
-            fontSize: 32,
-            margin: '0 0 8px 0',
-            letterSpacing: '-1px'
+            border: '4px solid rgba(255, 255, 255, 0.5)',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+            flexShrink: 0
           }}>
-            الملف الشخصي (عميل)
-          </h2>
-          <p style={{ color: BRAND.muted, fontSize: 15, margin: 0 }}>
-            تحديث معلوماتك الشخصية
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button
-            onClick={cancel}
-            disabled={!originalForm}
-            style={{
-              background: '#f1f5f9',
-              color: BRAND.dark,
-              border: 0,
-              borderRadius: 12,
-              padding: '12px 24px',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: originalForm ? 'pointer' : 'not-allowed',
-              transition: 'all 0.3s ease',
-              opacity: originalForm ? 1 : 0.5
-            }}
-            onMouseOver={e => {
-              if (originalForm) {
-                e.currentTarget.style.background = '#e2e8f0';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }
-            }}
-            onMouseOut={e => {
-              if (originalForm) {
-                e.currentTarget.style.background = '#f1f5f9';
-                e.currentTarget.style.transform = 'none';
-              }
-            }}
-          >
-            إلغاء
-          </button>
-          <button
-            onClick={saveProfile}
-            disabled={isSaving}
-            style={{
-              background: BRAND.gradient,
+            {form.name ? form.name.charAt(0).toUpperCase() : '👤'}
+          </div>
+          
+          <div style={{ flex: 1, minWidth: 250 }}>
+            <h2 style={{
+              fontWeight: 900,
               color: '#fff',
-              border: 0,
-              borderRadius: 12,
-              padding: '12px 24px',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              boxShadow: '0 4px 15px rgba(42,157,143,0.3)',
-              transition: 'all 0.3s ease',
-              opacity: isSaving ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-            onMouseOver={e => {
-              if (!isSaving) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(42,157,143,0.4)';
-              }
-            }}
-            onMouseOut={e => {
-              e.currentTarget.style.transform = 'none';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(42,157,143,0.3)';
-            }}
-          >
-            {isSaving ? '⏳ جاري الحفظ...' : '✓ حفظ'}
-          </button>
+              fontSize: 36,
+              margin: '0 0 8px 0',
+              letterSpacing: '-1px',
+              textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+            }}>
+              {form.name || 'الملف الشخصي'}
+            </h2>
+            <p style={{ 
+              color: 'rgba(255, 255, 255, 0.9)', 
+              fontSize: 16, 
+              margin: '0 0 12px 0',
+              fontWeight: 600
+            }}>
+              عميل · {form.email || 'لم يتم تحديد البريد الإلكتروني'}
+            </p>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {form.phone && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  padding: '8px 16px',
+                  borderRadius: 12,
+                  fontSize: 14,
+                  color: '#fff',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  📱 {form.phone}
+                </div>
+              )}
+              {form.address && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  padding: '8px 16px',
+                  borderRadius: 12,
+                  fontSize: 14,
+                  color: '#fff',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  📍 {form.address}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={cancel}
+              disabled={!originalForm}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                color: '#fff',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: 14,
+                padding: '14px 28px',
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: originalForm ? 'pointer' : 'not-allowed',
+                transition: 'all 0.3s ease',
+                opacity: originalForm ? 1 : 0.5
+              }}
+              onMouseOver={e => {
+                if (originalForm) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+                }
+              }}
+              onMouseOut={e => {
+                if (originalForm) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={saveProfile}
+              disabled={isSaving}
+              style={{
+                background: '#fff',
+                color: BRAND.primary,
+                border: 'none',
+                borderRadius: 14,
+                padding: '14px 32px',
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                boxShadow: '0 6px 25px rgba(0, 0, 0, 0.15)',
+                transition: 'all 0.3s ease',
+                opacity: isSaving ? 0.7 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+              onMouseOver={e => {
+                if (!isSaving) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.2)';
+                }
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(0, 0, 0, 0.15)';
+              }}
+            >
+              {isSaving ? '⏳ جاري الحفظ...' : '✓ حفظ التغييرات'}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Profile Form */}
       <div style={{
         background: '#ffffff',
-        borderRadius: 20,
-        boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
-        padding: 32,
-        border: '1px solid rgba(30,58,95,0.05)'
+        borderRadius: 24,
+        boxShadow: '0 4px 20px rgba(76, 175, 80, 0.08)',
+        padding: 40,
+        border: '2px solid rgba(102, 187, 106, 0.1)'
       }}>
+        <h3 style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color: BRAND.primary,
+          marginBottom: 24,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12
+        }}>
+          <span style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: BRAND.gradient,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 20
+          }}>📝</span>
+          معلومات الحساب
+        </h3>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))',
@@ -249,10 +367,12 @@ export default function ClientProfile() {
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
                 e.target.style.background = '#fff';
+                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
               }}
               onBlur={e => {
                 e.target.style.borderColor = '#e5e7eb';
                 e.target.style.background = BRAND.light;
+                e.target.style.boxShadow = 'none';
               }}
             />
           </div>
@@ -286,10 +406,12 @@ export default function ClientProfile() {
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
                 e.target.style.background = '#fff';
+                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
               }}
               onBlur={e => {
                 e.target.style.borderColor = '#e5e7eb';
                 e.target.style.background = BRAND.light;
+                e.target.style.boxShadow = 'none';
               }}
             />
           </div>
@@ -322,10 +444,12 @@ export default function ClientProfile() {
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
                 e.target.style.background = '#fff';
+                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
               }}
               onBlur={e => {
                 e.target.style.borderColor = '#e5e7eb';
                 e.target.style.background = BRAND.light;
+                e.target.style.boxShadow = 'none';
               }}
             />
           </div>
@@ -358,10 +482,12 @@ export default function ClientProfile() {
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
                 e.target.style.background = '#fff';
+                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
               }}
               onBlur={e => {
                 e.target.style.borderColor = '#e5e7eb';
                 e.target.style.background = BRAND.light;
+                e.target.style.boxShadow = 'none';
               }}
             />
           </div>
@@ -370,3 +496,8 @@ export default function ClientProfile() {
     </div>
   );
 }
+
+
+
+
+

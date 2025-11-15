@@ -2,11 +2,18 @@ import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Outlet } from "react-router-dom";
 import SplashScreen from "./SplashScreen";
 import RoleLogin from "./RoleLogin";
+import LoginPage from "./pages/Login";
 import Sidebar from "./Sidebar";
 import ContractorDashboard from "./ContractorDashboard";
 import ProjectCard from "./ProjectCard";
-import LandingPage from "./LandingPage";
+import LandingPage from "./LandingPageNew";
 import ProjectDetailsPage from "./ProjectDetailsPage";
+import ContractorsPage from "./pages/ContractorsNew";
+import TrainingPage from "./pages/TrainingPage";
+import ConsultingPage from "./pages/ConsultingPage";
+import ProjectsPage from "./pages/ProjectsPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 import { NotificationProvider } from "./components/NotificationSystem";
 
 // Contractor Pages
@@ -27,7 +34,7 @@ import ClientAddProject from "./pages/client/ClientAddProject";
 import ClientRequests from "./pages/client/ClientRequests";
 
 // Public Pages
-import ProjectsPage from "./pages/public/ProjectsPage";
+import PublicProjectsPage from "./pages/public/ProjectsPage";
 import TestimonialsPage from "./pages/public/TestimonialsPage";
 import FAQPage from "./pages/public/FAQPage";
 import HowItWorksPage from "./pages/public/HowItWorksPage";
@@ -46,9 +53,9 @@ const demoProjects = [
 
 function ShowcasePage() {
   const BRAND = {
-    primary: '#1e3a5f',
-    accent: '#2a9d8f',
-    gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
+    primary: '#4caf50',
+    accent: '#66bb6a',
+    gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
     light: '#f8fafc',
   };
 
@@ -177,7 +184,7 @@ function GoogleCallbackHandler() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)'
+      background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)'
     }}>
       <div style={{
         background: 'rgba(255, 255, 255, 0.95)',
@@ -187,7 +194,7 @@ function GoogleCallbackHandler() {
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
       }}>
         <div style={{ fontSize: 48, marginBottom: 24 }}>⏳</div>
-        <h2 style={{ color: '#1e3a5f', marginBottom: 16 }}>جاري تسجيل الدخول...</h2>
+        <h2 style={{ color: '#4caf50', marginBottom: 16 }}>جاري تسجيل الدخول...</h2>
         <p style={{ color: '#64748b' }}>يرجى الانتظار</p>
       </div>
     </div>
@@ -213,19 +220,19 @@ function AuthRouter() {
       display: 'flex',
       position: 'relative',
       overflow: 'hidden',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)'
+      background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)'
     }}>
       {/* Unified Background Effects */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(42, 157, 143, 0.25) 0%, transparent 50%)',
+        background: 'radial-gradient(circle at 20% 50%, rgba(102, 187, 106, 0.25) 0%, transparent 50%)',
         pointerEvents: 'none'
       }} />
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at 80% 80%, rgba(30, 58, 95, 0.2) 0%, transparent 50%)',
+        background: 'radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.2) 0%, transparent 50%)',
         pointerEvents: 'none'
       }} />
       <div style={{
@@ -321,7 +328,7 @@ export default function App() {
         {/* Landing */}
         <Route path="/" element={<LandingPage />} />
         {/* Login */}
-        <Route path="/login" element={<AuthRouter />} />
+        <Route path="/login" element={<LoginPage />} />
         {/* Reset Password */}
         <Route path="/reset-password" element={<ResetPassword />} />
         {/* Google OAuth Callback */}
@@ -331,6 +338,11 @@ export default function App() {
         <Route path="/testimonials" element={<TestimonialsPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/contractors" element={<ContractorsPage />} />
+        <Route path="/training" element={<TrainingPage />} />
+        <Route path="/consulting" element={<ConsultingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         {/* App layout */}
         <Route element={<MainLayout />}>
           {/* Public/Showcase */}

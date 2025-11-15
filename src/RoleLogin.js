@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { authAPI, setToken, setUser } from "./utils/api";
 
 const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  secondary: '#264653',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  gradientLight: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 100%)',
-  gradientContractor: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 100%)',
-  gradientClient: 'linear-gradient(135deg, #2a9d8f 0%, #1e3a5f 100%)',
+  primary: '#4caf50',
+  accent: '#66bb6a',
+  secondary: '#388e3c',
+  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
+  gradientContractor: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+  gradientClient: 'linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)',
   light: '#f8fafc',
-  dark: '#0f172a',
+  dark: '#2e7d32',
   muted: '#64748b',
 };
 

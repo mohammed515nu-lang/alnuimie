@@ -9,16 +9,6 @@
 
 ---
 
-## 🎯 الهدف من المشروع
-
-هذا المشروع هو **مشروع تخرج أكاديمي** يهدف إلى:
-- تطوير نظام متكامل لإدارة المقاولات
-- تطبيق المعارف المكتسبة في تطوير الويب
-- إدارة المشاريع والمواد والطلبات بشكل فعال
-- توثيق كامل للقاعدة البيانات والعلاقات
-
----
-
 ## 🏗️ هيكل المشروع
 
 ```
@@ -27,682 +17,92 @@ client/
 │   ├── components/        # مكونات React
 │   ├── pages/             # الصفحات الرئيسية
 │   └── utils/             # أدوات مساعدة
-└── server/                # Backend (Node.js)
-    ├── models/            # نماذج قاعدة البيانات (MongoDB)
-    ├── routes/            # مسارات API
-    └── server.js          # الخادم الرئيسي
+├── server/                # Backend (Node.js)
+│   ├── models/            # نماذج قاعدة البيانات (MongoDB)
+│   ├── routes/            # مسارات API
+│   └── server.js          # الخادم الرئيسي
+└── docs/                  # التوثيق
+    ├── frontend/          # توثيق Frontend
+    ├── backend/           # توثيق Backend
+    └── deployment/        # توثيق النشر
 ```
+
+---
+
+## 🚀 البدء السريع
+
+### 1. Frontend
+```bash
+npm install
+npm start
+```
+راجع: [docs/frontend/README.md](docs/frontend/README.md)
+
+### 2. Backend
+```bash
+cd server
+npm install
+npm run dev
+```
+راجع: [docs/backend/README.md](docs/backend/README.md)
+
+---
+
+## 📚 التوثيق
+
+- **Frontend**: [docs/frontend/README.md](docs/frontend/README.md)
+- **Backend**: [docs/backend/README.md](docs/backend/README.md)
+- **النشر**: [docs/deployment/](docs/deployment/)
 
 ---
 
 ## 🛠️ التقنيات المستخدمة
 
 ### Frontend:
-- **React.js** - مكتبة JavaScript لبناء الواجهات
-- **React Router DOM** - التوجيه والتنقل
-- **CSS3** - التصميم والأنيميشن
+- React.js
+- React Router DOM
+- CSS3
 
 ### Backend:
-- **Node.js** - بيئة تشغيل JavaScript
-- **Express.js** - إطار عمل للخادم
-- **MongoDB** - قاعدة بيانات NoSQL
-- **Mongoose** - ODM لـ MongoDB
-- **JWT** - المصادقة والتفويض
-- **bcryptjs** - تشفير كلمات المرور
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcryptjs
 
 ---
 
 ## 📊 قاعدة البيانات
 
-### Models (10):
-1. **User** - المستخدمون (عميل/مقاول)
-2. **Project** - المشاريع
-3. **Material** - المواد
-4. **Supplier** - الموردون
-5. **Purchase** - المشتريات
-6. **Payment** - المدفوعات
-7. **Issue** - إصدار المواد
-8. **Contract** - العقود
-9. **Request** - الطلبات
-10. **Report** - التقارير
+10 Models رئيسية:
+- User, Project, Material, Supplier, Purchase, Payment, Issue, Contract, Request, Report
 
-### ERD Diagram:
-- انظر: `server/Database-ERD.md`
-- Diagram بصري: `server/ERD-Visual.html`
+راجع: `server/SCHEMA-COMPLETE.md` للتفاصيل الكاملة
 
 ---
 
-## 🚀 التشغيل
+## 🌐 النشر
 
-### المتطلبات:
-- Node.js (v14 أو أحدث)
-- MongoDB (محلي أو Atlas)
+- **Frontend**: Vercel
+- **Backend**: Render
 
-### 1. تثبيت Dependencies:
-
-#### Frontend:
-```bash
-npm install
-```
-
-#### Backend:
-```bash
-cd server
-npm install
-```
-
-### 2. إعداد MongoDB:
-
-#### الخيار 1: MongoDB محلي
-- تثبيت MongoDB Community Edition
-- تشغيل MongoDB Service
-
-#### الخيار 2: MongoDB Atlas (موصى به)
-- إنشاء حساب على https://www.mongodb.com/cloud/atlas
-- إنشاء Cluster
-- نسخ Connection String
-
-### 3. إعداد ملف `.env`:
-
-في مجلد `server/`:
-```
-MONGODB_URI=mongodb://localhost:27017/construction-management
-# أو
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/construction-management
-
-PORT=4000
-JWT_SECRET=your-secret-key-here
-```
-
-### 4. تشغيل المشروع:
-
-#### Backend:
-```bash
-cd server
-npm run dev
-```
-الخادم يعمل على: `http://localhost:4000`
-
-#### Frontend:
-```bash
-npm start
-```
-التطبيق يعمل على: `http://localhost:3000`
-
----
-
-## 📁 الملفات المهمة
-
-### Frontend:
-- `src/App.js` - التطبيق الرئيسي والروابط
-- `src/LandingPage.js` - الصفحة الرئيسية
-- `src/RoleLogin.js` - صفحة تسجيل الدخول والتسجيل
-- `src/pages/` - صفحات العميل والمقاول
-
-### Backend:
-- `server/server.js` - الخادم الرئيسي
-- `server/models/` - نماذج قاعدة البيانات
-- `server/routes/` - مسارات API
-
-### التوثيق:
-- `server/Database-ERD.md` - ERD كامل
-- `server/ERD-Visual.html` - Diagram بصري
-- `server/عرض-بيانات-المستخدمين.md` - كيفية عرض البيانات
-
----
-
-## 🌐 API Endpoints
-
-### Authentication:
-- `POST /api/auth/register` - تسجيل مستخدم جديد
-- `POST /api/auth/login` - تسجيل الدخول
-
-### Projects:
-- `GET /api/projects` - قائمة المشاريع
-- `GET /api/projects/:id` - تفاصيل مشروع
-- `POST /api/projects` - إنشاء مشروع
-- `PUT /api/projects/:id` - تحديث مشروع
-- `DELETE /api/projects/:id` - حذف مشروع
-
-### Users:
-- `GET /api/users` - قائمة المستخدمين
-- `GET /api/users/:id` - تفاصيل مستخدم
-- `PUT /api/users/:id` - تحديث مستخدم
-
-### Materials, Suppliers, Purchases, Payments, Issues, Contracts, Requests, Reports:
-- CRUD operations متاحة لكل Model
+راجع: `docs/deployment/` للتفاصيل
 
 ---
 
 ## 📝 ملاحظات مهمة
 
-### هذا مشروع تخرج أكاديمي:
-- ✅ يهدف إلى التعلم والتطبيق
-- ✅ توثيق كامل للقاعدة البيانات
-- ✅ ERD Diagram شامل
-- ✅ جميع العلاقات موثقة
-
-### الأمان:
-- كلمات المرور مشفرة (bcrypt)
-- JWT للمصادقة
-- Password مستثناة من API responses
-
----
-
-## 📚 المراجع والأدوات
-
-- [React Documentation](https://reactjs.org/)
-- [Express.js Documentation](https://expressjs.com/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
-
----
-
-## 🎓 معلومات إضافية
-
-هذا المشروع تم تطويره كجزء من **مشروع تخرج أكاديمي** بهدف:
-- تطبيق المعارف النظرية في مشروع عملي
-- تطوير نظام متكامل لإدارة المقاولات
-- توثيق كامل للقاعدة البيانات والعلاقات
-- استخدام أحدث التقنيات في تطوير الويب
+هذا مشروع تخرج أكاديمي يهدف إلى:
+- ✅ تطبيق المعارف النظرية في مشروع عملي
+- ✅ تطوير نظام متكامل لإدارة المقاولات
+- ✅ توثيق كامل للقاعدة البيانات والعلاقات
 
 ---
 
 ## 📄 الترخيص
 
 هذا مشروع تخرج أكاديمي - للأغراض التعليمية فقط.
-
----
-
-## 👨‍💻 المطور
-
-تم تطوير هذا المشروع كجزء من مشروع تخرج أكاديمي.
-
----
-
-## 📞 الدعم
-
-لأي استفسارات أو مساعدة، يرجى التواصل.
-
----
-
-**تم التطوير باستخدام:** React.js, Node.js, Express.js, MongoDB  
-**نوع المشروع:** مشروع تخرج أكاديمي 🎓
-
-
----
-
-## 🚀 التشغيل
-
-### المتطلبات:
-- Node.js (v14 أو أحدث)
-- MongoDB (محلي أو Atlas)
-
-### 1. تثبيت Dependencies:
-
-#### Frontend:
-```bash
-npm install
-```
-
-#### Backend:
-```bash
-cd server
-npm install
-```
-
-### 2. إعداد MongoDB:
-
-#### الخيار 1: MongoDB محلي
-- تثبيت MongoDB Community Edition
-- تشغيل MongoDB Service
-
-#### الخيار 2: MongoDB Atlas (موصى به)
-- إنشاء حساب على https://www.mongodb.com/cloud/atlas
-- إنشاء Cluster
-- نسخ Connection String
-
-### 3. إعداد ملف `.env`:
-
-في مجلد `server/`:
-```
-MONGODB_URI=mongodb://localhost:27017/construction-management
-# أو
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/construction-management
-
-PORT=4000
-JWT_SECRET=your-secret-key-here
-```
-
-### 4. تشغيل المشروع:
-
-#### Backend:
-```bash
-cd server
-npm run dev
-```
-الخادم يعمل على: `http://localhost:4000`
-
-#### Frontend:
-```bash
-npm start
-```
-التطبيق يعمل على: `http://localhost:3000`
-
----
-
-## 📁 الملفات المهمة
-
-### Frontend:
-- `src/App.js` - التطبيق الرئيسي والروابط
-- `src/LandingPage.js` - الصفحة الرئيسية
-- `src/RoleLogin.js` - صفحة تسجيل الدخول والتسجيل
-- `src/pages/` - صفحات العميل والمقاول
-
-### Backend:
-- `server/server.js` - الخادم الرئيسي
-- `server/models/` - نماذج قاعدة البيانات
-- `server/routes/` - مسارات API
-
-### التوثيق:
-- `server/Database-ERD.md` - ERD كامل
-- `server/ERD-Visual.html` - Diagram بصري
-- `server/عرض-بيانات-المستخدمين.md` - كيفية عرض البيانات
-
----
-
-## 🌐 API Endpoints
-
-### Authentication:
-- `POST /api/auth/register` - تسجيل مستخدم جديد
-- `POST /api/auth/login` - تسجيل الدخول
-
-### Projects:
-- `GET /api/projects` - قائمة المشاريع
-- `GET /api/projects/:id` - تفاصيل مشروع
-- `POST /api/projects` - إنشاء مشروع
-- `PUT /api/projects/:id` - تحديث مشروع
-- `DELETE /api/projects/:id` - حذف مشروع
-
-### Users:
-- `GET /api/users` - قائمة المستخدمين
-- `GET /api/users/:id` - تفاصيل مستخدم
-- `PUT /api/users/:id` - تحديث مستخدم
-
-### Materials, Suppliers, Purchases, Payments, Issues, Contracts, Requests, Reports:
-- CRUD operations متاحة لكل Model
-
----
-
-## 📝 ملاحظات مهمة
-
-### هذا مشروع تخرج أكاديمي:
-- ✅ يهدف إلى التعلم والتطبيق
-- ✅ توثيق كامل للقاعدة البيانات
-- ✅ ERD Diagram شامل
-- ✅ جميع العلاقات موثقة
-
-### الأمان:
-- كلمات المرور مشفرة (bcrypt)
-- JWT للمصادقة
-- Password مستثناة من API responses
-
----
-
-## 📚 المراجع والأدوات
-
-- [React Documentation](https://reactjs.org/)
-- [Express.js Documentation](https://expressjs.com/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
-
----
-
-## 🎓 معلومات إضافية
-
-هذا المشروع تم تطويره كجزء من **مشروع تخرج أكاديمي** بهدف:
-- تطبيق المعارف النظرية في مشروع عملي
-- تطوير نظام متكامل لإدارة المقاولات
-- توثيق كامل للقاعدة البيانات والعلاقات
-- استخدام أحدث التقنيات في تطوير الويب
-
----
-
-## 📄 الترخيص
-
-هذا مشروع تخرج أكاديمي - للأغراض التعليمية فقط.
-
----
-
-## 👨‍💻 المطور
-
-تم تطوير هذا المشروع كجزء من مشروع تخرج أكاديمي.
-
----
-
-## 📞 الدعم
-
-لأي استفسارات أو مساعدة، يرجى التواصل.
-
----
-
-**تم التطوير باستخدام:** React.js, Node.js, Express.js, MongoDB  
-**نوع المشروع:** مشروع تخرج أكاديمي 🎓
-
-
----
-
-## 🚀 التشغيل
-
-### المتطلبات:
-- Node.js (v14 أو أحدث)
-- MongoDB (محلي أو Atlas)
-
-### 1. تثبيت Dependencies:
-
-#### Frontend:
-```bash
-npm install
-```
-
-#### Backend:
-```bash
-cd server
-npm install
-```
-
-### 2. إعداد MongoDB:
-
-#### الخيار 1: MongoDB محلي
-- تثبيت MongoDB Community Edition
-- تشغيل MongoDB Service
-
-#### الخيار 2: MongoDB Atlas (موصى به)
-- إنشاء حساب على https://www.mongodb.com/cloud/atlas
-- إنشاء Cluster
-- نسخ Connection String
-
-### 3. إعداد ملف `.env`:
-
-في مجلد `server/`:
-```
-MONGODB_URI=mongodb://localhost:27017/construction-management
-# أو
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/construction-management
-
-PORT=4000
-JWT_SECRET=your-secret-key-here
-```
-
-### 4. تشغيل المشروع:
-
-#### Backend:
-```bash
-cd server
-npm run dev
-```
-الخادم يعمل على: `http://localhost:4000`
-
-#### Frontend:
-```bash
-npm start
-```
-التطبيق يعمل على: `http://localhost:3000`
-
----
-
-## 📁 الملفات المهمة
-
-### Frontend:
-- `src/App.js` - التطبيق الرئيسي والروابط
-- `src/LandingPage.js` - الصفحة الرئيسية
-- `src/RoleLogin.js` - صفحة تسجيل الدخول والتسجيل
-- `src/pages/` - صفحات العميل والمقاول
-
-### Backend:
-- `server/server.js` - الخادم الرئيسي
-- `server/models/` - نماذج قاعدة البيانات
-- `server/routes/` - مسارات API
-
-### التوثيق:
-- `server/Database-ERD.md` - ERD كامل
-- `server/ERD-Visual.html` - Diagram بصري
-- `server/عرض-بيانات-المستخدمين.md` - كيفية عرض البيانات
-
----
-
-## 🌐 API Endpoints
-
-### Authentication:
-- `POST /api/auth/register` - تسجيل مستخدم جديد
-- `POST /api/auth/login` - تسجيل الدخول
-
-### Projects:
-- `GET /api/projects` - قائمة المشاريع
-- `GET /api/projects/:id` - تفاصيل مشروع
-- `POST /api/projects` - إنشاء مشروع
-- `PUT /api/projects/:id` - تحديث مشروع
-- `DELETE /api/projects/:id` - حذف مشروع
-
-### Users:
-- `GET /api/users` - قائمة المستخدمين
-- `GET /api/users/:id` - تفاصيل مستخدم
-- `PUT /api/users/:id` - تحديث مستخدم
-
-### Materials, Suppliers, Purchases, Payments, Issues, Contracts, Requests, Reports:
-- CRUD operations متاحة لكل Model
-
----
-
-## 📝 ملاحظات مهمة
-
-### هذا مشروع تخرج أكاديمي:
-- ✅ يهدف إلى التعلم والتطبيق
-- ✅ توثيق كامل للقاعدة البيانات
-- ✅ ERD Diagram شامل
-- ✅ جميع العلاقات موثقة
-
-### الأمان:
-- كلمات المرور مشفرة (bcrypt)
-- JWT للمصادقة
-- Password مستثناة من API responses
-
----
-
-## 📚 المراجع والأدوات
-
-- [React Documentation](https://reactjs.org/)
-- [Express.js Documentation](https://expressjs.com/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
-
----
-
-## 🎓 معلومات إضافية
-
-هذا المشروع تم تطويره كجزء من **مشروع تخرج أكاديمي** بهدف:
-- تطبيق المعارف النظرية في مشروع عملي
-- تطوير نظام متكامل لإدارة المقاولات
-- توثيق كامل للقاعدة البيانات والعلاقات
-- استخدام أحدث التقنيات في تطوير الويب
-
----
-
-## 📄 الترخيص
-
-هذا مشروع تخرج أكاديمي - للأغراض التعليمية فقط.
-
----
-
-## 👨‍💻 المطور
-
-تم تطوير هذا المشروع كجزء من مشروع تخرج أكاديمي.
-
----
-
-## 📞 الدعم
-
-لأي استفسارات أو مساعدة، يرجى التواصل.
-
----
-
-**تم التطوير باستخدام:** React.js, Node.js, Express.js, MongoDB  
-**نوع المشروع:** مشروع تخرج أكاديمي 🎓
-
-
----
-
-## 🚀 التشغيل
-
-### المتطلبات:
-- Node.js (v14 أو أحدث)
-- MongoDB (محلي أو Atlas)
-
-### 1. تثبيت Dependencies:
-
-#### Frontend:
-```bash
-npm install
-```
-
-#### Backend:
-```bash
-cd server
-npm install
-```
-
-### 2. إعداد MongoDB:
-
-#### الخيار 1: MongoDB محلي
-- تثبيت MongoDB Community Edition
-- تشغيل MongoDB Service
-
-#### الخيار 2: MongoDB Atlas (موصى به)
-- إنشاء حساب على https://www.mongodb.com/cloud/atlas
-- إنشاء Cluster
-- نسخ Connection String
-
-### 3. إعداد ملف `.env`:
-
-في مجلد `server/`:
-```
-MONGODB_URI=mongodb://localhost:27017/construction-management
-# أو
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/construction-management
-
-PORT=4000
-JWT_SECRET=your-secret-key-here
-```
-
-### 4. تشغيل المشروع:
-
-#### Backend:
-```bash
-cd server
-npm run dev
-```
-الخادم يعمل على: `http://localhost:4000`
-
-#### Frontend:
-```bash
-npm start
-```
-التطبيق يعمل على: `http://localhost:3000`
-
----
-
-## 📁 الملفات المهمة
-
-### Frontend:
-- `src/App.js` - التطبيق الرئيسي والروابط
-- `src/LandingPage.js` - الصفحة الرئيسية
-- `src/RoleLogin.js` - صفحة تسجيل الدخول والتسجيل
-- `src/pages/` - صفحات العميل والمقاول
-
-### Backend:
-- `server/server.js` - الخادم الرئيسي
-- `server/models/` - نماذج قاعدة البيانات
-- `server/routes/` - مسارات API
-
-### التوثيق:
-- `server/Database-ERD.md` - ERD كامل
-- `server/ERD-Visual.html` - Diagram بصري
-- `server/عرض-بيانات-المستخدمين.md` - كيفية عرض البيانات
-
----
-
-## 🌐 API Endpoints
-
-### Authentication:
-- `POST /api/auth/register` - تسجيل مستخدم جديد
-- `POST /api/auth/login` - تسجيل الدخول
-
-### Projects:
-- `GET /api/projects` - قائمة المشاريع
-- `GET /api/projects/:id` - تفاصيل مشروع
-- `POST /api/projects` - إنشاء مشروع
-- `PUT /api/projects/:id` - تحديث مشروع
-- `DELETE /api/projects/:id` - حذف مشروع
-
-### Users:
-- `GET /api/users` - قائمة المستخدمين
-- `GET /api/users/:id` - تفاصيل مستخدم
-- `PUT /api/users/:id` - تحديث مستخدم
-
-### Materials, Suppliers, Purchases, Payments, Issues, Contracts, Requests, Reports:
-- CRUD operations متاحة لكل Model
-
----
-
-## 📝 ملاحظات مهمة
-
-### هذا مشروع تخرج أكاديمي:
-- ✅ يهدف إلى التعلم والتطبيق
-- ✅ توثيق كامل للقاعدة البيانات
-- ✅ ERD Diagram شامل
-- ✅ جميع العلاقات موثقة
-
-### الأمان:
-- كلمات المرور مشفرة (bcrypt)
-- JWT للمصادقة
-- Password مستثناة من API responses
-
----
-
-## 📚 المراجع والأدوات
-
-- [React Documentation](https://reactjs.org/)
-- [Express.js Documentation](https://expressjs.com/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
-
----
-
-## 🎓 معلومات إضافية
-
-هذا المشروع تم تطويره كجزء من **مشروع تخرج أكاديمي** بهدف:
-- تطبيق المعارف النظرية في مشروع عملي
-- تطوير نظام متكامل لإدارة المقاولات
-- توثيق كامل للقاعدة البيانات والعلاقات
-- استخدام أحدث التقنيات في تطوير الويب
-
----
-
-## 📄 الترخيص
-
-هذا مشروع تخرج أكاديمي - للأغراض التعليمية فقط.
-
----
-
-## 👨‍💻 المطور
-
-تم تطوير هذا المشروع كجزء من مشروع تخرج أكاديمي.
-
----
-
-## 📞 الدعم
-
-لأي استفسارات أو مساعدة، يرجى التواصل.
 
 ---
 

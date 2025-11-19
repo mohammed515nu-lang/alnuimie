@@ -56,16 +56,11 @@ const ProgressBar = ({ progress, showLabel = true, size = 'medium' }) => {
 };
 
 const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
-  light: '#f8fafc',
-  dark: '#2e7d32',
-  muted: '#6c757d',
-  success: '#43a047',
-  warning: '#ff9800',
+  primary: '#1f2933',          // نص داكن على خلفية فاتحة
+  accent: '#C26B3A',           // لهجة دافئة ثانوية
+  background: '#f3f4f6',       // خلفية عامة فاتحة ومحايدة
+  card: '#ffffff',             // كروت بيضاء بسيطة
+  muted: '#6b7280',
 };
 
 export default function ContractorDashboard() {
@@ -132,7 +127,8 @@ export default function ContractorDashboard() {
       direction: 'rtl', 
       fontFamily: 'Cairo, system-ui, Arial',
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%)'
+      backgroundColor: BRAND.background,
+      color: BRAND.primary
     }}>
       <style>{`
         @keyframes fadeInUp {
@@ -144,15 +140,19 @@ export default function ContractorDashboard() {
           to { opacity: 1; transform: translateX(0); }
         }
         @keyframes glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
-          50% { box-shadow: 0 0 40px rgba(102, 187, 106, 0.5); }
+          0%, 100% { box-shadow: 0 0 20px rgba(194, 107, 58, 0.24); }
+          50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.32); }
         }
         .stat-card {
           animation: fadeInUp 0.6s ease-out;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #060B1B !important;
+          border-radius: 18px;
+          border: 1px solid rgba(148, 163, 184, 0.35);
         }
         .stat-card:hover {
           transform: translateY(-8px) scale(1.02);
+          box-shadow: 0 22px 45px rgba(15, 23, 42, 0.65);
         }
         .glow-effect {
           position: relative;
@@ -173,42 +173,19 @@ export default function ContractorDashboard() {
         }
       `}</style>
 
-      {/* Decorative Header Background */}
+      {/* Header - simple flat card */}
       <div style={{
         position: 'relative',
-        background: BRAND.gradient,
-        padding: '40px 32px',
-        marginBottom: 30,
-        borderRadius: '0 0 30px 30px',
-        boxShadow: '0 10px 40px rgba(76, 175, 80, 0.3)',
-        overflow: 'hidden'
+        backgroundColor: '#ffffff',
+        padding: '24px 32px',
+        marginBottom: 24,
+        borderRadius: '0 0 24px 24px',
+        boxShadow: '0 8px 20px rgba(15,23,42,0.08)',
+        borderBottom: '1px solid rgba(148,163,184,0.35)'
       }}>
-        {/* Decorative circles */}
-        <div style={{
-          position: 'absolute',
-          width: 200,
-          height: 200,
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          top: -50,
-          right: -50,
-          animation: 'glow 3s infinite'
-        }} />
-        <div style={{
-          position: 'absolute',
-          width: 150,
-          height: 150,
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.08)',
-          bottom: -30,
-          left: 100,
-          animation: 'glow 4s infinite'
-        }} />
-
         <div style={{
           position: 'relative',
-          zIndex: 1,
-          animation: 'slideIn 0.8s ease-out'
+          zIndex: 1
         }}>
           <div style={{
             display: 'flex',
@@ -232,20 +209,19 @@ export default function ContractorDashboard() {
             </div>
             <div>
               <h1 style={{
-                fontSize: 36,
-                fontWeight: 900,
-                color: '#fff',
+                fontSize: 28,
+                fontWeight: 800,
+                color: BRAND.primary,
                 margin: 0,
-                letterSpacing: '-1px',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+                letterSpacing: '-0.5px'
               }}>
                 أهلاً بك، المقاول
               </h1>
               <p style={{ 
-                color: 'rgba(255, 255, 255, 0.9)', 
-                fontSize: 16, 
-                margin: '4px 0 0 0',
-                fontWeight: 500
+                color: BRAND.muted, 
+                fontSize: 14, 
+                margin: '6px 0 0 0',
+                fontWeight: 400
               }}>
                 إدارة مشاريعك ومراقبة التقدم من مكان واحد
               </p>
@@ -269,41 +245,26 @@ export default function ContractorDashboard() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="glow-effect"
             style={{
               flex: 1,
-              padding: '16px 24px',
-              borderRadius: 16,
-              border: activeTab === tab.id ? 'none' : '2px solid rgba(76, 175, 80, 0.1)',
-              background: activeTab === tab.id ? BRAND.gradient : '#fff',
-              color: activeTab === tab.id ? '#fff' : BRAND.muted,
-              fontSize: 15,
-              fontWeight: 700,
+              padding: '10px 20px',
+              borderRadius: 999,
+              border: activeTab === tab.id
+                ? '1px solid rgba(37,99,235,0.6)'
+                : '1px solid rgba(148,163,184,0.7)',
+              backgroundColor: activeTab === tab.id ? '#e0f2fe' : '#ffffff',
+              color: activeTab === tab.id ? '#1d4ed8' : '#4b5563',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              fontSize: 14,
+              fontWeight: 600,
+              boxShadow: activeTab === tab.id
+                ? '0 6px 16px rgba(15,23,42,0.12)'
+                : '0 2px 6px rgba(15,23,42,0.06)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 10,
-              boxShadow: activeTab === tab.id 
-                ? '0 8px 25px rgba(76, 175, 80, 0.35)' 
-                : '0 2px 8px rgba(0, 0, 0, 0.05)'
-            }}
-            onMouseOver={e => {
-              if (activeTab !== tab.id) {
-                e.currentTarget.style.background = 'rgba(76, 175, 80, 0.05)';
-                e.currentTarget.style.color = BRAND.primary;
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.borderColor = BRAND.primary;
-              }
-            }}
-            onMouseOut={e => {
-              if (activeTab !== tab.id) {
-                e.currentTarget.style.background = '#fff';
-                e.currentTarget.style.color = BRAND.muted;
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = 'rgba(76, 175, 80, 0.1)';
-              }
+              gap: 8,
+              transition: 'background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease'
             }}
           >
             <span style={{ fontSize: 20 }}>{tab.icon}</span>
@@ -323,21 +284,18 @@ export default function ContractorDashboard() {
         marginBottom: 24,
         padding: '0 32px'
       }}>
-        {[
-          { label: 'إجمالي المشاريع', value: stats.total, icon: '📊', color: BRAND.primary, gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)' },
-          { label: 'قيد الانتظار', value: stats.pending, icon: '⏳', color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)' },
-          { label: 'قيد التنفيذ', value: stats.inProgress, icon: '⚙️', color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' },
-          { label: 'مكتملة', value: stats.completed, icon: '✅', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' },
+        {[ 
+          { label: 'إجمالي المشاريع', value: stats.total, icon: '📊', color: BRAND.accent, gradient: 'linear-gradient(135deg, #C26B3A 0%, #f97316 100%)' },
+          { label: 'قيد الانتظار', value: stats.pending, icon: '⏳', color: '#eab308', gradient: 'linear-gradient(135deg, #facc15 0%, #f97316 100%)' },
         ].map((stat, i) => (
           <div
             key={stat.label}
-            className="stat-card glow-effect"
             style={{
-              background: '#fff',
+              background: BRAND.card,
               borderRadius: 20,
-              padding: 28,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid rgba(0,0,0,0.05)',
+              padding: 24,
+              boxShadow: '0 4px 10px rgba(15,23,42,0.04)',
+              border: '1px solid rgba(148,163,184,0.25)',
               position: 'relative',
               overflow: 'hidden',
               animationDelay: `${i * 0.1}s`
@@ -351,7 +309,7 @@ export default function ContractorDashboard() {
               width: 120,
               height: 120,
               background: stat.gradient,
-              opacity: 0.1,
+              opacity: 0.25,
               borderRadius: '0 20px 0 100%'
             }} />
             
@@ -369,7 +327,7 @@ export default function ContractorDashboard() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: 28,
-                  boxShadow: `0 8px 20px ${stat.color}30`
+                  boxShadow: `0 10px 26px ${stat.color}55`
                 }}>
                   {stat.icon}
                 </div>
@@ -378,17 +336,14 @@ export default function ContractorDashboard() {
                   height: 12,
                   borderRadius: '50%',
                   background: stat.color,
-                  boxShadow: `0 0 20px ${stat.color}80`,
+                  boxShadow: `0 0 22px ${stat.color}aa`,
                   animation: 'glow 2s infinite'
                 }} />
               </div>
               <div style={{
                 fontSize: 38,
                 fontWeight: 900,
-                background: stat.gradient,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: '#f9fafb',
                 marginBottom: 8,
                 letterSpacing: '-1px'
               }}>
@@ -416,20 +371,19 @@ export default function ContractorDashboard() {
         padding: '0 32px'
       }}>
         {[
-          { label: 'إجمالي الميزانية', value: `$${stats.totalBudget.toLocaleString()}`, icon: '💰', color: BRAND.accent, gradient: 'linear-gradient(135deg, #66bb6a 0%, #81c784 100%)' },
-          { label: 'التكلفة الفعلية', value: `$${stats.totalCost.toLocaleString()}`, icon: '💵', color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)' },
-          { label: 'متوسط التقدم', value: `${stats.avgProgress}%`, icon: '📈', color: '#06b6d4', gradient: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)' },
-          { label: 'إجمالي المهندسين', value: stats.totalEngineers, icon: '👷', color: '#f97316', gradient: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)' },
+          { label: 'إجمالي الميزانية', value: `$${stats.totalBudget.toLocaleString()}`, icon: '💰', color: '#facc15', gradient: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)' },
+          { label: 'التكلفة الفعلية', value: `$${stats.totalCost.toLocaleString()}`, icon: '💵', color: '#38bdf8', gradient: 'linear-gradient(135deg, #111827 0%, #020617 100%)' },
+          { label: 'متوسط التقدم', value: `${stats.avgProgress}%`, icon: '📈', color: '#4ade80', gradient: 'linear-gradient(135deg, #052e16 0%, #0f172a 100%)' },
+          { label: 'إجمالي المهندسين', value: stats.totalEngineers, icon: '👷', color: '#fb923c', gradient: 'linear-gradient(135deg, #7c2d12 0%, #0f172a 100%)' },
         ].map((stat, i) => (
           <div
             key={stat.label}
-            className="stat-card glow-effect"
             style={{
-              background: '#fff',
+              background: BRAND.card,
               borderRadius: 20,
-              padding: 28,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid rgba(0,0,0,0.05)',
+              padding: 24,
+              boxShadow: '0 4px 10px rgba(15,23,42,0.04)',
+              border: '1px solid rgba(148,163,184,0.25)',
               position: 'relative',
               overflow: 'hidden',
               animationDelay: `${(i + 4) * 0.1}s`
@@ -446,8 +400,8 @@ export default function ContractorDashboard() {
               opacity: 0.1,
               borderRadius: '0 20px 0 100%'
             }} />
-            
-            <div style={{ 
+
+            <div style={{
               position: 'relative',
               zIndex: 1
             }}>
@@ -477,18 +431,15 @@ export default function ContractorDashboard() {
               <div style={{
                 fontSize: stat.label.includes('الميزانية') || stat.label.includes('التكلفة') ? 28 : 38,
                 fontWeight: 900,
-                background: stat.gradient,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: '#111827',
                 marginBottom: 8,
                 letterSpacing: '-1px'
               }}>
                 {stat.value}
               </div>
-              <div style={{ 
-                color: BRAND.muted, 
-                fontSize: 14, 
+              <div style={{
+                color: BRAND.muted,
+                fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: '0.3px'
               }}>
@@ -507,21 +458,20 @@ export default function ContractorDashboard() {
         marginBottom: 30,
         padding: '0 32px'
       }}>
-        {[
-          { label: 'الموردين', value: stats.totalSuppliers, icon: '🏢', color: BRAND.primary, gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)' },
-          { label: 'إجمالي المدفوع', value: `$${stats.totalPaid.toLocaleString()}`, icon: '💳', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' },
-          { label: 'المتبقي للموردين', value: `$${stats.totalRemaining.toLocaleString()}`, icon: '📊', color: '#ef4444', gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)' },
-          { label: 'عمليات السداد', value: stats.recentPayments, icon: '💰', color: BRAND.accent, gradient: 'linear-gradient(135deg, #66bb6a 0%, #81c784 100%)' },
+        {[ 
+          { label: 'الموردين', value: stats.totalSuppliers, icon: '🏢', color: '#38bdf8', gradient: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)' },
+          { label: 'إجمالي المدفوع', value: `$${stats.totalPaid.toLocaleString()}`, icon: '💳', color: '#22c55e', gradient: 'linear-gradient(135deg, #052e16 0%, #0f172a 100%)' },
+          { label: 'المتبقي للموردين', value: `$${stats.totalRemaining.toLocaleString()}`, icon: '📊', color: '#f97316', gradient: 'linear-gradient(135deg, #7c2d12 0%, #0f172a 100%)' },
+          { label: 'عمليات السداد', value: stats.recentPayments, icon: '💰', color: '#facc15', gradient: 'linear-gradient(135deg, #1f2937 0%, #020617 100%)' },
         ].map((stat, i) => (
           <div
             key={stat.label}
-            className="stat-card glow-effect"
             style={{
-              background: '#fff',
+              background: BRAND.card,
               borderRadius: 20,
-              padding: 28,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid rgba(0,0,0,0.05)',
+              padding: 24,
+              boxShadow: '0 4px 10px rgba(15,23,42,0.04)',
+              border: '1px solid rgba(148,163,184,0.25)',
               position: 'relative',
               overflow: 'hidden',
               animationDelay: `${(i + 8) * 0.1}s`
@@ -569,10 +519,7 @@ export default function ContractorDashboard() {
               <div style={{
                 fontSize: stat.label.includes('المدفوع') || stat.label.includes('المتبقي') ? 26 : 38,
                 fontWeight: 900,
-                background: stat.gradient,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: '#111827',
                 marginBottom: 8,
                 letterSpacing: '-1px'
               }}>

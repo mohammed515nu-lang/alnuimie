@@ -53,6 +53,15 @@ router.get('/:id', async (req, res) => {
     if (!purchase) {
       return res.status(404).json({ error: 'Purchase not found' });
     }
+    
+    // عزل البيانات: التحقق من أن المشتري يخص المقاول
+    if (req.user && req.userRole === 'contractor' && purchase.project) {
+      const project = await Project.findById(purchase.project._id || purchase.project);
+      if (!project || project.contractor?.toString() !== req.userId.toString()) {
+        return res.status(403).json({ error: 'You do not have permission to view this purchase' });
+      }
+    }
+    
     res.json(purchase);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch purchase', message: error.message });

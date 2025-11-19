@@ -61,6 +61,14 @@ router.get('/:id', async (req, res) => {
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
     }
+    
+    // عزل البيانات: التحقق من أن المدفوعة تخص المقاول
+    if (req.user && req.userRole === 'contractor') {
+      if (payment.createdBy?.toString() !== req.userId.toString()) {
+        return res.status(403).json({ error: 'You do not have permission to view this payment' });
+      }
+    }
+    
     res.json(payment);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch payment', message: error.message });

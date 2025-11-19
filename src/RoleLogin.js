@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { authAPI, setToken, setUser } from "./utils/api";
+import logoFuture from "./assets/images/logo-future.jpeg";
 
 const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
-  gradientContractor: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientClient: 'linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)',
+  primary: '#0f172a',
+  accent: '#1d4ed8',
+  secondary: '#0ea5e9',
+  gradient: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 40%, #0ea5e9 100%)',
+  gradientLight: 'linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 50%, #38bdf8 100%)',
+  gradientContractor: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)',
+  gradientClient: 'linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)',
   light: '#f8fafc',
-  dark: '#2e7d32',
+  dark: '#0f172a',
   muted: '#64748b',
 };
 
@@ -33,6 +34,34 @@ export default function RoleLogin({ onLogin, onGuest, initialStep = 1, loading =
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+
+  // قراءة باراميترات الـ URL (role, redirect, contractorId) لاستخدامها بعد تسجيل الدخول
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlRole = params.get('role');
+      const urlRedirect = params.get('redirect');
+      const urlContractorId = params.get('contractorId');
+
+      if (urlRole === 'client') {
+        setRole('عميل');
+        localStorage.setItem('selectedRole', 'عميل');
+      } else if (urlRole === 'contractor') {
+        setRole('مقاول');
+        localStorage.setItem('selectedRole', 'مقاول');
+      }
+
+      if (urlRedirect) {
+        localStorage.setItem('postLoginRedirect', urlRedirect);
+      }
+
+      if (urlContractorId) {
+        localStorage.setItem('postLoginContractorId', urlContractorId);
+      }
+    } catch (e) {
+      // تجاهل أي خطأ في قراءة URL
+    }
+  }, []);
 
   const handleRoleChoice = (selectedRole) => {
     setRole(selectedRole);
@@ -303,18 +332,22 @@ export default function RoleLogin({ onLogin, onGuest, initialStep = 1, loading =
         <div style={{ animation: "fadeIn 0.8s" }}>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div className="card-float" style={{
-              width: 80,
-              height: 80,
-              borderRadius: 20,
+              width: 84,
+              height: 84,
+              borderRadius: 24,
               background: BRAND.gradientLight,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 40,
               margin: '0 auto 24px',
-              boxShadow: '0 10px 40px rgba(42, 157, 143, 0.3)'
+              boxShadow: '0 16px 45px rgba(15,23,42,0.35)',
+              padding: 8
             }}>
-              🏗️
+              <img
+                src={logoFuture}
+                alt="شعار المستقبل لإدارة المقاولات"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 20 }}
+              />
             </div>
             <div style={{ width: 60, height: 4, background: BRAND.gradientLight, margin: '0 auto 20px', borderRadius: 2 }} />
             <h2 style={{ 

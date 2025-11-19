@@ -45,6 +45,14 @@ router.get('/:id', async (req, res) => {
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });
     }
+    
+    // عزل البيانات: التحقق من أن التقرير يخص المستخدم
+    if (req.user && req.userId) {
+      if (report.generatedBy?.toString() !== req.userId.toString()) {
+        return res.status(403).json({ error: 'You do not have permission to view this report' });
+      }
+    }
+    
     res.json(report);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch report', message: error.message });

@@ -9,12 +9,17 @@ import ProjectCard from "./ProjectCard";
 import LandingPage from "./LandingPageNew";
 import ProjectDetailsPage from "./ProjectDetailsPage";
 import ContractorsPage from "./pages/ContractorsNew";
+import ContractorDetailsPage from "./pages/ContractorDetailsPage";
 import TrainingPage from "./pages/TrainingPage";
+import TrainingRegistrationPage from "./pages/TrainingRegistrationPage";
+import TrainersPage from "./pages/TrainersPage";
 import ConsultingPage from "./pages/ConsultingPage";
+import ConsultingRequestPage from "./pages/ConsultingRequestPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import { NotificationProvider } from "./components/NotificationSystem";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Contractor Pages
 import AddProjectAndRequests from "./pages/contractor/AddProjectAndRequests";
@@ -42,7 +47,7 @@ import HowItWorksPage from "./pages/public/HowItWorksPage";
 // Auth Pages
 import ResetPassword from "./pages/auth/ResetPassword";
 
-import logo from "./company-logo.jpeg";
+import logo from "./assets/images/logo-future.jpeg";
 import splashBg from "./55.jpeg";
 
 const demoProjects = [
@@ -110,7 +115,158 @@ function ShowcasePage() {
   );
 }
 
-function ProfilePage() { return <div style={{padding:'20px'}}><h2>صفحتك الشخصية</h2><p>سيتم بناء هذه الصفحة لاحقًا.</p></div>; }
+function ProfilePage() {
+  const BRAND = {
+    primary: '#4caf50',
+    accent: '#66bb6a',
+    secondary: '#388e3c',
+    gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+    gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
+    light: '#f8fafc',
+    dark: '#2e7d32',
+    muted: '#6c757d',
+    white: '#ffffff',
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e8f5e9 100%)',
+      padding: '40px 20px',
+      direction: 'rtl'
+    }}>
+      <div style={{
+        maxWidth: 1200,
+        margin: '0 auto',
+        background: BRAND.white,
+        borderRadius: 20,
+        boxShadow: '0 8px 30px rgba(76, 175, 80, 0.15)',
+        overflow: 'hidden'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: BRAND.gradient,
+          padding: '40px',
+          textAlign: 'center',
+          color: BRAND.white
+        }}>
+          <div style={{
+            width: 120,
+            height: 120,
+            margin: '0 auto 20px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 48,
+            border: '4px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            👤
+          </div>
+          <h1 style={{
+            fontSize: 32,
+            fontWeight: 700,
+            margin: 0,
+            marginBottom: 10,
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+          }}>
+            صفحتك الشخصية
+          </h1>
+          <p style={{
+            fontSize: 16,
+            opacity: 0.9,
+            margin: 0
+          }}>
+            إدارة معلوماتك الشخصية وإعدادات الحساب
+          </p>
+        </div>
+
+        {/* Content */}
+        <div style={{
+          padding: '40px'
+        }}>
+          <div style={{
+            background: BRAND.light,
+            borderRadius: 16,
+            padding: '30px',
+            marginBottom: 20,
+            border: `2px solid ${BRAND.primary}20`
+          }}>
+            <h2 style={{
+              color: BRAND.primary,
+              fontSize: 24,
+              fontWeight: 700,
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10
+            }}>
+              <span>ℹ️</span> معلومات الحساب
+            </h2>
+            <p style={{
+              color: BRAND.muted,
+              fontSize: 16,
+              lineHeight: 1.8,
+              margin: 0
+            }}>
+              يمكنك الوصول إلى صفحة الملف الشخصي الكاملة من القائمة الجانبية.
+              <br />
+              <strong style={{ color: BRAND.primary }}>
+                للعملاء: </strong>انتقل إلى <strong style={{ color: BRAND.secondary }}>/client/profile</strong>
+              <br />
+              <strong style={{ color: BRAND.primary }}>
+                للمقاولين: </strong>انتقل إلى <strong style={{ color: BRAND.secondary }}>/contractor/profile</strong>
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 20,
+            marginTop: 30
+          }}>
+            <div style={{
+              background: BRAND.gradientLight,
+              borderRadius: 12,
+              padding: '20px',
+              textAlign: 'center',
+              color: BRAND.white
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>📊</div>
+              <h3 style={{ margin: 0, marginBottom: 8, fontSize: 18 }}>المشاريع</h3>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>إدارة مشاريعك</p>
+            </div>
+
+            <div style={{
+              background: BRAND.gradient,
+              borderRadius: 12,
+              padding: '20px',
+              textAlign: 'center',
+              color: BRAND.white
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>⚙️</div>
+              <h3 style={{ margin: 0, marginBottom: 8, fontSize: 18 }}>الإعدادات</h3>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>تخصيص حسابك</p>
+            </div>
+
+            <div style={{
+              background: `linear-gradient(135deg, ${BRAND.secondary} 0%, ${BRAND.primary} 100%)`,
+              borderRadius: 12,
+              padding: '20px',
+              textAlign: 'center',
+              color: BRAND.white
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>🔒</div>
+              <h3 style={{ margin: 0, marginBottom: 8, fontSize: 18 }}>الأمان</h3>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>حماية حسابك</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function GoogleCallbackHandler() {
   const navigate = useNavigate();
@@ -184,7 +340,7 @@ function GoogleCallbackHandler() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)'
+      background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 40%, #0ea5e9 100%)'
     }}>
       <div style={{
         background: 'rgba(255, 255, 255, 0.95)',
@@ -194,7 +350,7 @@ function GoogleCallbackHandler() {
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
       }}>
         <div style={{ fontSize: 48, marginBottom: 24 }}>⏳</div>
-        <h2 style={{ color: '#4caf50', marginBottom: 16 }}>جاري تسجيل الدخول...</h2>
+        <h2 style={{ color: '#1d4ed8', marginBottom: 16 }}>جاري تسجيل الدخول...</h2>
         <p style={{ color: '#64748b' }}>يرجى الانتظار</p>
       </div>
     </div>
@@ -220,19 +376,19 @@ function AuthRouter() {
       display: 'flex',
       position: 'relative',
       overflow: 'hidden',
-      background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)'
+      background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 40%, #0ea5e9 100%)'
     }}>
       {/* Unified Background Effects */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(102, 187, 106, 0.25) 0%, transparent 50%)',
+        background: 'radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.28) 0%, transparent 55%)',
         pointerEvents: 'none'
       }} />
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.2) 0%, transparent 50%)',
+        background: 'radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.26) 0%, transparent 55%)',
         pointerEvents: 'none'
       }} />
       <div style={{
@@ -339,8 +495,12 @@ export default function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/contractors" element={<ContractorsPage />} />
+        <Route path="/contractors/:id" element={<ContractorDetailsPage />} />
         <Route path="/training" element={<TrainingPage />} />
+        <Route path="/training/register" element={<TrainingRegistrationPage />} />
+        <Route path="/trainers" element={<TrainersPage />} />
         <Route path="/consulting" element={<ConsultingPage />} />
+        <Route path="/consulting/request" element={<ConsultingRequestPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         {/* App layout */}
@@ -349,26 +509,86 @@ export default function App() {
           <Route path="/showcase" element={<ShowcasePage />} />
           <Route path="/project/:id" element={<ProjectDetailsPage />} />
           
-          {/* Contractor Routes */}
-          <Route path="/contractor" element={<ContractorDashboard />} />
-          <Route path="/contractor/projects/add" element={<AddProjectAndRequests />} />
-          <Route path="/contractor/projects/list" element={<ProjectsList />} />
-          <Route path="/contractor/inventory" element={<InventoryMaterials />} />
-          <Route path="/contractor/purchases-issue" element={<PurchasesAndIssue />} />
-          <Route path="/contractor/clients-contractors" element={<ClientsAndContractors />} />
-          <Route path="/contractor/contracts-supplies" element={<ContractsAndSupplies />} />
-          <Route path="/contractor/suppliers-payments" element={<SuppliersAndPayments />} />
-          <Route path="/contractor/reports-invoices" element={<ReportsAndInvoices />} />
-          <Route path="/contractor/profile" element={<ContractorProfile />} />
+          {/* Contractor Routes - Protected */}
+          <Route path="/contractor" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ContractorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/projects/add" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <AddProjectAndRequests />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/projects/list" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ProjectsList />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/inventory" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <InventoryMaterials />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/purchases-issue" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <PurchasesAndIssue />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/clients-contractors" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ClientsAndContractors />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/contracts-supplies" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ContractsAndSupplies />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/suppliers-payments" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <SuppliersAndPayments />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/reports-invoices" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ReportsAndInvoices />
+            </ProtectedRoute>
+          } />
+          <Route path="/contractor/profile" element={
+            <ProtectedRoute allowedRoles="contractor">
+              <ContractorProfile />
+            </ProtectedRoute>
+          } />
           
-          {/* Client Routes */}
-          <Route path="/client/profile" element={<ClientProfile />} />
-          <Route path="/client/projects" element={<ClientProjects />} />
-          <Route path="/client/projects/add" element={<ClientAddProject />} />
-          <Route path="/client/requests" element={<ClientRequests />} />
+          {/* Client Routes - Protected */}
+          <Route path="/client/profile" element={
+            <ProtectedRoute allowedRoles="client">
+              <ClientProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/client/projects" element={
+            <ProtectedRoute allowedRoles="client">
+              <ClientProjects />
+            </ProtectedRoute>
+          } />
+          <Route path="/client/projects/add" element={
+            <ProtectedRoute allowedRoles="client">
+              <ClientAddProject />
+            </ProtectedRoute>
+          } />
+          <Route path="/client/requests" element={
+            <ProtectedRoute allowedRoles="client">
+              <ClientRequests />
+            </ProtectedRoute>
+          } />
           
-          {/* Legacy/Deprecated */}
-          <Route path="/profile" element={<ProfilePage />} />
+          {/* Legacy/Deprecated - Protected for authenticated users */}
+          <Route path="/profile" element={
+            <ProtectedRoute allowedRoles={['client', 'contractor']}>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>

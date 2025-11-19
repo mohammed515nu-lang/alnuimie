@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { projectsAPI } from "../utils/api";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState("all");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [contractorFilter, setContractorFilter] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('contractorId') || '';
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -14,178 +23,113 @@ export default function ProjectsPage() {
   }, []);
 
   const projectCategories = [
-    { id: "all", name: "كل المشاريع" },
-    { id: "residential", name: "سكني" },
-    { id: "commercial", name: "تجاري" },
-    { id: "industrial", name: "صناعي" },
-    { id: "infrastructure", name: "بنية تحتية" },
-    { id: "tourism", name: "سياحي" }
+    { id: "all", name: "كل المشاريع", aliases: null },
+    { id: "residential", name: "سكني", aliases: ["residential", "سكني"] },
+    { id: "commercial", name: "تجاري", aliases: ["commercial", "تجاري"] },
+    { id: "industrial", name: "صناعي", aliases: ["industrial", "صناعي"] },
+    { id: "infrastructure", name: "بنية تحتية", aliases: ["infrastructure", "بنية تحتية"] },
+    { id: "tourism", name: "سياحي", aliases: ["tourism", "سياحي"] }
   ];
 
-  const projects = [
-    {
-      id: 1,
-      title: "مجمع سكني الراقي",
-      category: "residential",
-      location: "دمشق، المزة",
-      client: "شركة العقار الذهبي",
-      contractor: "شركة البناء المتطور",
-      area: "12,500 م²",
-      duration: "24 شهر",
-      status: "قيد التنفيذ",
-      completion: 65,
-      cost: "2.5 مليار ل.س",
-      startDate: "يناير 2022",
-      endDate: "يناير 2024",
-      description: "مشروع مجمع سكني فاخر يتكون من 3 أبراج سكنية مع مرافق تجارية وخدمية",
-      images: [
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1600585154526-990dac4d53ef?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=500&fit=crop"
-      ],
-      features: ["3 أبراج سكنية", "مركز تسوق", "نادي صحي", "منطقة لعب أطفال", "مواقف سيارات"]
-    },
-    {
-      id: 2,
-      title: "مركز تجاري حديث",
-      category: "commercial",
-      location: "حلب، الجديدة",
-      client: "مجموعة الأبراج التجارية",
-      contractor: "مجموعة الأبنية الحديثة",
-      area: "25,000 م²",
-      duration: "18 شهر",
-      status: "مكتمل",
-      completion: 100,
-      cost: "3.2 مليار ل.س",
-      startDate: "مارس 2021",
-      endDate: "أغسطس 2022",
-      description: "مركز تجاري حديث على مساحة 25,000 متر مربع مع أكثر من 150 محل تجاري",
-      images: [
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=800&h=500&fit=crop"
-      ],
-      features: ["150 محل تجاري", "منطقة طعام", "سينما", "منطقة ألعاب", "مواقف سيارات متعددة الطوابق"]
-    },
-    {
-      id: 3,
-      title: "فندق الخمس نجوم",
-      category: "tourism",
-      location: "اللاذقية، الشاطئ",
-      client: "شركة السياحة السورية",
-      contractor: "مؤسسة الهندسة المتقدمة",
-      area: "18,000 م²",
-      duration: "30 شهر",
-      status: "قيد التنفيذ",
-      completion: 40,
-      cost: "4.8 مليار ل.س",
-      startDate: "يونيو 2022",
-      endDate: "ديسمبر 2024",
-      description: "فندق خمس نجوم على شاطئ البحر مع 250 غرفة ومرافق سياحية فاخرة",
-      images: [
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=500&fit=crop"
-      ],
-      features: ["250 غرفة", "مسبح أولمبي", "منتجع صحي", "6 مطاعم", "قاعة مؤتمرات"]
-    },
-    {
-      id: 4,
-      title: "مصنع معالجة المواد الغذائية",
-      category: "industrial",
-      location: "حماة، المنطقة الصناعية",
-      client: "شركة الغذاء الصحي",
-      contractor: "شركة الإنشاءات الصناعية",
-      area: "30,000 م²",
-      duration: "20 شهر",
-      status: "مكتمل",
-      completion: 100,
-      cost: "5.5 مليار ل.س",
-      startDate: "مايو 2021",
-      endDate: "يناير 2023",
-      description: "مصنع حديث لمعالجة وتعبئة المواد الغذائية بأحدث التقنيات العالمية",
-      images: [
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=500&fit=crop"
-      ],
-      features: ["خطوط إنتاج متطورة", "مختبرات مراقبة جودة", "مستودعات تبريد", "وحدة تغليف", "محطة معالجة مياه"]
-    },
-    {
-      id: 5,
-      title: "مستشفى تخصصي",
-      category: "infrastructure",
-      location: "حمص، الحمراء",
-      client: "وزارة الصحة",
-      contractor: "شركة المباني الطبية",
-      area: "22,000 م²",
-      duration: "28 شهر",
-      status: "قيد التنفيذ",
-      completion: 55,
-      cost: "6.2 مليار ل.س",
-      startDate: "أكتوبر 2021",
-      endDate: "فبراير 2024",
-      description: "مستشفى تخصصي حديث بسعة 300 سرير مع أحدث المعدات الطبية",
-      images: [
-        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&h=500&fit=crop"
-      ],
-      features: ["300 سرير", "15 غرفة عمليات", "قسائم طوارئ", "مختبرات متطورة", "مركز أبحاث"]
-    },
-    {
-      id: 6,
-      title: "مجمع فيلات فاخر",
-      category: "residential",
-      location: "ريف دمشق، عين ترما",
-      client: "شركة الضاحية السكنية",
-      contractor: "مجموعة العمارة المستقبلية",
-      area: "45,000 م²",
-      duration: "36 شهر",
-      status: "قيد التنفيذ",
-      completion: 30,
-      cost: "7.8 مليار ل.س",
-      startDate: "مارس 2022",
-      endDate: "مارس 2025",
-      description: "مجمع سكني فاخر يضم 80 فيلا تصميمات معمارية حديثة مع مساحات خضراء واسعة",
-      images: [
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1600585154526-990dac4d53ef?w=800&h=500&fit=crop",
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=500&fit=crop"
-      ],
-      features: ["80 فيلا", "نادي رياضي", "منطقة لعب أطفال", "بحيرات صناعية", "أمن على مدار الساعة"]
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setContractorFilter(params.get('contractorId') || '');
+  }, [location.search]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const filters = {};
+        if (contractorFilter) {
+          filters.contractor = contractorFilter;
+        }
+        const data = await projectsAPI.getAll(filters);
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError(err.message || 'حدث خطأ أثناء جلب المشاريع');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [contractorFilter]);
+
+  const getStatusKey = (status) => {
+    const value = (status || '').toString().toLowerCase();
+    if (["completed", "مكتمل"].includes(value)) return 'completed';
+    if (["in_progress", "قيد التنفيذ", "active"].includes(value)) return 'inProgress';
+    if (["pending", "معلق", "on_hold"].includes(value)) return 'pending';
+    return 'default';
+  };
+
+  const getStatusLabel = (status) => {
+    const key = getStatusKey(status);
+    switch (key) {
+      case 'completed':
+        return 'مكتمل';
+      case 'inProgress':
+        return 'قيد التنفيذ';
+      case 'pending':
+        return 'معلق';
+      default:
+        return status || 'غير محدد';
     }
-  ];
-
-  const filteredProjects = activeCategory === "all" 
-    ? projects 
-    : projects.filter(project => project.category === activeCategory);
+  };
 
   const getStatusColor = (status) => {
-    switch(status) {
-      case "مكتمل": return "#2e7d32";
-      case "قيد التنفيذ": return "#f57c00";
-      case "معلق": return "#d32f2f";
+    const key = getStatusKey(status);
+    switch(key) {
+      case 'completed': return "#2e7d32";
+      case 'inProgress': return "#f57c00";
+      case 'pending': return "#d32f2f";
       default: return "#757575";
     }
   };
 
   const getStatusBgColor = (status) => {
-    switch(status) {
-      case "مكتمل": return "rgba(46, 125, 50, 0.1)";
-      case "قيد التنفيذ": return "rgba(245, 124, 0, 0.1)";
-      case "معلق": return "rgba(211, 47, 47, 0.1)";
+    const key = getStatusKey(status);
+    switch(key) {
+      case 'completed': return "rgba(46, 125, 50, 0.1)";
+      case 'inProgress': return "rgba(245, 124, 0, 0.1)";
+      case 'pending': return "rgba(211, 47, 47, 0.1)";
       default: return "rgba(117, 117, 117, 0.1)";
     }
   };
 
+  const selectedCategory = projectCategories.find(cat => cat.id === activeCategory);
+  const filteredProjects = projects.filter((project) => {
+    if (!selectedCategory || !selectedCategory.aliases) return true;
+    const categoryValue = (project.category || '').toString().toLowerCase();
+    return selectedCategory.aliases.some(alias => alias.toLowerCase() === categoryValue);
+  });
+
+  const defaultImage = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&h=500&fit=crop";
+
   return (
-    <div dir="rtl" style={{ fontFamily: 'Cairo, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <div
+      dir="rtl"
+      style={{
+        fontFamily: 'Cairo, sans-serif',
+        background: 'radial-gradient(circle at top, rgba(15,23,42,0.65), rgba(2,6,23,0.95))',
+        color: '#fdf7f2',
+        minHeight: '100vh',
+        paddingBottom: '80px'
+      }}
+    >
       {/* Header */}
       <header style={{
-        backgroundColor: '#2e7d32',
-        padding: '20px 0',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        background: 'rgba(15,23,42,0.85)',
+        padding: '18px 0',
+        boxShadow: '0 10px 30px rgba(2,6,23,0.4)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backdropFilter: 'blur(10px)'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -199,21 +143,23 @@ export default function ProjectsPage() {
             <button 
               onClick={() => navigate('/')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                background: 'linear-gradient(135deg, rgba(194,107,58,0.8), rgba(164,88,43,0.9))',
+                color: '#fff',
                 border: 'none',
-                padding: '8px 15px',
-                borderRadius: '5px',
+                padding: '8px 18px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontWeight: 500,
+                boxShadow: '0 10px 25px rgba(194,107,58,0.3)'
               }}
             >
               ← العودة
             </button>
-            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>المشاريع</div>
+            <div style={{ color: '#fef3c7', fontSize: '20px', fontWeight: 700 }}>المشاريع</div>
           </div>
 
-          <div style={{ color: 'white', fontSize: '16px' }}>
+          <div style={{ color: 'rgba(248,250,252,0.7)', fontSize: '14px' }}>
             {filteredProjects.length} مشروع
           </div>
         </div>
@@ -221,22 +167,56 @@ export default function ProjectsPage() {
 
       {/* Hero Section */}
       <section style={{
-        backgroundColor: '#f0f8f0',
-        padding: '40px 20px',
-        textAlign: 'center'
+        background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(3,7,18,0.95) 60%)',
+        padding: '60px 20px',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '32px', color: '#2e7d32', marginBottom: '20px' }}>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at 20% 20%, rgba(14,165,233,0.25), transparent 45%)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
+          <h1 style={{ fontSize: '36px', color: '#fef3c7', marginBottom: '18px', fontWeight: 800 }}>
             معرض المشاريع المنجزة وقيد التنفيذ
           </h1>
-          <p style={{ fontSize: '18px', color: '#555', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '16px', color: 'rgba(248,250,252,0.78)', lineHeight: 1.8 }}>
             استعرض أحدث مشاريعنا في مختلف المجالات العمرانية والإنشائية
           </p>
+          {contractorFilter && (
+            <div style={{
+              marginTop: '15px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              backgroundColor: 'rgba(14,165,233,0.15)',
+              color: '#7dd3fc',
+              padding: '10px 18px',
+              borderRadius: '999px',
+              fontSize: '14px',
+              border: '1px solid rgba(14,165,233,0.3)'
+            }}>
+              عرض مشاريع المقاول رقم: {contractorFilter}
+              <button onClick={() => navigate('/projects')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#bae6fd',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}>
+                إظهار الكل
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Filters */}
-      <section style={{ padding: '20px 0', backgroundColor: 'white', borderBottom: '1px solid #eee' }}>
+      <section style={{ padding: '28px 0', backgroundColor: 'rgba(15,23,42,0.75)', borderBottom: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -247,20 +227,23 @@ export default function ProjectsPage() {
           flexWrap: 'wrap',
           gap: '15px'
         }}>
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {projectCategories.map(category => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
                 style={{
-                  padding: '10px 20px',
+                  padding: '10px 22px',
                   borderRadius: '30px',
-                  border: 'none',
-                  backgroundColor: activeCategory === category.id ? '#2e7d32' : '#f0f0f0',
-                  color: activeCategory === category.id ? 'white' : '#333',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: activeCategory === category.id
+                    ? 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)'
+                    : 'rgba(255,255,255,0.04)',
+                  color: activeCategory === category.id ? '#f0f9ff' : 'rgba(248,250,252,0.8)',
                   cursor: 'pointer',
                   fontSize: '16px',
-                  fontWeight: '500'
+                  fontWeight: '600',
+                  boxShadow: activeCategory === category.id ? '0 12px 25px rgba(14,165,233,0.25)' : 'none'
                 }}
               >
                 {category.name}
@@ -273,10 +256,10 @@ export default function ProjectsPage() {
               onClick={() => setViewMode("grid")}
               style={{
                 padding: '8px 12px',
-                borderRadius: '5px',
-                border: 'none',
-                backgroundColor: viewMode === "grid" ? '#2e7d32' : '#f0f0f0',
-                color: viewMode === "grid" ? 'white' : '#333',
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: viewMode === "grid" ? 'linear-gradient(135deg, #c26b3a, #a4582b)' : 'transparent',
+                color: viewMode === "grid" ? '#fff7ed' : 'rgba(248,250,252,0.7)',
                 cursor: 'pointer'
               }}
             >
@@ -286,10 +269,10 @@ export default function ProjectsPage() {
               onClick={() => setViewMode("list")}
               style={{
                 padding: '8px 12px',
-                borderRadius: '5px',
-                border: 'none',
-                backgroundColor: viewMode === "list" ? '#2e7d32' : '#f0f0f0',
-                color: viewMode === "list" ? 'white' : '#333',
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: viewMode === "list" ? 'linear-gradient(135deg, #0ea5e9, #2563eb)' : 'transparent',
+                color: viewMode === "list" ? '#fff' : 'rgba(248,250,252,0.7)',
                 cursor: 'pointer'
               }}
             >
@@ -304,261 +287,352 @@ export default function ProjectsPage() {
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          display: viewMode === "grid" ? 'grid' : 'block',
-          gridTemplateColumns: viewMode === "grid" ? 'repeat(auto-fill, minmax(350px, 1fr))' : 'none',
-          gap: viewMode === "grid" ? '30px' : '0',
-          animation: 'fadeIn 0.5s ease-in-out'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px'
         }}>
-        <style>{`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-          {filteredProjects.map(project => (
-            viewMode === "grid" ? (
-              // Grid View
-              <div key={project.id} style={{
-                backgroundColor: 'white',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.08)',
-                transition: 'transform 0.3s ease'
-              }}>
-                <div style={{ height: '200px', overflow: 'hidden' }}>
-                  <img 
-                    src={project.images[0]} 
-                    alt={project.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </div>
+        {isLoading && (
+          <div style={{
+            padding: '30px',
+            textAlign: 'center',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+            border: '1px solid rgba(255,255,255,0.05)'
+          }}>
+            جاري تحميل المشاريع...
+          </div>
+        )}
+        {error && !isLoading && (
+          <div style={{
+            padding: '30px',
+            textAlign: 'center',
+            backgroundColor: 'rgba(239,68,68,0.12)',
+            borderRadius: '16px',
+            color: '#fecaca',
+            border: '1px solid rgba(239,68,68,0.35)'
+          }}>
+            {error}
+          </div>
+        )}
+        {!isLoading && !error && filteredProjects.length === 0 && (
+          <div style={{
+            padding: '30px',
+            textAlign: 'center',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+            border: '1px solid rgba(255,255,255,0.05)'
+          }}>
+            لا توجد مشاريع مطابقة للمعايير الحالية.
+          </div>
+        )}
+        {!isLoading && !error && filteredProjects.length > 0 && (
+          <div>
+            <style>{`
+              @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+            <div style={{
+              display: viewMode === "grid" ? 'grid' : 'block',
+              gridTemplateColumns: viewMode === "grid" ? 'repeat(auto-fill, minmax(350px, 1fr))' : 'none',
+              gap: viewMode === "grid" ? '30px' : '0',
+              animation: 'fadeIn 0.5s ease-in-out'
+            }}>
+              {filteredProjects.map((project) => {
+                const coverImage = (project.images && project.images[0]) || project.coverImage || defaultImage;
+                const completionValue = typeof project.progress === 'number' ? project.progress : (project.completion || 0);
+                const statusLabel = getStatusLabel(project.status);
+                const projectLocation = project.location || project.city || 'غير محدد';
+                const projectArea = project.area || project.size || '—';
+                const projectDuration = project.duration || project.timeline || '—';
+                const projectCost = project.cost || project.budget ? `${project.budget || project.cost} ل.س` : '—';
+                const projectClient = project.clientName || project.client || '—';
+                const description = project.description || 'لا توجد تفاصيل إضافية متاحة لهذا المشروع حالياً.';
 
-                <div style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>{project.title}</h3>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      backgroundColor: getStatusBgColor(project.status),
-                      padding: '5px 10px',
+                if (viewMode === "grid") {
+                  return (
+                    <div key={project.id} style={{
+                      backgroundColor: 'rgba(255,255,255,0.03)',
                       borderRadius: '20px',
-                      color: getStatusColor(project.status),
-                      fontSize: '14px'
+                      overflow: 'hidden',
+                      boxShadow: '0 25px 45px rgba(2,6,23,0.65)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      transition: 'transform 0.3s ease, border 0.3s ease'
                     }}>
-                      {project.status}
-                    </div>
-                  </div>
-
-                  <div style={{ color: '#666', marginBottom: '15px', fontSize: '14px' }}>
-                    📍 {project.location}
-                  </div>
-
-                  <div style={{ color: '#666', marginBottom: '15px', fontSize: '14px', lineHeight: 1.5 }}>
-                    {project.description}
-                  </div>
-
-                  {project.status === "قيد التنفيذ" && (
-                    <div style={{ marginBottom: '15px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '14px', color: '#666' }}>نسبة الإنجاز</span>
-                        <span style={{ fontSize: '14px', color: '#2e7d32', fontWeight: 'bold' }}>{project.completion}%</span>
-                      </div>
-                      <div style={{
-                        height: '8px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
+                      <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
                         <div style={{
-                          height: '100%',
-                          width: `${project.completion}%`,
-                          backgroundColor: '#2e7d32',
-                          borderRadius: '4px'
-                        }}></div>
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(15,23,42,0.75) 100%)',
+                          zIndex: 1
+                        }} />
+                        <img
+                          src={coverImage}
+                          alt={project.title || 'مشروع'}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '12px',
+                          left: '12px',
+                          backgroundColor: 'rgba(15,23,42,0.65)',
+                          borderRadius: '999px',
+                          color: '#e0f2fe',
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          zIndex: 2
+                        }}>
+                          {projectClient !== '—' ? projectClient : 'عميل خاص'}
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>{project.title || 'مشروع بدون اسم'}</h3>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            backgroundColor: getStatusBgColor(project.status),
+                            padding: '5px 10px',
+                            borderRadius: '20px',
+                            color: getStatusColor(project.status),
+                            fontSize: '14px'
+                          }}>
+                            {statusLabel}
+                          </div>
+                        </div>
+
+                        <div style={{ color: 'rgba(248,250,252,0.75)', marginBottom: '15px', fontSize: '14px' }}>
+                          📍 {projectLocation}
+                        </div>
+
+                        <div style={{ color: 'rgba(248,250,252,0.75)', marginBottom: '15px', fontSize: '14px', lineHeight: 1.6 }}>
+                          {description}
+                        </div>
+
+                        {getStatusKey(project.status) === 'inProgress' && (
+                          <div style={{ marginBottom: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                              <span style={{ fontSize: '14px', color: 'rgba(248,250,252,0.75)' }}>نسبة الإنجاز</span>
+                              <span style={{ fontSize: '14px', color: '#34d399', fontWeight: 'bold' }}>{completionValue}%</span>
+                            </div>
+                            <div style={{
+                              height: '8px',
+                              backgroundColor: 'rgba(255,255,255,0.1)',
+                              borderRadius: '999px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                height: '100%',
+                                width: `${completionValue}%`,
+                                background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
+                                borderRadius: '999px'
+                              }}></div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+                          <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
+                            📐 {projectArea}
+                          </div>
+                          <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
+                            📅 {projectDuration}
+                          </div>
+                          <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
+                            💰 {projectCost}
+                          </div>
+                          <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
+                            🏢 {projectClient}
+                          </div>
+                        </div>
+
+                        <button onClick={() => navigate('/login')} style={{
+                          background: 'linear-gradient(135deg, #c26b3a, #a4582b)',
+                          color: '#fff7ed',
+                          border: 'none',
+                          padding: '10px 18px',
+                          borderRadius: '25px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          boxShadow: '0 14px 30px rgba(194,107,58,0.35)'
+                        }}>
+                          عرض التفاصيل
+                        </button>
                       </div>
                     </div>
-                  )}
+                  );
+                }
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      📐 {project.area}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      📅 {project.duration}
-                    </div>
-                  </div>
-
-                  <button onClick={() => navigate('/login')} style={{
-                    backgroundColor: '#2e7d32',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 15px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    width: '100%'
+                return (
+                  <div key={project.id} style={{
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: '0 25px 45px rgba(2,6,23,0.65)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row'
                   }}>
-                    عرض التفاصيل
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // List View
-              <div key={project.id} style={{
-                backgroundColor: 'white',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.08)',
-                marginBottom: '20px',
-                display: 'flex',
-                flexDirection: isMobile ? 'column' : 'row'
-              }}>
-                <div style={{ 
-                  width: isMobile ? '100%' : '300px', 
-                  height: isMobile ? '200px' : 'auto',
-                  overflow: 'hidden' 
-                }}>
-                  <img 
-                    src={project.images[0]} 
-                    alt={project.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </div>
-
-                <div style={{ padding: '20px', flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '20px', color: '#333' }}>{project.title}</h3>
                     <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      backgroundColor: getStatusBgColor(project.status),
-                      padding: '5px 10px',
-                      borderRadius: '20px',
-                      color: getStatusColor(project.status),
-                      fontSize: '14px'
+                      width: isMobile ? '100%' : '300px', 
+                      height: isMobile ? '200px' : 'auto',
+                      overflow: 'hidden' 
                     }}>
-                      {project.status}
-                    </div>
-                  </div>
-
-                  <div style={{ color: '#666', marginBottom: '15px' }}>
-                    📍 {project.location}
-                  </div>
-
-                  <div style={{ color: '#666', marginBottom: '15px', lineHeight: 1.5 }}>
-                    {project.description}
-                  </div>
-
-                  {project.status === "قيد التنفيذ" && (
-                    <div style={{ marginBottom: '15px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '14px', color: '#666' }}>نسبة الإنجاز</span>
-                        <span style={{ fontSize: '14px', color: '#2e7d32', fontWeight: 'bold' }}>{project.completion}%</span>
-                      </div>
-                      <div style={{
-                        height: '8px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
-                        <div style={{
+                      <img 
+                        src={coverImage}
+                        alt={project.title || 'مشروع'}
+                        style={{
+                          width: '100%',
                           height: '100%',
-                          width: `${project.completion}%`,
-                          backgroundColor: '#2e7d32',
-                          borderRadius: '4px'
-                        }}></div>
-                      </div>
+                          objectFit: 'cover'
+                        }}
+                      />
                     </div>
-                  )}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      📐 {project.area}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      📅 {project.duration}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      💰 {project.cost}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '14px' }}>
-                      🏢 {project.client}
+                    <div style={{ padding: '20px', flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                        <h3 style={{ margin: 0, fontSize: '20px', color: '#fef3c7' }}>{project.title || 'مشروع بدون اسم'}</h3>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          backgroundColor: getStatusBgColor(project.status),
+                          padding: '5px 10px',
+                          borderRadius: '20px',
+                          color: getStatusColor(project.status),
+                          fontSize: '14px'
+                        }}>
+                          {statusLabel}
+                        </div>
+                      </div>
+
+                      <div style={{ color: 'rgba(248,250,252,0.75)', marginBottom: '15px' }}>
+                        📍 {projectLocation}
+                      </div>
+
+                      <div style={{ color: 'rgba(248,250,252,0.75)', marginBottom: '15px', lineHeight: 1.6 }}>
+                        {description}
+                      </div>
+
+                      {getStatusKey(project.status) === 'inProgress' && (
+                        <div style={{ marginBottom: '15px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                            <span style={{ fontSize: '14px', color: '#666' }}>نسبة الإنجاز</span>
+                            <span style={{ fontSize: '14px', color: '#2e7d32', fontWeight: 'bold' }}>{completionValue}%</span>
+                          </div>
+                          <div style={{
+                            height: '8px',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '4px',
+                            overflow: 'hidden'
+                          }}>
+                            <div style={{
+                              height: '100%',
+                              width: `${completionValue}%`,
+                              backgroundColor: '#2e7d32',
+                              borderRadius: '4px'
+                            }}></div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ color: '#666', fontSize: '14px' }}>
+                          📐 {projectArea}
+                        </div>
+                        <div style={{ color: '#666', fontSize: '14px' }}>
+                          📅 {projectDuration}
+                        </div>
+                        <div style={{ color: '#666', fontSize: '14px' }}>
+                          💰 {projectCost}
+                        </div>
+                        <div style={{ color: '#666', fontSize: '14px' }}>
+                          🏢 {projectClient}
+                        </div>
+                      </div>
+
+                      <button onClick={() => navigate('/login')} style={{
+                        backgroundColor: '#2e7d32',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 15px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}>
+                        عرض التفاصيل
+                      </button>
                     </div>
                   </div>
-
-                  <button onClick={() => navigate('/login')} style={{
-                    backgroundColor: '#2e7d32',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 15px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}>
-                    عرض التفاصيل
-                  </button>
-                </div>
-              </div>
-            )
-          ))}
+                );
+              })}
+            </div>
+          </div>
+        )}
         </div>
       </section>
 
       {/* Pagination */}
       <div style={{
         maxWidth: '1200px',
-        margin: '30px auto',
+        margin: '30px auto 0',
         padding: '0 20px',
         display: 'flex',
         justifyContent: 'center',
         gap: '10px'
       }}>
         <button style={{
-          padding: '8px 15px',
-          borderRadius: '5px',
-          border: '1px solid #ddd',
-          backgroundColor: 'white',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backgroundColor: 'transparent',
+          color: 'rgba(248,250,252,0.8)',
           cursor: 'pointer'
         }}>السابق</button>
 
         <button style={{
-          padding: '8px 15px',
-          borderRadius: '5px',
-          border: '1px solid #ddd',
-          backgroundColor: '#2e7d32',
-          color: 'white',
-          cursor: 'pointer'
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: 'none',
+          background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
+          color: '#f0f9ff',
+          cursor: 'pointer',
+          boxShadow: '0 12px 25px rgba(14,165,233,0.25)'
         }}>1</button>
 
         <button style={{
-          padding: '8px 15px',
-          borderRadius: '5px',
-          border: '1px solid #ddd',
-          backgroundColor: 'white',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backgroundColor: 'transparent',
+          color: 'rgba(248,250,252,0.8)',
           cursor: 'pointer'
         }}>2</button>
 
         <button style={{
-          padding: '8px 15px',
-          borderRadius: '5px',
-          border: '1px solid #ddd',
-          backgroundColor: 'white',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backgroundColor: 'transparent',
+          color: 'rgba(248,250,252,0.8)',
           cursor: 'pointer'
         }}>3</button>
 
         <button style={{
-          padding: '8px 15px',
-          borderRadius: '5px',
-          border: '1px solid #ddd',
-          backgroundColor: 'white',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backgroundColor: 'transparent',
+          color: 'rgba(248,250,252,0.8)',
           cursor: 'pointer'
         }}>التالي</button>
       </div>

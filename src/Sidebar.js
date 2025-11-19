@@ -3,14 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import logo from "./company-logo.jpeg";
 
 const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
-  light: '#f8fafc',
-  dark: '#2e7d32',
-  muted: '#6c757d',
+  primary: '#e5e7eb',
+  accent: '#C26B3A',
+  secondary: '#9ca3af',
+  gradient: 'linear-gradient(145deg, #060B1B 0%, #111827 45%, #1f2937 100%)',
+  gradientLight: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(31,41,55,1) 100%)',
+  light: '#111827',
+  dark: '#020617',
+  muted: '#6b7280',
 };
 
 const baseMenu = [
@@ -19,8 +19,9 @@ const baseMenu = [
 ];
 
 const contractorMenu = [
+  { to: "/contractor", label: "الصفحة الرئيسية", icon: "🏠" },
   { to: "/contractor/projects/add", label: "إضافة مشروع + طلبات العملاء", icon: "➕" },
-  { to: "/contractor/projects/list", label: "المشاريع الجاهزة", icon: "📋" },
+  { to: "/contractor/projects/list", label: "المشاريع", icon: "📋" },
   { to: "/contractor/inventory", label: "المخازن والمواد", icon: "📦" },
   { to: "/contractor/purchases-issue", label: "مشتريات وصرف المواد", icon: "🛒" },
   { to: "/contractor/clients-contractors", label: "العملاء والمتعاقدون", icon: "🤝" },
@@ -56,15 +57,15 @@ export default function Sidebar() {
       <div style={{
         width: 80,
         height: 80,
-        background: BRAND.gradient,
-        borderRadius: 20,
+        background: BRAND.gradientLight,
+        borderRadius: 24,
         overflow: 'hidden',
         margin: '32px 0 16px',
-        boxShadow: '0 6px 25px rgba(76,175,80,0.3)',
+        boxShadow: '0 14px 40px rgba(15,23,42,0.75)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        border: '3px solid rgba(255,255,255,0.2)'
+        border: '2px solid rgba(148,163,184,0.45)'
       }}>
         <img src={logo} alt="الشعار" style={{ width: '70%', height: '70%', objectFit: 'contain' }} />
       </div>
@@ -88,7 +89,6 @@ export default function Sidebar() {
         marginTop: 10
       }}>
         {menu.map((item) => {
-          // Improved active state detection - supports nested routes
           const isActive = location.pathname === item.to || 
             (item.to !== '/contractor' && item.to !== '/client/profile' && 
              item.to !== '/client/projects' && item.to !== '/showcase' && 
@@ -100,12 +100,12 @@ export default function Sidebar() {
               onClick={() => setOpen(false)}
               style={{
                 textDecoration: 'none',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.85)',
+                color: isActive ? '#f9fafb' : 'rgba(229,231,235,0.8)',
                 padding: '14px 16px',
                 borderRadius: 14,
                 background: isActive
-                  ? BRAND.gradient
-                  : 'transparent',
+                  ? 'linear-gradient(135deg, rgba(148,163,184,0.18), rgba(15,23,42,0.95))'
+                  : 'rgba(15,23,42,0.85)',
                 fontWeight: 700,
                 fontSize: 15,
                 width: '100%',
@@ -114,23 +114,23 @@ export default function Sidebar() {
                 gap: 12,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: isActive
-                  ? '0 4px 15px rgba(76,175,80,0.4)'
-                  : 'none',
+                  ? '0 18px 40px rgba(0,0,0,0.7)'
+                  : '0 8px 24px rgba(0,0,0,0.55)',
                 position: 'relative',
-                border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                border: isActive ? '1px solid rgba(249,250,251,0.45)' : '1px solid rgba(15,23,42,0.9)'
               }}
               onMouseOver={e => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.background = 'rgba(15,23,42,0.98)';
                   e.currentTarget.style.transform = 'translateX(-4px)';
-                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.color = '#f9fafb';
                 }
               }}
               onMouseOut={e => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.background = 'rgba(15,23,42,0.85)';
                   e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.85)';
+                  e.currentTarget.style.color = 'rgba(229,231,235,0.8)';
                 }
               }}
             >
@@ -201,14 +201,14 @@ export default function Sidebar() {
         textAlign: 'center',
         padding: '0 12px'
       }}>
-        © {new Date().getFullYear()} جميع الحقوق محفوظة
+        &copy; {new Date().getFullYear()} جميع الحقوق محفوظة
       </div>
     </>
   );
 
   return (
     <>
-      {/* هذا الزر يختفي عندما تكون القائمة مفتوحة */}
+      {/* زر فتح القائمة في حالة الإغلاق */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -217,7 +217,7 @@ export default function Sidebar() {
             top: 20,
             right: 20,
             zIndex: 21,
-            background: BRAND.gradient,
+            background: 'rgba(6,11,27,0.96)',
             color: '#fff',
             border: 0,
             borderRadius: 14,
@@ -227,17 +227,9 @@ export default function Sidebar() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 6px 25px rgba(76,175,80,0.4)',
+            boxShadow: '0 14px 40px rgba(15,23,42,0.75)',
             cursor: 'pointer',
             transition: 'all 0.3s ease'
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
-            e.currentTarget.style.boxShadow = '0 8px 30px rgba(76,175,80,0.5)';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
-            e.currentTarget.style.boxShadow = '0 6px 25px rgba(76,175,80,0.4)';
           }}
           aria-label="القائمة الجانبية"
         >
@@ -245,17 +237,17 @@ export default function Sidebar() {
         </button>
       )}
 
+      {/* الـ Overlay واللوحة الجانبية */}
       {open && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(76,175,80,0.8)',
-            backdropFilter: 'blur(8px)',
+            background: '#2D374D',
+            backdropFilter: 'blur(18px)',
             zIndex: 30,
             display: 'flex',
-            justifyContent: 'flex-end',
-            animation: 'fadeIn 0.2s ease'
+            justifyContent: 'flex-end'
           }}
           onClick={() => setOpen(false)}
         >
@@ -264,131 +256,58 @@ export default function Sidebar() {
             style={{
               height: '100vh',
               width: isMobile ? '100%' : 280,
-              background: BRAND.gradient,
+              background: '#2D374D',
               borderRadius: '0 24px 24px 0',
               boxShadow: '8px 0 40px rgba(0,0,0,0.3)',
               display: 'flex',
               flexDirection: 'column',
-              animation: 'slideInDrawer 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               position: 'relative',
               overflow: 'hidden'
             }}
           >
-            {/* Decorative elements */}
-            <div style={{
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-              borderRadius: '50%',
-              pointerEvents: 'none'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: -100,
-              left: -100,
-              width: 300,
-              height: 300,
-              background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
-              borderRadius: '50%',
-              pointerEvents: 'none'
-            }} />
+            {/* عناصر زخرفية بسيطة */}
+            <div
+              style={{
+                position: 'absolute',
+                top: -50,
+                right: -50,
+                width: 200,
+                height: 200,
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                borderRadius: '50%',
+                pointerEvents: 'none'
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -100,
+                left: -100,
+                width: 300,
+                height: 300,
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+                borderRadius: '50%',
+                pointerEvents: 'none'
+              }}
+            />
 
-            {/* Fixed Header with Close Button */}
-            <div style={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
-              background: 'rgba(76,175,80,0.3)',
-              backdropFilter: 'blur(10px)',
-              padding: '20px 0 12px',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              paddingRight: 20
-            }}>
-              <button
-                onClick={() => setOpen(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: '#fff',
-                  fontSize: 24,
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s ease',
-                  fontWeight: 700,
-                  flexShrink: 0
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.background = 'rgba(220,38,38,0.3)';
-                  e.currentTarget.style.transform = 'rotate(90deg)';
-                  e.currentTarget.style.borderColor = 'rgba(220,38,38,0.5)';
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                  e.currentTarget.style.transform = 'rotate(0deg)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                }}
-                aria-label="إغلاق القائمة"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div style={{
-              flex: 1,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              width: '100%',
-              position: 'relative',
-              zIndex: 1,
-              paddingBottom: 24,
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(255,255,255,0.3) transparent'
-            }}>
-              <style>{`
-                div::-webkit-scrollbar {
-                  width: 6px;
-                }
-                div::-webkit-scrollbar-track {
-                  background: transparent;
-                }
-                div::-webkit-scrollbar-thumb {
-                  background: rgba(255,255,255,0.3);
-                  border-radius: 3px;
-                }
-                div::-webkit-scrollbar-thumb:hover {
-                  background: rgba(255,255,255,0.5);
-                }
-              `}</style>
+            {/* محتوى السايدبار القابل للتمرير */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                width: '100%',
+                position: 'relative',
+                zIndex: 1,
+                paddingBottom: 24
+              }}
+            >
               {sidebarContent}
             </div>
           </div>
-          <style>{`
-            @keyframes fadeIn {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes slideInDrawer {
-              from {
-                opacity: 0;
-                transform: translateX(200px);
-              }
-              to {
-                opacity: 1;
-                transform: translateX(0);
-              }
-            }
-          `}</style>
         </div>
       )}
     </>

@@ -3,14 +3,14 @@ import { usersAPI, getUser } from "../../utils/api";
 import { useNotifications } from "../../components/NotificationSystem";
 
 const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
+  primary: '#1e3a5f',
+  accent: '#2a9d8f',
+  secondary: '#264653',
+  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
+  gradientLight: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
   light: '#f8fafc',
-  dark: '#2e7d32',
-  muted: '#6c757d',
+  dark: '#0f172a',
+  muted: '#64748b',
 };
 
 export default function ContractorProfile() {
@@ -131,7 +131,7 @@ export default function ContractorProfile() {
       direction: 'rtl', 
       fontFamily: 'Cairo, system-ui, Arial',
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%)',
+      background: 'linear-gradient(to bottom, #f3f4f6 0%, #e5e7eb 100%)',
       padding: '32px'
     }}>
       <style>{`
@@ -163,7 +163,7 @@ export default function ContractorProfile() {
         marginBottom: 32,
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 15px 50px rgba(76, 175, 80, 0.25)'
+        boxShadow: '0 15px 50px rgba(30, 64, 175, 0.25)'
       }}>
         {/* Decorative circles with animation */}
         <div style={{
@@ -401,9 +401,9 @@ export default function ContractorProfile() {
       <div className="profile-card" style={{
         background: '#ffffff',
         borderRadius: 30,
-        boxShadow: '0 8px 35px rgba(76, 175, 80, 0.1)',
+        boxShadow: '0 8px 35px rgba(30, 64, 175, 0.15)',
         padding: 50,
-        border: '1px solid rgba(76, 175, 80, 0.1)'
+        border: '1px solid rgba(30, 64, 175, 0.08)'
       }}>
         <div style={{
           display: 'flex',

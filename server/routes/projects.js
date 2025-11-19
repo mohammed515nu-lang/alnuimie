@@ -121,6 +121,18 @@ router.get('/:id', async (req, res) => {
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
+    
+    // عزل البيانات: التحقق من أن المشروع يخص المستخدم
+    if (req.user && req.userId) {
+      const isOwner = 
+        (req.userRole === 'contractor' && project.contractor?.toString() === req.userId.toString()) ||
+        (req.userRole === 'client' && project.client?.toString() === req.userId.toString());
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: 'You do not have permission to view this project' });
+      }
+    }
+    
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch project', message: error.message });

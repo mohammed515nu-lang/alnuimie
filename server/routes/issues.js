@@ -72,6 +72,21 @@ router.get('/:id', async (req, res) => {
     if (!issue) {
       return res.status(404).json({ error: 'Issue not found' });
     }
+    
+    // عزل البيانات: التحقق من أن المشكلة في مشروع يخص المستخدم
+    if (req.user && req.userId && issue.project) {
+      const project = await Project.findById(issue.project._id || issue.project);
+      if (project) {
+        const isOwner = 
+          (req.userRole === 'contractor' && project.contractor?.toString() === req.userId.toString()) ||
+          (req.userRole === 'client' && project.client?.toString() === req.userId.toString());
+        
+        if (!isOwner) {
+          return res.status(403).json({ error: 'You do not have permission to view this issue' });
+        }
+      }
+    }
+    
     res.json(issue);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch issue', message: error.message });

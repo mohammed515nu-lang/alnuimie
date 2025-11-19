@@ -57,6 +57,18 @@ router.get('/:id', async (req, res) => {
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
+    
+    // عزل البيانات: التحقق من أن الطلب يخص المستخدم
+    if (req.user && req.userId) {
+      const isOwner = 
+        (req.userRole === 'contractor' && request.contractor?.toString() === req.userId.toString()) ||
+        (req.userRole === 'client' && request.client?.toString() === req.userId.toString());
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: 'You do not have permission to view this request' });
+      }
+    }
+    
     res.json(request);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch request', message: error.message });

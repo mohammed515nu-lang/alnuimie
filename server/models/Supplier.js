@@ -56,6 +56,11 @@ const supplierSchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  contractor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   notes: {
     type: String,
     trim: true

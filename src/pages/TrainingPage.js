@@ -114,12 +114,26 @@ export default function TrainingPage() {
     : courses.filter(course => course.category === activeCategory);
 
   return (
-    <div dir="rtl" style={{ fontFamily: 'Cairo, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <div
+      dir="rtl"
+      style={{
+        fontFamily: 'Cairo, sans-serif',
+        background: 'radial-gradient(circle at top, rgba(15,23,42,0.7), rgba(2,6,23,0.95))',
+        color: '#fdf7f2',
+        minHeight: '100vh',
+        paddingBottom: '80px'
+      }}
+    >
       {/* Header */}
       <header style={{
-        backgroundColor: '#2e7d32',
-        padding: '20px 0',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        background: 'rgba(15,23,42,0.85)',
+        padding: '18px 0',
+        boxShadow: '0 10px 30px rgba(2,6,23,0.4)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backdropFilter: 'blur(10px)'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -133,21 +147,23 @@ export default function TrainingPage() {
             <button 
               onClick={() => navigate('/')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                background: 'linear-gradient(135deg, rgba(194,107,58,0.8), rgba(164,88,43,0.9))',
+                color: '#fff',
                 border: 'none',
-                padding: '8px 15px',
-                borderRadius: '5px',
+                padding: '8px 18px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontWeight: 500,
+                boxShadow: '0 10px 25px rgba(194,107,58,0.3)'
               }}
             >
               ← العودة
             </button>
-            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>التدريب</div>
+            <div style={{ color: '#fef3c7', fontSize: '20px', fontWeight: 700 }}>التدريب</div>
           </div>
 
-          <div style={{ color: 'white', fontSize: '16px' }}>
+          <div style={{ color: 'rgba(248,250,252,0.7)', fontSize: '14px' }}>
             {filteredCourses.length} دورة تدريبية متاحة
           </div>
         </div>
@@ -155,28 +171,36 @@ export default function TrainingPage() {
 
       {/* Hero Section */}
       <section style={{
-        backgroundColor: '#f0f8f0',
-        padding: '40px 20px',
-        textAlign: 'center'
+        background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(3,7,18,0.95) 60%)',
+        padding: '60px 20px',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '32px', color: '#2e7d32', marginBottom: '20px' }}>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at 20% 20%, rgba(14,165,233,0.25), transparent 45%)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
+          <h1 style={{ fontSize: '36px', color: '#fef3c7', marginBottom: '18px', fontWeight: 800 }}>
             مركز التدريب المتخصص في البناء والتشييد
           </h1>
-          <p style={{ fontSize: '18px', color: '#555', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '16px', color: 'rgba(248,250,252,0.78)', lineHeight: 1.8 }}>
             نوفر دورات تدريبية متخصصة في مجال البناء والتشييد بإشراف خبراء متخصصين
           </p>
         </div>
       </section>
 
       {/* Categories */}
-      <section style={{ padding: '20px 0', backgroundColor: 'white', borderBottom: '1px solid #eee' }}>
+      <section style={{ padding: '28px 0', backgroundColor: 'rgba(15,23,42,0.75)', borderBottom: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0 20px',
           display: 'flex',
-          gap: '15px',
+          gap: '12px',
           flexWrap: 'wrap',
           justifyContent: 'center'
         }}>
@@ -185,14 +209,17 @@ export default function TrainingPage() {
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               style={{
-                padding: '10px 20px',
+                padding: '10px 22px',
                 borderRadius: '30px',
-                border: 'none',
-                backgroundColor: activeCategory === category.id ? '#2e7d32' : '#f0f0f0',
-                color: activeCategory === category.id ? 'white' : '#333',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: activeCategory === category.id
+                  ? 'linear-gradient(135deg, #0ea5e9, #2563eb)'
+                  : 'rgba(255,255,255,0.04)',
+                color: activeCategory === category.id ? '#f0f9ff' : 'rgba(248,250,252,0.8)',
                 cursor: 'pointer',
                 fontSize: '16px',
-                fontWeight: '500'
+                fontWeight: '600',
+                boxShadow: activeCategory === category.id ? '0 12px 25px rgba(14,165,233,0.25)' : 'none'
               }}
             >
               {category.name}
@@ -212,13 +239,20 @@ export default function TrainingPage() {
         }}>
           {filteredCourses.map(course => (
             <div key={course.id} style={{
-              backgroundColor: 'white',
-              borderRadius: '10px',
+              backgroundColor: 'rgba(255,255,255,0.03)',
+              borderRadius: '20px',
               overflow: 'hidden',
-              boxShadow: '0 5px 15px rgba(0,0,0,0.08)',
+              boxShadow: '0 25px 45px rgba(2,6,23,0.65)',
+              border: '1px solid rgba(255,255,255,0.08)',
               transition: 'transform 0.3s ease'
             }}>
-              <div style={{ height: '200px', overflow: 'hidden' }}>
+              <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(15,23,42,0.75) 100%)',
+                  zIndex: 1
+                }} />
                 <img 
                   src={course.image} 
                   alt={course.title}
@@ -228,30 +262,45 @@ export default function TrainingPage() {
                     objectFit: 'cover'
                   }}
                 />
+                <div style={{
+                  position: 'absolute',
+                  bottom: '12px',
+                  left: '12px',
+                  backgroundColor: 'rgba(15,23,42,0.65)',
+                  borderRadius: '999px',
+                  color: '#e0f2fe',
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  zIndex: 2
+                }}>
+                  {course.location}
+                </div>
               </div>
 
               <div style={{ padding: '20px' }}>
                 <div style={{ 
-                  display: 'inline-block', 
-                  backgroundColor: '#f0f8f0', 
-                  color: '#2e7d32', 
-                  padding: '5px 10px', 
-                  borderRadius: '5px', 
-                  fontSize: '14px',
-                  marginBottom: '10px'
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'rgba(194,107,58,0.15)', 
+                  color: '#f4c9aa', 
+                  padding: '6px 14px', 
+                  borderRadius: '999px', 
+                  fontSize: '13px',
+                  marginBottom: '12px'
                 }}>
-                  {course.level}
+                  مستوى {course.level}
                 </div>
 
-                <h3 style={{ margin: '0 0 10px', fontSize: '18px', color: '#333' }}>
+                <h3 style={{ margin: '0 0 10px', fontSize: '19px', color: '#fef3c7' }}>
                   {course.title}
                 </h3>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#666' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(248,250,252,0.75)' }}>
                     📅 {course.duration}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#666' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(248,250,252,0.75)' }}>
                     👥 {course.students} طالب
                   </div>
                 </div>
@@ -260,41 +309,40 @@ export default function TrainingPage() {
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center',
-                    backgroundColor: '#f0f8f0',
-                    padding: '5px 10px',
-                    borderRadius: '20px',
-                    color: '#2e7d32',
-                    fontSize: '14px',
+                    backgroundColor: 'rgba(14,165,233,0.12)',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    color: '#7dd3fc',
+                    fontSize: '13px',
                     marginLeft: '10px'
                   }}>
                     ⭐ {course.rating}
                   </div>
-                  <div style={{ color: '#666', fontSize: '14px' }}>
+                  <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
                     {course.instructor}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                  <div style={{ color: '#666', fontSize: '14px' }}>
-                    📍 {course.location}
-                  </div>
-                  <div style={{ color: '#666', fontSize: '14px' }}>
+                  <div style={{ color: 'rgba(248,250,252,0.75)', fontSize: '14px' }}>
                     🗓️ {course.startDate}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2e7d32' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#34d399' }}>
                     {course.price}
                   </div>
-                  <button onClick={() => navigate('/login')} style={{
-                    backgroundColor: '#2e7d32',
-                    color: 'white',
+                  <button onClick={() => navigate(`/training/register?courseId=${course.id}`)} style={{
+                    background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
+                    color: '#f0f9ff',
                     border: 'none',
-                    padding: '8px 15px',
-                    borderRadius: '5px',
+                    padding: '10px 18px',
+                    borderRadius: '25px',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    boxShadow: '0 14px 30px rgba(14,165,233,0.35)'
                   }}>
                     التسجيل الآن
                   </button>
@@ -307,27 +355,43 @@ export default function TrainingPage() {
 
       {/* CTA Section */}
       <section style={{
-        backgroundColor: '#2e7d32',
-        padding: '40px 20px',
+        background: 'linear-gradient(135deg, rgba(14,165,233,0.15), rgba(194,107,58,0.15))',
+        padding: '50px 20px',
         textAlign: 'center',
-        color: 'white'
+        color: '#fdf7f2',
+        borderRadius: '30px',
+        width: '90%',
+        maxWidth: '900px',
+        margin: '0 auto',
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 30px 60px rgba(2,6,23,0.5)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '28px', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '28px', marginBottom: '20px', fontWeight: 700, color: '#fef3c7' }}>
             هل تحتاج دورة تدريبية مخصصة؟
           </h2>
-          <p style={{ fontSize: '18px', marginBottom: '30px' }}>
+          <p style={{ fontSize: '16px', marginBottom: '28px', color: 'rgba(248,250,252,0.78)' }}>
             يمكننا تصميم دورة تدريبية خاصة تلبي احتياجات شركتك أو فريقك
           </p>
-          <button onClick={() => navigate('/contact')} style={{
-            backgroundColor: 'white',
-            color: '#2e7d32',
+          <button onClick={() => navigate('/training/register?custom=true')} style={{
+            background: 'linear-gradient(135deg, #c26b3a, #a4582b)',
+            color: '#fff7ed',
             border: 'none',
-            padding: '12px 25px',
+            padding: '12px 30px',
             borderRadius: '30px',
-            fontWeight: 'bold',
+            fontWeight: '700',
             fontSize: '16px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            boxShadow: '0 18px 35px rgba(194,107,58,0.35)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-3px)';
+            e.target.style.boxShadow = '0 22px 45px rgba(194,107,58,0.45)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 18px 35px rgba(194,107,58,0.35)';
           }}>
             طلب دورة مخصصة
           </button>

@@ -88,12 +88,25 @@ export default function ContactPage() {
   ];
 
   return (
-    <div dir="rtl" style={{ fontFamily: 'Cairo, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <div
+      dir="rtl"
+      style={{
+        fontFamily: 'Cairo, sans-serif',
+        background: 'radial-gradient(circle at top, #020617 0%, #020617 40%, #0b1120 70%, #111827 100%)',
+        color: '#f9fafb',
+        minHeight: '100vh'
+      }}
+    >
       {/* Header */}
       <header style={{
-        backgroundColor: '#2e7d32',
-        padding: '20px 0',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        background: 'rgba(15,23,42,0.92)',
+        padding: '16px 0',
+        boxShadow: '0 10px 30px rgba(15,23,42,0.7)',
+        borderBottom: '1px solid rgba(148,163,184,0.35)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backdropFilter: 'blur(14px)'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -103,44 +116,46 @@ export default function ContactPage() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button 
               onClick={() => navigate('/')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                background: 'linear-gradient(135deg, #c26b3a, #dba98b)',
+                color: '#0b1120',
                 border: 'none',
-                padding: '8px 15px',
-                borderRadius: '5px',
+                padding: '8px 18px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontWeight: 600,
+                boxShadow: '0 10px 25px rgba(15,23,42,0.7)'
               }}
             >
               ← العودة
             </button>
-            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>اتصل بنا</div>
+            <div style={{ color: '#e5e7eb', fontSize: '20px', fontWeight: 700 }}>اتصل بنا</div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section style={{
-        backgroundColor: '#f0f8f0',
-        padding: '60px 20px',
-        textAlign: 'center'
+        padding: '70px 20px 40px',
+        textAlign: 'center',
+        background: 'radial-gradient(circle at top, rgba(15,23,42,0.4), transparent 60%)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '36px', color: '#2e7d32', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '36px', color: '#f9fafb', marginBottom: '16px', fontWeight: 800 }}>
             تواصل معنا
           </h1>
-          <p style={{ fontSize: '18px', color: '#555', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.88)', lineHeight: 1.8 }}>
             نحن هنا لمساعدتك والإجابة على جميع استفساراتك
           </p>
         </div>
       </section>
 
       {/* Contact Form and Info */}
-      <section style={{ padding: '60px 20px', backgroundColor: 'white' }}>
+      <section style={{ padding: '60px 20px', background: 'linear-gradient(145deg, #020617 0%, #020617 40%, #0b1120 100%)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -150,16 +165,16 @@ export default function ContactPage() {
         }}>
           {/* Contact Form */}
           <div>
-            <h2 style={{ fontSize: '28px', color: '#2e7d32', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '28px', color: '#fef3c7', marginBottom: '20px' }}>
               أرسل لنا رسالة
             </h2>
 
             {formSubmitted && (
               <div style={{
-                backgroundColor: '#e8f5e9',
-                color: '#2e7d32',
+                backgroundColor: 'rgba(22,163,74,0.15)',
+                color: '#bbf7d0',
                 padding: '15px',
-                borderRadius: '5px',
+                borderRadius: '12px',
                 marginBottom: '20px',
                 textAlign: 'center'
               }}>
@@ -167,9 +182,15 @@ export default function ContactPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#333', fontWeight: '500' }}>
+            <form onSubmit={handleSubmit} style={{
+              background: 'rgba(15,23,42,0.96)',
+              padding: '24px',
+              borderRadius: '20px',
+              boxShadow: '0 22px 45px rgba(0,0,0,0.7)',
+              border: '1px solid rgba(148,163,184,0.35)'
+            }}>
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#e5e7eb', fontWeight: '500' }}>
                   الاسم الكامل *
                 </label>
                 <input
@@ -181,15 +202,17 @@ export default function ContactPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
-                    fontSize: '16px'
+                    borderRadius: '12px',
+                    border: '1px solid rgba(148,163,184,0.6)',
+                    fontSize: '16px',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    color: '#e5e7eb'
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#333', fontWeight: '500' }}>
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#e5e7eb', fontWeight: '500' }}>
                   البريد الإلكتروني *
                 </label>
                 <input
@@ -201,15 +224,17 @@ export default function ContactPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
-                    fontSize: '16px'
+                    borderRadius: '12px',
+                    border: '1px solid rgba(148,163,184,0.6)',
+                    fontSize: '16px',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    color: '#e5e7eb'
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#333', fontWeight: '500' }}>
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#e5e7eb', fontWeight: '500' }}>
                   رقم الهاتف
                 </label>
                 <input
@@ -220,15 +245,17 @@ export default function ContactPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
-                    fontSize: '16px'
+                    borderRadius: '12px',
+                    border: '1px solid rgba(148,163,184,0.6)',
+                    fontSize: '16px',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    color: '#e5e7eb'
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#333', fontWeight: '500' }}>
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#e5e7eb', fontWeight: '500' }}>
                   الموضوع *
                 </label>
                 <input
@@ -240,15 +267,17 @@ export default function ContactPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
-                    fontSize: '16px'
+                    borderRadius: '12px',
+                    border: '1px solid rgba(148,163,184,0.6)',
+                    fontSize: '16px',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    color: '#e5e7eb'
                   }}
                 />
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#333', fontWeight: '500' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#e5e7eb', fontWeight: '500' }}>
                   الرسالة *
                 </label>
                 <textarea
@@ -260,24 +289,27 @@ export default function ContactPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(148,163,184,0.6)',
                     fontSize: '16px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    color: '#e5e7eb'
                   }}
                 ></textarea>
               </div>
 
               <button type="submit" style={{
-                backgroundColor: '#2e7d32',
-                color: 'white',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                color: '#0b1120',
                 border: 'none',
                 padding: '12px 25px',
-                borderRadius: '5px',
+                borderRadius: '999px',
                 fontSize: '16px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                width: '100%'
+                width: '100%',
+                boxShadow: '0 16px 40px rgba(22,163,74,0.55)'
               }}>
                 إرسال الرسالة
               </button>
@@ -286,21 +318,23 @@ export default function ContactPage() {
 
           {/* Contact Info */}
           <div>
-            <h2 style={{ fontSize: '28px', color: '#2e7d32', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '28px', color: '#fef3c7', marginBottom: '20px' }}>
               معلومات التواصل
             </h2>
 
             <div style={{
-              backgroundColor: '#f0f8f0',
+              backgroundColor: 'rgba(15,23,42,0.95)',
               padding: '25px',
-              borderRadius: '10px',
-              marginBottom: '30px'
+              borderRadius: '20px',
+              marginBottom: '30px',
+              border: '1px solid rgba(148,163,184,0.35)',
+              boxShadow: '0 22px 45px rgba(0,0,0,0.7)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                 <div style={{
                   width: '40px',
                   height: '40px',
-                  backgroundColor: '#2e7d32',
+                  background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -310,8 +344,8 @@ export default function ContactPage() {
                   marginLeft: '15px'
                 }}>📧</div>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: '#333' }}>البريد الإلكتروني</div>
-                  <div style={{ color: '#555' }}>info@muqawil.org</div>
+                  <div style={{ fontWeight: 'bold', color: '#e5e7eb' }}>البريد الإلكتروني</div>
+                  <div style={{ color: 'rgba(226,232,240,0.9)' }}>info@muqawil.org</div>
                 </div>
               </div>
 
@@ -329,8 +363,8 @@ export default function ContactPage() {
                   marginLeft: '15px'
                 }}>📞</div>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: '#333' }}>الهاتف</div>
-                  <div style={{ color: '#555' }}>+963 11 111 2222</div>
+                  <div style={{ fontWeight: 'bold', color: '#e5e7eb' }}>الهاتف</div>
+                  <div style={{ color: 'rgba(226,232,240,0.9)' }}>+963 11 111 2222</div>
                 </div>
               </div>
 
@@ -348,8 +382,8 @@ export default function ContactPage() {
                   marginLeft: '15px'
                 }}>📍</div>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: '#333' }}>العنوان الرئيسي</div>
-                  <div style={{ color: '#555' }}>دمشق، شارع الجسر، مبنى المهندسين</div>
+                  <div style={{ fontWeight: 'bold', color: '#e5e7eb' }}>العنوان الرئيسي</div>
+                  <div style={{ color: 'rgba(226,232,240,0.9)' }}>دمشق، شارع الجسر، مبنى المهندسين</div>
                 </div>
               </div>
 
@@ -367,28 +401,29 @@ export default function ContactPage() {
                   marginLeft: '15px'
                 }}>🕐</div>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: '#333' }}>ساعات العمل</div>
-                  <div style={{ color: '#555' }}>الأحد - الخميس: 9:00 ص - 5:00 م</div>
+                  <div style={{ fontWeight: 'bold', color: '#e5e7eb' }}>ساعات العمل</div>
+                  <div style={{ color: 'rgba(226,232,240,0.9)' }}>الأحد - الخميس: 9:00 ص - 5:00 م</div>
                 </div>
               </div>
             </div>
 
-            <h3 style={{ fontSize: '22px', color: '#2e7d32', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '22px', color: '#fef3c7', marginBottom: '20px' }}>
               مكاتبنا في سوريا
             </h3>
 
             {offices.map((office, index) => (
               <div key={index} style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'rgba(15,23,42,0.96)',
                 padding: '20px',
-                borderRadius: '10px',
-                marginBottom: '15px'
+                borderRadius: '16px',
+                marginBottom: '15px',
+                border: '1px solid rgba(148,163,184,0.35)'
               }}>
-                <h4 style={{ margin: '0 0 10px', color: '#2e7d32' }}>{office.city}</h4>
-                <div style={{ color: '#555', marginBottom: '5px' }}>{office.address}</div>
-                <div style={{ color: '#555', marginBottom: '5px' }}>{office.phone}</div>
-                <div style={{ color: '#555', marginBottom: '5px' }}>{office.email}</div>
-                <div style={{ color: '#555' }}>{office.hours}</div>
+                <h4 style={{ margin: '0 0 10px', color: '#bfdbfe' }}>{office.city}</h4>
+                <div style={{ color: 'rgba(226,232,240,0.9)', marginBottom: '5px' }}>{office.address}</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)', marginBottom: '5px' }}>{office.phone}</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)', marginBottom: '5px' }}>{office.email}</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)' }}>{office.hours}</div>
               </div>
             ))}
           </div>
@@ -396,12 +431,12 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section style={{ padding: '60px 20px', backgroundColor: '#f8f9fa' }}>
+      <section style={{ padding: '60px 20px', background: '#020617' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <h2 style={{ fontSize: '32px', color: '#2e7d32', textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '32px', color: '#fef3c7', textAlign: 'center', marginBottom: '40px' }}>
             الأسئلة الشائعة
           </h2>
 
@@ -411,22 +446,23 @@ export default function ContactPage() {
           }}>
             {faqs.map((faq, index) => (
               <div key={index} style={{
-                backgroundColor: 'white',
+                backgroundColor: 'rgba(15,23,42,0.96)',
                 padding: '20px',
-                borderRadius: '10px',
+                borderRadius: '16px',
                 marginBottom: '15px',
-                boxShadow: '0 3px 10px rgba(0,0,0,0.05)'
+                boxShadow: '0 20px 40px rgba(0,0,0,0.7)',
+                border: '1px solid rgba(148,163,184,0.45)'
               }}>
                 <h3 style={{
                   margin: '0 0 10px',
-                  color: '#2e7d32',
+                  color: '#bfdbfe',
                   fontSize: '18px'
                 }}>
                   {faq.question}
                 </h3>
                 <p style={{
                   margin: 0,
-                  color: '#555',
+                  color: 'rgba(226,232,240,0.9)',
                   lineHeight: 1.6
                 }}>
                   {faq.answer}
@@ -438,15 +474,15 @@ export default function ContactPage() {
       </section>
 
       {/* Map Section */}
-      <section style={{ padding: '0', height: '400px', position: 'relative' }}>
+      <section style={{ padding: '0', height: '360px', position: 'relative' }}>
         <div style={{
           width: '100%',
           height: '100%',
-          backgroundColor: '#e0e0e0',
+          background: 'radial-gradient(circle at center, rgba(15,23,42,0.9), #020617)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#757575',
+          color: 'rgba(148,163,184,0.9)',
           fontSize: '18px'
         }}>
           خريطة جوجل ستظهر هنا

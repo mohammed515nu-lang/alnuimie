@@ -56,6 +56,18 @@ router.get('/:id', async (req, res) => {
     if (!contract) {
       return res.status(404).json({ error: 'Contract not found' });
     }
+    
+    // عزل البيانات: التحقق من أن العقد يخص المستخدم
+    if (req.user && req.userId) {
+      const isOwner = 
+        (req.userRole === 'contractor' && contract.contractor?.toString() === req.userId.toString()) ||
+        (req.userRole === 'client' && contract.client?.toString() === req.userId.toString());
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: 'You do not have permission to view this contract' });
+      }
+    }
+    
     res.json(contract);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch contract', message: error.message });

@@ -5,16 +5,16 @@ import { authAPI } from '../utils/api';
 import '../assets/styles/landing.css';
 
 const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
-  dark: '#2e7d32',
-  light: '#f8f9fa',
-  muted: '#6c757d',
-  success: '#43a047',
-  warning: '#ff9800',
+  primary: '#e5e7eb',          // نص فاتح على خلفية داكنة
+  accent: '#9ca3af',           // حدود وعناصر ثانوية رمادية
+  secondary: '#f3f4f6',        // عناصر فاتحة بسيطة
+  gradient: 'linear-gradient(135deg, #020617 0%, #111827 100%)',
+  gradientLight: 'linear-gradient(135deg, #020617 0%, #1f2937 100%)',
+  dark: '#020617',
+  light: '#0b1120',
+  muted: '#9ca3af',
+  success: '#22c55e',
+  warning: '#f97316',
 };
 
 export default function Login() {
@@ -73,20 +73,67 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const validateRegisterForm = () => {
+    const newErrors = {};
+    if (!formData.name) {
+      newErrors.name = 'الاسم الكامل مطلوب';
+    }
+    if (!formData.email) {
+      newErrors.email = 'البريد الإلكتروني مطلوب';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'البريد الإلكتروني غير صالح';
+    }
+    if (!formData.password) {
+      newErrors.password = 'كلمة المرور مطلوبة';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'تأكيد كلمة المرور مطلوب';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'كلمة المرور غير متطابقة';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (!validateForm()) return;
+
+    try {
       setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
-        // Navigate based on user type
-        if (userType === 'contractor') {
-          navigate('/contractor');
-        } else {
-          navigate('/client/projects');
-        }
-      }, 1500);
+
+      // استدعاء تسجيل الدخول من الـ API الفعلي
+      const data = await authAPI.login(formData.email, formData.password);
+
+      // نتوقع أن الباك يرجع { token, user }
+      if (data.token) {
+        localStorage.setItem('jwtToken', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      setIsLoading(false);
+
+      const role = data.user?.role || userType;
+
+      if (role === 'contractor') {
+        navigate('/contractor');
+      } else if (role === 'client') {
+        navigate('/client/projects');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setIsLoading(false);
+      setErrors(prev => ({
+        ...prev,
+        general: error.message || 'بيانات الدخول غير صحيحة',
+      }));
     }
   };
 
@@ -108,6 +155,58 @@ export default function Login() {
 
   const handleRegister = () => {
     setIsRegistering(true);
+    // Clear form data and errors when switching to register
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+    setErrors({});
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateRegisterForm()) return;
+
+    try {
+      setIsLoading(true);
+
+      // استدعاء إنشاء الحساب من الـ API
+      const data = await authAPI.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: userType
+      });
+
+      // نتوقع أن الباك يرجع { token, user }
+      if (data.token) {
+        localStorage.setItem('jwtToken', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      setIsLoading(false);
+
+      const role = data.user?.role || userType;
+
+      if (role === 'contractor') {
+        navigate('/contractor');
+      } else if (role === 'client') {
+        navigate('/client/projects');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      setIsLoading(false);
+      setErrors(prev => ({
+        ...prev,
+        general: error.message || 'فشل إنشاء الحساب. قد يكون البريد الإلكتروني مستخدم بالفعل',
+      }));
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -147,24 +246,24 @@ export default function Login() {
           opacity: 0.4
         }} />
 
-        {/* Dark overlay */}
+        {/* Dark overlay - lighter to show city image */}
         <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(46, 125, 50, 0.35) 50%, rgba(0, 0, 0, 0.85) 100%)'
+          background: 'linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(15,23,42,0.65) 45%, rgba(15,23,42,0.85) 100%)'
         }} />
 
-        {/* Animated light particles */}
+        {/* Animated light particles - neutral glow */}
         <div style={{
           position: 'absolute',
           top: '15%',
           left: '10%',
           width: '300px',
           height: '300px',
-          background: 'radial-gradient(circle, rgba(102, 187, 106, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(148, 163, 184, 0.25) 0%, transparent 70%)',
           borderRadius: '50%',
           animation: 'float 8s ease-in-out infinite',
           filter: 'blur(60px)'
@@ -175,7 +274,7 @@ export default function Login() {
           right: '15%',
           width: '250px',
           height: '250px',
-          background: 'radial-gradient(circle, rgba(76, 175, 80, 0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(148, 163, 184, 0.2) 0%, transparent 70%)',
           borderRadius: '50%',
           animation: 'float 10s ease-in-out infinite',
           animationDelay: '3s',
@@ -196,12 +295,9 @@ export default function Login() {
             <h1 style={{
               fontSize: '42px',
               fontWeight: '900',
-              background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: BRAND.primary,
               marginBottom: 10,
-              textShadow: '0 0 30px rgba(102, 187, 106, 0.5)',
+              textShadow: '0 0 28px rgba(0, 0, 0, 0.8)',
               letterSpacing: '-1px',
               animation: 'fadeInDown 1s ease-out'
             }}>
@@ -314,20 +410,30 @@ export default function Login() {
               fontSize: '2rem',
               fontWeight: 700,
               color: '#fff',
-              marginBottom: 30,
+              marginBottom: 10,
               textAlign: 'center',
               textShadow: '0 2px 10px rgba(0,0,0,0.2)'
-            }}>تسجيل الدخول</h2>
+            }}>{isRegistering ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</h2>
+            <p style={{
+              textAlign: 'center',
+              marginBottom: 26,
+              fontSize: 13,
+              color: 'rgba(226,232,240,0.7)'
+            }}>
+              {isRegistering
+                ? 'قم بإنشاء حساب جديد كمقاول أو صاحب مشروع لمتابعة مشاريعك بسهولة.'
+                : 'سجّل دخولك للوصول إلى لوحة التحكم ومتابعة مشاريعك.'}
+            </p>
 
             {/* User Type Selector */}
             <div style={{
               display: 'flex',
-              marginBottom: 30,
-              background: 'rgba(255, 255, 255, 0.15)',
+              marginBottom: 24,
+              background: 'rgba(15, 23, 42, 0.5)',
               borderRadius: 16,
               padding: 6,
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+              backdropFilter: 'blur(18px)',
+              boxShadow: '0 12px 35px rgba(0,0,0,0.6)'
             }}>
               <button
                 type="button"
@@ -337,13 +443,13 @@ export default function Login() {
                   padding: '14px',
                   border: 'none',
                   borderRadius: 12,
-                  background: userType === 'contractor' ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-                  color: userType === 'contractor' ? BRAND.primary : '#fff',
+                  background: userType === 'contractor' ? 'rgba(15, 23, 42, 0.95)' : 'transparent',
+                  color: userType === 'contractor' ? '#f9fafb' : '#e5e7eb',
                   fontWeight: 700,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   fontSize: 16,
-                  boxShadow: userType === 'contractor' ? '0 4px 15px rgba(0,0,0,0.1)' : 'none'
+                  boxShadow: userType === 'contractor' ? '0 10px 25px rgba(0,0,0,0.7)' : 'none',
                 }}
               >
                 مقاول
@@ -356,19 +462,21 @@ export default function Login() {
                   padding: '14px',
                   border: 'none',
                   borderRadius: 12,
-                  background: userType === 'client' ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-                  color: userType === 'client' ? BRAND.primary : '#fff',
+                  background: userType === 'client' ? 'rgba(15, 23, 42, 0.95)' : 'transparent',
+                  color: userType === 'client' ? '#f9fafb' : '#e5e7eb',
                   fontWeight: 700,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   fontSize: 16,
-                  boxShadow: userType === 'client' ? '0 4px 15px rgba(0,0,0,0.1)' : 'none'
+                  boxShadow: userType === 'client' ? '0 10px 25px rgba(0,0,0,0.7)' : 'none'
                 }}
               >
                 صاحب مشروع
               </button>
             </div>
-
+            
+            {/* Forms: Login vs Register */}
+            {!isRegistering ? (
             <form onSubmit={handleSubmit}>
               {/* Email Field */}
               <div style={{ marginBottom: 24 }}>
@@ -389,23 +497,23 @@ export default function Login() {
                   style={{
                     width: '100%',
                     padding: '14px 16px',
-                    border: errors.email ? '2px solid #ef5350' : '2px solid rgba(102, 187, 106, 0.3)',
+                    border: errors.email ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
                     borderRadius: 12,
                     fontSize: 16,
                     outline: 'none',
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    color: '#fff',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: '#e5e7eb',
                     transition: 'all 0.3s ease'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = 'rgba(102, 187, 106, 0.8)';
-                    e.target.style.boxShadow = `0 0 0 4px rgba(102, 187, 106, 0.15)`;
-                    e.target.style.background = 'rgba(0, 0, 0, 0.5)';
+                    e.target.style.borderColor = 'rgba(249, 250, 251, 0.9)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(148, 163, 184, 0.5)';
+                    e.target.style.background = 'rgba(15, 23, 42, 0.8)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = errors.email ? '#ef5350' : 'rgba(102, 187, 106, 0.3)';
+                    e.target.style.borderColor = errors.email ? '#ef5350' : 'rgba(148, 163, 184, 0.6)';
                     e.target.style.boxShadow = 'none';
-                    e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                    e.target.style.background = 'rgba(15, 23, 42, 0.7)';
                   }}
                 />
                 {errors.email && (
@@ -439,23 +547,23 @@ export default function Login() {
                     style={{
                       width: '100%',
                       padding: '14px 16px',
-                      border: errors.password ? '2px solid #ef5350' : '2px solid rgba(102, 187, 106, 0.3)',
+                      border: errors.password ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
                       borderRadius: 12,
                       fontSize: 16,
                       outline: 'none',
-                      background: 'rgba(0, 0, 0, 0.3)',
-                      color: '#fff',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      color: '#e5e7eb',
                       transition: 'all 0.3s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = 'rgba(102, 187, 106, 0.8)';
-                      e.target.style.boxShadow = `0 0 0 4px rgba(102, 187, 106, 0.15)`;
-                      e.target.style.background = 'rgba(0, 0, 0, 0.5)';
+                      e.target.style.borderColor = 'rgba(249, 250, 251, 0.9)';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(148, 163, 184, 0.5)';
+                      e.target.style.background = 'rgba(15, 23, 42, 0.8)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = errors.password ? '#ef5350' : 'rgba(102, 187, 106, 0.3)';
+                      e.target.style.borderColor = errors.password ? '#ef5350' : 'rgba(148, 163, 184, 0.6)';
                       e.target.style.boxShadow = 'none';
-                      e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                      e.target.style.background = 'rgba(15, 23, 42, 0.7)';
                     }}
                   />
                   <button
@@ -487,6 +595,22 @@ export default function Login() {
                 )}
               </div>
 
+              {/* General Error Message */}
+              {errors.general && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: 12,
+                  padding: '12px 16px',
+                  marginBottom: 16,
+                  color: '#ef4444',
+                  fontSize: 14,
+                  textAlign: 'center'
+                }}>
+                  {errors.general}
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -496,13 +620,13 @@ export default function Login() {
                   padding: '16px',
                   border: 'none',
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+                  background: BRAND.gradient,
                   color: '#fff',
                   fontWeight: 700,
                   fontSize: 17,
                   cursor: isLoading ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 25px rgba(102, 187, 106, 0.4)',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -512,12 +636,12 @@ export default function Login() {
                 onMouseOver={(e) => {
                   if (!isLoading) {
                     e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 12px 35px rgba(102, 187, 106, 0.5)';
+                    e.target.style.boxShadow = '0 16px 40px rgba(0, 0, 0, 0.9)';
                   }
                 }}
                 onMouseOut={(e) => {
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(102, 187, 106, 0.4)';
+                  e.target.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.8)';
                 }}
               >
                 {isLoading ? (
@@ -558,10 +682,10 @@ export default function Login() {
                 style={{
                   width: '100%',
                   padding: '16px',
-                  border: '2px solid rgba(102, 187, 106, 0.4)',
+                  border: '1px solid rgba(148, 163, 184, 0.7)',
                   borderRadius: 12,
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  color: '#fff',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  color: '#e5e7eb',
                   fontWeight: 600,
                   fontSize: 16,
                   cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -575,16 +699,16 @@ export default function Login() {
                 }}
                 onMouseOver={(e) => {
                   if (!isLoading) {
-                    e.target.style.background = 'rgba(102, 187, 106, 0.1)';
-                    e.target.style.borderColor = 'rgba(102, 187, 106, 0.6)';
+                    e.target.style.background = 'rgba(15, 23, 42, 0.98)';
+                    e.target.style.borderColor = 'rgba(229, 231, 235, 0.9)';
                     e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 20px rgba(102, 187, 106, 0.3)';
+                    e.target.style.boxShadow = '0 10px 28px rgba(0, 0, 0, 0.8)';
                   }
                 }}
                 onMouseOut={(e) => {
                   if (!isLoading) {
-                    e.target.style.background = 'rgba(0, 0, 0, 0.3)';
-                    e.target.style.borderColor = 'rgba(102, 187, 106, 0.4)';
+                    e.target.style.background = 'rgba(15, 23, 42, 0.95)';
+                    e.target.style.borderColor = 'rgba(148, 163, 184, 0.7)';
                     e.target.style.transform = 'translateY(0)';
                     e.target.style.boxShadow = 'none';
                   }
@@ -599,81 +723,284 @@ export default function Login() {
                 {isLoading ? 'جاري التحميل...' : 'تسجيل الدخول بحساب Google'}
               </button>
             </form>
+            ) : (
+            <form onSubmit={handleRegisterSubmit}>
+              {/* Name Field */}
+              <div style={{ marginBottom: 18 }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: 8,
+                  fontWeight: 600,
+                  color: '#fff'
+                }}>
+                  الاسم الكامل
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ''}
+                  onChange={handleInputChange}
+                  placeholder="أدخل اسمك الكامل"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: errors.name ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
+                    borderRadius: 12,
+                    fontSize: 15,
+                    outline: 'none',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: '#e5e7eb',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+                {errors.name && (
+                  <div style={{ color: '#ef4444', fontSize: 13, marginTop: 6 }}>{errors.name}</div>
+                )}
+              </div>
 
-            {/* Forgot Password */}
-            <div style={{
-              textAlign: 'center',
-              marginTop: 24,
-              fontSize: 14,
-              color: 'rgba(255, 255, 255, 0.7)'
-            }}>
-              هل نسيت كلمة المرور؟{' '}
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#66bb6a',
-                  textDecoration: 'none',
-                  fontWeight: 700,
-                  cursor: 'pointer',
+              {/* Email Field */}
+              <div style={{ marginBottom: 18 }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: 8,
+                  fontWeight: 600,
+                  color: '#fff'
+                }}>
+                  البريد الإلكتروني
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="example@mail.com"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: errors.email ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
+                    borderRadius: 12,
+                    fontSize: 15,
+                    outline: 'none',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: '#e5e7eb',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+                {errors.email && (
+                  <div style={{ color: '#ef4444', fontSize: 13, marginTop: 6 }}>{errors.email}</div>
+                )}
+              </div>
+
+              {/* Password & Confirm */}
+              <div style={{ marginBottom: 18 }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: 8,
+                  fontWeight: 600,
+                  color: '#fff'
+                }}>
+                  كلمة المرور
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="اختر كلمة مرور"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: errors.password ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
+                    borderRadius: 12,
+                    fontSize: 15,
+                    outline: 'none',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: '#e5e7eb',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+                {errors.password && (
+                  <div style={{ color: '#ef4444', fontSize: 13, marginTop: 6 }}>{errors.password}</div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: 8,
+                  fontWeight: 600,
+                  color: '#fff'
+                }}>
+                  تأكيد كلمة المرور
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword || ''}
+                  onChange={handleInputChange}
+                  placeholder="أعد إدخال كلمة المرور"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: errors.confirmPassword ? '2px solid #ef5350' : '1px solid rgba(148, 163, 184, 0.6)',
+                    borderRadius: 12,
+                    fontSize: 15,
+                    outline: 'none',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: '#e5e7eb',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+                {errors.confirmPassword && (
+                  <div style={{ color: '#ef4444', fontSize: 13, marginTop: 6 }}>{errors.confirmPassword}</div>
+                )}
+              </div>
+
+              {/* General Error Message */}
+              {errors.general && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: 12,
+                  padding: '12px 16px',
+                  marginBottom: 16,
+                  color: '#ef4444',
                   fontSize: 14,
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#81c784';
-                  e.target.style.textDecoration = 'underline';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#66bb6a';
-                  e.target.style.textDecoration = 'none';
+                  textAlign: 'center'
+                }}>
+                  {errors.general}
+                </div>
+              )}
+
+              {/* Register Submit */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  border: 'none',
+                  borderRadius: 12,
+                  background: BRAND.gradient,
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 17,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.8)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 12,
+                  opacity: isLoading ? 0.7 : 1
                 }}
               >
-                إعادة تعيين كلمة المرور
+                {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
               </button>
-            </div>
 
-            {/* Register Link */}
-            <div style={{
-              textAlign: 'center',
-              marginTop: 16,
-              fontSize: 14,
-              color: 'rgba(255, 255, 255, 0.7)'
-            }}>
-              ليس لديك حساب؟{' '}
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#66bb6a',
-                  textDecoration: 'none',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#81c784';
-                  e.target.style.textDecoration = 'underline';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#66bb6a';
-                  e.target.style.textDecoration = 'none';
-                }}
-              >
-                إنشاء حساب جديد
-              </button>
-            </div>
+              <div style={{
+                textAlign: 'center',
+                marginTop: 8,
+                fontSize: 13,
+                color: 'rgba(209,213,219,0.9)'
+              }}>
+                لديك حساب بالفعل؟{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegistering(false);
+                    // Clear form data and errors when switching to login
+                    setFormData({
+                      email: '',
+                      password: ''
+                    });
+                    setErrors({});
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#e5e7eb',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  العودة لتسجيل الدخول
+                </button>
+              </div>
+            </form>
+            )}
+
+            {/* Forgot Password - only in login mode */}
+            {!isRegistering && (
+              <div style={{
+                textAlign: 'center',
+                marginTop: 24,
+                fontSize: 14,
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>
+                هل نسيت كلمة المرور؟{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#e5e7eb',
+                    textDecoration: 'none',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.color = '#e5e7eb';
+                    e.target.style.textDecoration = 'underline';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.color = '#e5e7eb';
+                    e.target.style.textDecoration = 'none';
+                  }}
+                >
+                  إعادة تعيين كلمة المرور
+                </button>
+              </div>
+            )}
+
+            {/* Register / Login toggle text under card (login mode only) */}
+            {!isRegistering && (
+              <div style={{
+                textAlign: 'center',
+                marginTop: 16,
+                fontSize: 14,
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>
+                ليس لديك حساب؟{' '}
+                <button
+                  type="button"
+                  onClick={handleRegister}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#e5e7eb',
+                    textDecoration: 'underline',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  إنشاء حساب جديد
+                </button>
+              </div>
+            )}
 
             {/* Back to Home */}
             <div style={{
               textAlign: 'center',
               marginTop: 20,
               paddingTop: 20,
-              borderTop: '1px solid rgba(102, 187, 106, 0.1)'
+              borderTop: '1px solid rgba(37, 99, 235, 0.14)'
             }}>
               <Link
                 to="/"
@@ -687,7 +1014,7 @@ export default function Login() {
                   gap: '5px'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.color = '#66bb6a';
+                  e.target.style.color = '#1d4ed8';
                 }}
                 onMouseOut={(e) => {
                   e.target.style.color = 'rgba(255, 255, 255, 0.5)';
@@ -725,7 +1052,7 @@ export default function Login() {
             maxWidth: 450,
             width: '90%',
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            border: '2px solid rgba(102, 187, 106, 0.3)',
+            border: '2px solid rgba(37, 99, 235, 0.4)',
             animation: 'slideUp 0.3s'
           }}
           onClick={(e) => e.stopPropagation()}
@@ -764,11 +1091,11 @@ export default function Login() {
                 transition: 'all 0.3s ease'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = 'rgba(102, 187, 106, 0.7)';
-                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
+                e.target.style.borderColor = 'rgba(37, 99, 235, 0.75)';
+                e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.14)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(102, 187, 106, 0.3)';
+                e.target.style.borderColor = 'rgba(37, 99, 235, 0.4)';
                 e.target.style.boxShadow = 'none';
               }}
             />

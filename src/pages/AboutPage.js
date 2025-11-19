@@ -7,69 +7,77 @@ export default function AboutPage() {
   const teamMembers = [
     {
       id: 1,
-      name: "مهندس أحمد خالد",
+      name: "مهندس عمر عزاوي",
       position: "المدير التنفيذي",
-      image: "https://randomuser.me/api/portraits/men/1.jpg",
-      bio: "خبير في إدارة المشاريع الهندسية بخبرة تزيد عن 20 عاماً في مجال البناء والتشييد"
+      image: "",
+      bio: "خبير في إدارة المشاريع البرمجية بخبرة تزيد عن عامين في مجال البناء والتشييد"
     },
     {
       id: 2,
-      name: "م. رنا محمود",
-      position: "مديرة العمليات",
-      image: "https://randomuser.me/api/portraits/women/1.jpg",
-      bio: "متخصصة في إدارة مشاريع البناء وتطوير العمليات التشغيلية بخبرة 15 عاماً"
+      name: " مهندس محمود العلي",
+      position: "مدير العمليات",
+      image: "",
+      bio: "متخصص في إدارة مشاريع البناء وتطوير العمليات التشغيلية"
     },
     {
       id: 3,
-      name: "د. يوسف أحمد",
-      position: "مدير قسم الهندسة",
-      image: "https://randomuser.me/api/portraits/men/2.jpg",
-      bio: "خبير في الهندسة المدنية والهياكل الإنشائية حاصل على درجة الدكتوراه من جامعة دمشق"
+      name: "مهندس محمد النعيمي",
+      position: " مدير قسم الهندسة IT",
+      image: "",
+      bio: "خبير في تصميم مواقع الويب"
     },
-    {
-      id: 4,
-      name: "م. سارة حسن",
-      position: "مديرة قسم الجودة",
-      image: "https://randomuser.me/api/portraits/women/2.jpg",
-      bio: "متخصصة في أنظمة إدارة الجودة في المشاريع الإنشائية وحاصلة على شهادات عالمية"
-    }
+ 
   ];
 
   const milestones = [
     {
-      year: "2008",
+      year: "2025",
       title: "تأسيس الشركة",
       description: "بدأت الشركة كفريق صغير من المهندسين المتخصصين في مشاريع البناء السكنية"
     },
     {
-      year: "2012",
+      year: "2025/2",
       title: "التوسع في المحافظات",
       description: "بدأت الشركة بتوسيع خدماتها لتشمل جميع المحافظات السورية"
     },
     {
-      year: "2015",
+      year: "2025/7",
       title: "إطلاق المنصة الرقمية",
       description: "أطلقنا منصتنا الرقمية لربط المقاولين وأصحاب المشاريع"
     },
     {
-      year: "2018",
+      year: "2025/10",
       title: "التدريب والاستشارات",
       description: "أضفنا خدمات التدريب والاستشارات الهندسية إلى خدماتنا"
     },
     {
-      year: "2023",
+      year: "2025/12",
       title: "التطور المستمر",
       description: "واصلنا تطوير خدماتنا ومنصتنا لتلبية احتياجات السوق المتغيرة"
     }
   ];
 
   return (
-    <div dir="rtl" style={{ fontFamily: 'Cairo, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <div
+      dir="rtl"
+      style={{
+        fontFamily: 'Cairo, sans-serif',
+        background: 'radial-gradient(circle at top, #020617 0%, #020617 40%, #0b1120 70%, #111827 100%)',
+        color: '#f9fafb',
+        minHeight: '100vh',
+        paddingBottom: '40px'
+      }}
+    >
       {/* Header */}
       <header style={{
-        backgroundColor: '#2e7d32',
-        padding: '20px 0',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        background: 'rgba(15,23,42,0.92)',
+        padding: '16px 0',
+        boxShadow: '0 10px 30px rgba(15,23,42,0.7)',
+        borderBottom: '1px solid rgba(148,163,184,0.35)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backdropFilter: 'blur(14px)'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -79,44 +87,46 @@ export default function AboutPage() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button 
               onClick={() => navigate('/')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                background: 'linear-gradient(135deg, #c26b3a, #dba98b)',
+                color: '#0b1120',
                 border: 'none',
-                padding: '8px 15px',
-                borderRadius: '5px',
+                padding: '8px 18px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontWeight: 600,
+                boxShadow: '0 10px 25px rgba(15,23,42,0.7)'
               }}
             >
               ← العودة
             </button>
-            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>من نحن</div>
+            <div style={{ color: '#e5e7eb', fontSize: '20px', fontWeight: 700 }}>من نحن</div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section style={{
-        backgroundColor: '#f0f8f0',
-        padding: '60px 20px',
-        textAlign: 'center'
+        padding: '70px 20px 50px',
+        textAlign: 'center',
+        background: 'radial-gradient(circle at top, rgba(15,23,42,0.4), transparent 60%)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '36px', color: '#2e7d32', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '36px', color: '#f9fafb', marginBottom: '16px', fontWeight: 800 }}>
             قصة نجاحنا في عالم البناء والتشييد
           </h1>
-          <p style={{ fontSize: '18px', color: '#555', lineHeight: 1.6 }}>
-            نحن منصة رائدة في مجال إدارة المشاريع والمقاولات في سوريا، نربط بين المقاولين وأصحاب المشاريع
+          <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.85)', lineHeight: 1.8 }}>
+            نحن "المستقبل لإدارة المقاولات"، منصة رائدة في مجال إدارة المشاريع والمقاولات في سوريا، نربط بين المقاولين وأصحاب المشاريع
           </p>
         </div>
       </section>
 
       {/* About Section */}
-      <section style={{ padding: '60px 20px', backgroundColor: 'white' }}>
+      <section style={{ padding: '60px 20px', background: 'linear-gradient(145deg, #020617 0%, #020617 40%, #0b1120 100%)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -126,15 +136,15 @@ export default function AboutPage() {
           alignItems: 'center'
         }}>
           <div>
-            <h2 style={{ fontSize: '28px', color: '#2e7d32', marginBottom: '20px' }}>
-              عن منصة مقاول
+            <h2 style={{ fontSize: '28px', color: '#fef3c7', marginBottom: '20px' }}>
+              عن شركة المستقبل لإدارة المقاولات
             </h2>
-            <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7, marginBottom: '20px' }}>
-              تأسست منصة مقاول في عام 2008 بهدف توفير حلول متكاملة لقطاع البناء والتشييد في سوريا.
+            <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.85)', lineHeight: 1.9, marginBottom: '18px' }}>
+              تأسست شركة المستقبل لإدارة المقاولات في عام 2025 بهدف توفير حلول متكاملة لقطاع البناء والتشييد في سوريا.
               نعمل على ربط المقاولين وأصحاب المشاريع وتوفير بيئة عمل احترافية تعزز التعاون والنمو في القطاع.
             </p>
-            <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7, marginBottom: '20px' }}>
-              اليوم، أصبحت منصة مقاول واحدة من أكبر المنصات في سوريا، حيث تخدم أكثر من 3000 مقاول وأكثر من
+            <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.78)', lineHeight: 1.9, marginBottom: '20px' }}>
+              اليوم، أصبحت "المستقبل لإدارة المقاولات" واحدة من أكبر المنصات في سوريا، حيث تخدم أكثر من 3000 مقاول وأكثر من
               1500 مشروع منجز في جميع المحافظات السورية.
             </p>
             <div style={{
@@ -144,59 +154,68 @@ export default function AboutPage() {
               marginTop: '30px'
             }}>
               <div style={{
-                backgroundColor: '#f0f8f0',
+                background: 'rgba(15,23,42,0.9)',
                 padding: '20px',
-                borderRadius: '10px',
-                textAlign: 'center'
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '1px solid rgba(250,250,250,0.1)',
+                boxShadow: '0 18px 40px rgba(0,0,0,0.5)'
               }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2e7d32', marginBottom: '5px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#bef264', marginBottom: '4px' }}>
                   15+
                 </div>
-                <div style={{ color: '#555' }}>سنة خبرة</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)' }}>سنة خبرة</div>
               </div>
               <div style={{
-                backgroundColor: '#f0f8f0',
+                background: 'rgba(15,23,42,0.9)',
                 padding: '20px',
-                borderRadius: '10px',
-                textAlign: 'center'
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '1px solid rgba(250,250,250,0.1)',
+                boxShadow: '0 18px 40px rgba(0,0,0,0.5)'
               }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2e7d32', marginBottom: '5px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#bef264', marginBottom: '4px' }}>
                   3000+
                 </div>
-                <div style={{ color: '#555' }}>مقاول مسجل</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)' }}>مقاول مسجل</div>
               </div>
               <div style={{
-                backgroundColor: '#f0f8f0',
+                background: 'rgba(15,23,42,0.9)',
                 padding: '20px',
-                borderRadius: '10px',
-                textAlign: 'center'
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '1px solid rgba(250,250,250,0.1)',
+                boxShadow: '0 18px 40px rgba(0,0,0,0.5)'
               }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2e7d32', marginBottom: '5px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#bef264', marginBottom: '4px' }}>
                   1500+
                 </div>
-                <div style={{ color: '#555' }}>مشروع منجز</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)' }}>مشروع منجز</div>
               </div>
               <div style={{
-                backgroundColor: '#f0f8f0',
+                background: 'rgba(15,23,42,0.9)',
                 padding: '20px',
-                borderRadius: '10px',
-                textAlign: 'center'
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '1px solid rgba(250,250,250,0.1)',
+                boxShadow: '0 18px 40px rgba(0,0,0,0.5)'
               }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2e7d32', marginBottom: '5px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#bef264', marginBottom: '4px' }}>
                   14
                 </div>
-                <div style={{ color: '#555' }}>محافظة سورية</div>
+                <div style={{ color: 'rgba(226,232,240,0.9)' }}>محافظة سورية</div>
               </div>
             </div>
           </div>
           <div>
             <img 
-              src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&h=600&fit=crop" 
               alt="فريق العمل" 
               style={{
                 width: '100%',
-                borderRadius: '10px',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                borderRadius: '20px',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.75)',
+                border: '1px solid rgba(248,250,252,0.12)'
               }} 
             />
           </div>
@@ -204,7 +223,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section style={{ padding: '60px 20px', backgroundColor: '#f8f9fa' }}>
+      <section style={{ padding: '60px 20px', background: 'linear-gradient(145deg, #020617 0%, #020617 30%, #020617 100%)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -213,15 +232,16 @@ export default function AboutPage() {
           gap: '40px'
         }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: 'rgba(15,23,42,0.95)',
             padding: '30px',
-            borderRadius: '10px',
-            boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+            borderRadius: '20px',
+            boxShadow: '0 24px 45px rgba(0,0,0,0.7)',
+            border: '1px solid rgba(148,163,184,0.35)'
           }}>
             <div style={{
               width: '60px',
               height: '60px',
-              backgroundColor: '#2e7d32',
+              background: 'linear-gradient(135deg, #c26b3a, #dba98b)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -230,25 +250,26 @@ export default function AboutPage() {
               fontSize: '24px',
               marginBottom: '20px'
             }}>🎯</div>
-            <h3 style={{ fontSize: '24px', color: '#2e7d32', marginBottom: '15px' }}>
+            <h3 style={{ fontSize: '24px', color: '#fef3c7', marginBottom: '15px' }}>
               رؤيتنا
             </h3>
-            <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.85)', lineHeight: 1.9 }}>
               أن نكون المنصة الرائدة في قطاع البناء والتشييد في سوريا والمنطقة، من خلال توفير حلول مبتكرة
               تعزز التعاون بين المقاولين وأصحاب المشاريع وترفع من جودة القطاع.
             </p>
           </div>
 
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: 'rgba(15,23,42,0.95)',
             padding: '30px',
-            borderRadius: '10px',
-            boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+            borderRadius: '20px',
+            boxShadow: '0 24px 45px rgba(0,0,0,0.7)',
+            border: '1px solid rgba(148,163,184,0.35)'
           }}>
             <div style={{
               width: '60px',
               height: '60px',
-              backgroundColor: '#2e7d32',
+              background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -257,10 +278,10 @@ export default function AboutPage() {
               fontSize: '24px',
               marginBottom: '20px'
             }}>🏆</div>
-            <h3 style={{ fontSize: '24px', color: '#2e7d32', marginBottom: '15px' }}>
+            <h3 style={{ fontSize: '24px', color: '#fef3c7', marginBottom: '15px' }}>
               رسالتنا
             </h3>
-            <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.85)', lineHeight: 1.9 }}>
               توفير منصة متكاملة تربط بين المقاولين وأصحاب المشاريع، وتوفر أدوات وخدمات تدعم نجاح
               المشاريع وتضمن جودة التنفيذ والالتزام بالمعايير والمواصفات السورية.
             </p>
@@ -269,12 +290,12 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section style={{ padding: '60px 20px', backgroundColor: 'white' }}>
+      <section style={{ padding: '60px 20px', background: '#020617' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <h2 style={{ fontSize: '32px', color: '#2e7d32', textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '32px', color: '#fef3c7', textAlign: 'center', marginBottom: '40px' }}>
             مسيرتنا عبر الزمن
           </h2>
 
@@ -289,8 +310,8 @@ export default function AboutPage() {
               top: 0,
               bottom: 0,
               right: '50%',
-              width: '4px',
-              backgroundColor: '#e0e0e0',
+              width: '3px',
+              background: 'linear-gradient(to bottom, rgba(148,163,184,0.1), rgba(148,163,184,0.6), rgba(148,163,184,0.1))',
               transform: 'translateX(50%)'
             }}></div>
 
@@ -307,27 +328,28 @@ export default function AboutPage() {
                   top: '0',
                   right: '50%',
                   transform: 'translateX(50%)',
-                  width: '20px',
-                  height: '20px',
+                  width: '18px',
+                  height: '18px',
                   borderRadius: '50%',
-                  backgroundColor: '#2e7d32',
-                  border: '4px solid white',
-                  boxShadow: '0 0 0 4px #e0e0e0',
+                  background: 'radial-gradient(circle, #facc15, #eab308)',
+                  border: '4px solid #020617',
+                  boxShadow: '0 0 0 4px rgba(148,163,184,0.7)',
                   zIndex: 1
                 }}></div>
 
                 {/* Timeline Content */}
                 <div style={{
                   width: '45%',
-                  backgroundColor: '#f8f9fa',
+                  background: 'rgba(15,23,42,0.95)',
                   padding: '20px',
-                  borderRadius: '10px',
-                  boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+                  borderRadius: '18px',
+                  boxShadow: '0 22px 45px rgba(0,0,0,0.7)',
+                  border: '1px solid rgba(148,163,184,0.35)'
                 }}>
                   <div style={{
                     display: 'inline-block',
-                    backgroundColor: '#2e7d32',
-                    color: 'white',
+                    background: 'linear-gradient(135deg, #c26b3a, #dba98b)',
+                    color: '#0b1120',
                     padding: '5px 15px',
                     borderRadius: '20px',
                     fontSize: '14px',
@@ -336,10 +358,10 @@ export default function AboutPage() {
                   }}>
                     {milestone.year === "2008" ? "٢٠٠٨" : milestone.year}
                   </div>
-                  <h3 style={{ fontSize: '20px', color: '#333', marginBottom: '10px' }}>
+                  <h3 style={{ fontSize: '20px', color: '#e5e7eb', marginBottom: '10px' }}>
                     {milestone.title}
                   </h3>
-                  <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '16px', color: 'rgba(226,232,240,0.85)', lineHeight: 1.7 }}>
                     {milestone.description}
                   </p>
                 </div>
@@ -350,7 +372,7 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section */}
-      <section style={{ padding: '60px 20px', backgroundColor: '#f8f9fa' }}>
+      <section style={{ padding: '60px 20px', background: 'linear-gradient(145deg, #020617 0%, #020617 30%, #0b1120 100%)' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto'
@@ -366,11 +388,12 @@ export default function AboutPage() {
           }}>
             {teamMembers.map(member => (
               <div key={member.id} style={{
-                backgroundColor: 'white',
-                borderRadius: '10px',
+                backgroundColor: 'rgba(15,23,42,0.95)',
+                borderRadius: '18px',
                 overflow: 'hidden',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
-                textAlign: 'center'
+                boxShadow: '0 22px 45px rgba(0,0,0,0.7)',
+                textAlign: 'center',
+                border: '1px solid rgba(148,163,184,0.35)'
               }}>
                 <div style={{ height: '200px', overflow: 'hidden' }}>
                   <img 
@@ -385,11 +408,11 @@ export default function AboutPage() {
                 </div>
 
                 <div style={{ padding: '20px' }}>
-                  <h3 style={{ fontSize: '20px', color: '#333', marginBottom: '5px' }}>
+                  <h3 style={{ fontSize: '20px', color: '#f9fafb', marginBottom: '5px' }}>
                     {member.name}
                   </h3>
                   <div style={{
-                    color: '#2e7d32',
+                    color: '#bfdbfe',
                     fontWeight: 'bold',
                     marginBottom: '15px'
                   }}>
@@ -407,27 +430,37 @@ export default function AboutPage() {
 
       {/* CTA Section */}
       <section style={{
-        backgroundColor: '#2e7d32',
+        background: 'radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98))',
         padding: '60px 20px',
         textAlign: 'center',
-        color: 'white'
+        color: '#e5e7eb'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 800, color: '#fef3c7' }}>
             انضم إلى مجتمعنا
           </h2>
-          <p style={{ fontSize: '18px', marginBottom: '30px' }}>
+          <p style={{ fontSize: '16px', marginBottom: '26px', color: 'rgba(226,232,240,0.85)' }}>
             سجل في منصتنا اليوم واستفد من جميع خدماتنا في إدارة المشاريع
           </p>
           <button onClick={() => navigate('/login')} style={{
-            backgroundColor: 'white',
-            color: '#2e7d32',
+            background: 'linear-gradient(135deg, #c26b3a, #dba98b)',
+            color: '#0b1120',
             border: 'none',
-            padding: '12px 25px',
-            borderRadius: '30px',
-            fontWeight: 'bold',
+            padding: '14px 30px',
+            borderRadius: '999px',
+            fontWeight: '700',
             fontSize: '16px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            boxShadow: '0 16px 40px rgba(15,23,42,0.9)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-3px)';
+            e.target.style.boxShadow = '0 22px 50px rgba(15,23,42,0.95)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 16px 40px rgba(15,23,42,0.9)';
           }}>
             سجل الآن
           </button>

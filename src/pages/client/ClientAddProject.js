@@ -26,6 +26,21 @@ export default function ClientAddProject() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // ملء حقل المقاول تلقائياً من contractorId في URL أو localStorage
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const contractorIdFromUrl = params.get('contractorId');
+      const contractorIdFromStorage = localStorage.getItem('postLoginContractorId');
+      const chosen = contractorIdFromUrl || contractorIdFromStorage;
+      if (chosen) {
+        setForm(prev => ({ ...prev, contractor: chosen }));
+      }
+    } catch (e) {
+      // تجاهل أي خطأ في قراءة URL
+    }
+  }, []);
+
   useEffect(() => {
     const fetchContractors = async () => {
       setIsLoadingContractors(true);

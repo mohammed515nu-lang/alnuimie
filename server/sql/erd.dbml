@@ -1,0 +1,264 @@
+// ============================================
+// ERD Diagram - نظام إدارة المقاولات
+// استخدم هذا الملف في dbdiagram.io
+// ============================================
+
+// Users Table
+Table users {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  email varchar(255) [not null, unique]
+  password varchar(255) [not null]
+  role enum('client', 'contractor') [default: 'client']
+  phone varchar(20)
+  address text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المستخدمون - عملاء ومقاولون'
+}
+
+// Projects Table
+Table projects {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  description text
+  client_id int [ref: > users.id]
+  contractor_id int [ref: > users.id]
+  location varchar(255)
+  status enum('pending', 'in-progress', 'completed', 'cancelled') [default: 'pending']
+  start_date date
+  expected_end_date date
+  actual_end_date date
+  budget decimal(15,2) [default: 0.00]
+  total_cost decimal(15,2) [default: 0.00]
+  progress int [default: 0]
+  notes text
+  created_by int [ref: > users.id]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المشاريع - المشاريع الرئيسية'
+}
+
+// Suppliers Table
+Table suppliers {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  contact_person varchar(255)
+  phone varchar(20)
+  email varchar(255)
+  address text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'الموردون - موردو المواد'
+}
+
+// Materials Table
+Table materials {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  quantity decimal(10,2) [not null]
+  unit varchar(50) [default: 'وحدة']
+  cost decimal(15,2) [default: 0.00]
+  project_id int [ref: > projects.id]
+  supplier_id int [ref: > suppliers.id]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المواد - المواد المستخدمة في المشاريع'
+}
+
+// Purchases Table
+Table purchases {
+  id int [pk, increment]
+  supplier_id int [ref: > suppliers.id, not null]
+  material_id int [ref: > materials.id]
+  quantity decimal(10,2) [not null]
+  unit_price decimal(15,2) [not null]
+  total_price decimal(15,2) [not null]
+  purchase_date date [not null]
+  status enum('pending', 'completed', 'cancelled') [default: 'pending']
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المشتريات - مشتريات المواد'
+}
+
+// Payments Table
+Table payments {
+  id int [pk, increment]
+  project_id int [ref: > projects.id]
+  supplier_id int [ref: > suppliers.id]
+  amount decimal(15,2) [not null]
+  payment_date date [not null]
+  payment_method enum('cash', 'bank_transfer', 'check', 'credit_card') [default: 'cash']
+  status enum('pending', 'completed', 'cancelled') [default: 'pending']
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المدفوعات - المدفوعات للموردين'
+}
+
+// Issues Table
+Table issues {
+  id int [pk, increment]
+  material_id int [ref: > materials.id, not null]
+  project_id int [ref: > projects.id, not null]
+  quantity decimal(10,2) [not null]
+  issue_date date [not null]
+  issued_by int [ref: > users.id]
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'إصدار المواد - إصدار المواد للمشاريع'
+}
+
+// Contracts Table
+Table contracts {
+  id int [pk, increment]
+  project_id int [ref: > projects.id, not null]
+  client_id int [ref: > users.id, not null]
+  contractor_id int [ref: > users.id, not null]
+  contract_number varchar(100) [unique]
+  contract_date date [not null]
+  start_date date
+  end_date date
+  total_amount decimal(15,2) [not null]
+  status enum('draft', 'active', 'completed', 'cancelled') [default: 'draft']
+  terms text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'العقود - عقود المشاريع'
+}
+
+// Requests Table
+Table requests {
+  id int [pk, increment]
+  title varchar(255) [not null]
+  description text
+  client_id int [ref: > users.id, not null]
+  contractor_id int [ref: > users.id]
+  request_number varchar(100) [unique]
+  budget decimal(15,2)
+  location varchar(255)
+  status enum('pending', 'approved', 'rejected', 'cancelled') [default: 'pending']
+  response_date date
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'الطلبات - طلبات العملاء'
+}
+
+// Reports Table
+Table reports {
+  id int [pk, increment]
+  project_id int [ref: > projects.id]
+  title varchar(255) [not null]
+  type enum('financial', 'progress', 'material', 'general') [default: 'general']
+  content text
+  generated_by int [ref: > users.id]
+  report_date date [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'التقارير - تقارير المشاريع'
+}
+
+// Project Engineers Table
+Table project_engineers {
+  id int [pk, increment]
+  project_id int [ref: > projects.id, not null]
+  name varchar(255) [not null]
+  specialty varchar(100)
+  salary decimal(15,2)
+  phone varchar(20)
+  email varchar(255)
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'المهندسين - مهندسو المشاريع'
+}
+
+// Project Crews Table
+Table project_crews {
+  id int [pk, increment]
+  project_id int [ref: > projects.id, not null]
+  crew_name varchar(255) [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'فرق العمل - فرق عمل المشاريع'
+}
+
+// Project Images Table
+Table project_images {
+  id int [pk, increment]
+  project_id int [ref: > projects.id, not null]
+  image_url text [not null]
+  image_type varchar(50)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'صور المشاريع - صور المشاريع'
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

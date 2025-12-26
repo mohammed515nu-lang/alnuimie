@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const mongoose = require('mongoose');
 
 const issueSchema = new mongoose.Schema({
@@ -136,8 +135,4 @@ issueSchema.post('findOneAndDelete', async function (doc) {
 const Issue = mongoose.model('Issue', issueSchema);
 
 module.exports = Issue;
-=======
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 

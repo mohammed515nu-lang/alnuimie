@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { projectsAPI, usersAPI, getUser } from "./utils/api";
-=======
-import { projectsAPI, usersAPI } from "./utils/api";
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 import logoFuture from "./assets/images/logo-future.jpeg";
 
 const STATS_DATA = [
@@ -38,16 +34,11 @@ export default function LandingPageNew() {
   const [contractorsData, setContractorsData] = useState([]);
   const [contractorsLoading, setContractorsLoading] = useState(false);
   const [contractorsError, setContractorsError] = useState(null);
-<<<<<<< HEAD
   const [showWelcome, setShowWelcome] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
 
 
-=======
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   const sectionRef = useRef(null);
   const statsIntervalRef = useRef(null);
 
@@ -163,7 +154,6 @@ export default function LandingPageNew() {
   }, []);
 
   useEffect(() => {
-<<<<<<< HEAD
     const user = getUser();
     if (user && user.name) {
       setCurrentUser(user);
@@ -179,8 +169,6 @@ export default function LandingPageNew() {
 
 
   useEffect(() => {
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -359,7 +347,6 @@ export default function LandingPageNew() {
     ]
   };
 
-<<<<<<< HEAD
   const heroGallery = [
     {
       src: '/hero-construction-1.jpeg',
@@ -370,18 +357,6 @@ export default function LandingPageNew() {
       alt: 'مهندسان يتابعان مخططات أمام مبنى قيد الإنشاء'
     }
   ];
-=======
-const heroGallery = [
-  {
-    src: '/hero-construction-1.jpeg',
-    alt: 'مهندس يشرف على موقع بناء وأبراج ورافعات'
-  },
-  {
-    src: '/hero-construction-2.jpeg',
-    alt: 'مهندسان يتابعان مخططات أمام مبنى قيد الإنشاء'
-  }
-];
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   return (
     <div
       dir="rtl"
@@ -391,7 +366,6 @@ const heroGallery = [
         color: '#1f2933'
       }}
     >
-<<<<<<< HEAD
       {/* Welcome Message Overlay */}
       {showWelcome && currentUser && (
         <div style={{
@@ -423,8 +397,6 @@ const heroGallery = [
         </div>
       )}
 
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       <style>{`
         @keyframes fadeInUp {
           from {
@@ -592,7 +564,6 @@ const heroGallery = [
                 ? currentPath === '/'
                 : currentPath.startsWith(item.href);
               return (
-<<<<<<< HEAD
                 <a
                   key={item.href}
                   href={item.href}
@@ -635,50 +606,6 @@ const heroGallery = [
                 >
                   {item.label}
                 </a>
-=======
-              <a
-                key={item.href}
-                href={item.href}
-                style={{
-                  color: isActive ? '#0f172a' : '#111827',
-                  textDecoration: 'none',
-                  fontWeight: isActive ? 700 : 600,
-                  letterSpacing: isActive ? '0.03em' : '0.01em',
-                  fontSize: '14px',
-                  position: 'relative',
-                  padding: '9px 16px',
-                  borderRadius: '999px',
-                  transition: 'all 0.25s ease',
-                  border: isActive
-                    ? '1px solid rgba(15,23,42,0.38)'
-                    : '1px solid transparent',
-                  background: isActive
-                    ? 'linear-gradient(135deg, rgba(15,23,42,0.08), rgba(15,23,42,0.03))'
-                    : 'transparent',
-                  boxShadow: isActive
-                    ? '0 10px 22px rgba(15,23,42,0.18)'
-                    : 'none'
-                }}
-                onMouseOver={(e) => {
-                  if (!isActive) {
-                    e.target.style.color = '#0f172a';
-                    e.target.style.background = 'rgba(15,23,42,0.06)';
-                    e.target.style.borderColor = 'rgba(15,23,42,0.18)';
-                    e.target.style.boxShadow = '0 6px 14px rgba(15,23,42,0.12)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isActive) {
-                    e.target.style.color = '#111827';
-                    e.target.style.background = 'transparent';
-                    e.target.style.borderColor = 'transparent';
-                    e.target.style.boxShadow = 'none';
-                  }
-                }}
-              >
-                {item.label}
-              </a>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               );
             })}
             <button onClick={() => navigate('/login')} style={{
@@ -695,7 +622,6 @@ const heroGallery = [
               position: 'relative',
               overflow: 'hidden'
             }}
-<<<<<<< HEAD
               onMouseOver={(e) => {
                 e.target.style.transform = 'translateY(-2px)';
                 e.target.style.boxShadow = '0 14px 32px rgba(194, 107, 58, 0.45)';
@@ -704,16 +630,6 @@ const heroGallery = [
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = '0 10px 24px rgba(194, 107, 58, 0.35)';
               }}>تسجيل الدخول</button>
-=======
-            onMouseOver={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 14px 32px rgba(194, 107, 58, 0.45)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 10px 24px rgba(194, 107, 58, 0.35)';
-            }}>تسجيل الدخول</button>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           </nav>
 
           {/* Mobile Menu Button */}
@@ -761,7 +677,6 @@ const heroGallery = [
               boxShadow: '0 10px 24px rgba(194, 107, 58, 0.35)',
               transition: 'all 0.3s ease'
             }}
-<<<<<<< HEAD
               onMouseOver={(e) => {
                 e.target.style.transform = 'translateY(-2px)';
                 e.target.style.boxShadow = '0 14px 32px rgba(194, 107, 58, 0.45)';
@@ -770,16 +685,6 @@ const heroGallery = [
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = '0 10px 24px rgba(194, 107, 58, 0.35)';
               }}>تسجيل الدخول</button>
-=======
-            onMouseOver={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 14px 32px rgba(194, 107, 58, 0.45)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 10px 24px rgba(194, 107, 58, 0.35)';
-            }}>تسجيل الدخول</button>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           </div>
         )}
       </header>
@@ -1309,11 +1214,7 @@ const heroGallery = [
               transition: 'all 0.3s ease',
               cursor: 'pointer'
             }}
-<<<<<<< HEAD
               onClick={() => setCurrentTestimonial(index)}>
-=======
-            onClick={() => setCurrentTestimonial(index)}>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
                 <img
                   src={testimonial.avatar}

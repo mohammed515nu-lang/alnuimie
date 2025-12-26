@@ -1,7 +1,6 @@
 // API Utilities
 // في Production، استخدم متغير البيئة. في Development، استخدم localhost
 // للمشاركة المؤقتة مع Ngrok، استخدم رابط Ngrok
-<<<<<<< HEAD
 const isLocal = typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
@@ -11,9 +10,6 @@ const isLocal = typeof window !== 'undefined' &&
 const API_BASE_URL = process.env.REACT_APP_API_URL ||
   (isLocal ? `http://${window.location.hostname}:4000/api` : 'https://construction-backend-nw0g.onrender.com/api');
 
-=======
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://construction-backend-nw0g.onrender.com/api';
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 // Token Management
 export const setToken = (token) => localStorage.setItem('jwtToken', token);
@@ -38,11 +34,7 @@ const callApi = async (endpoint, method = 'GET', data = null, auth = true) => {
   const headers = {
     'Content-Type': 'application/json',
   };
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   if (auth) {
     const token = getToken();
     if (token) {
@@ -59,11 +51,7 @@ const callApi = async (endpoint, method = 'GET', data = null, auth = true) => {
     method,
     headers,
   };
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   if (data) {
     config.body = JSON.stringify(data);
   }
@@ -217,12 +205,6 @@ export const reportsAPI = {
   create: (reportData) => callApi('/reports', 'POST', reportData),
   update: (id, updateData) => callApi(`/reports/${id}`, 'PUT', updateData),
   remove: (id) => callApi(`/reports/${id}`, 'DELETE'),
-<<<<<<< HEAD
   deleteBulk: (ids) => callApi('/reports/bulk-delete', 'POST', { ids }),
 };
 
-=======
-};
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc

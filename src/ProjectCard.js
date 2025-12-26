@@ -1,42 +1,23 @@
 import React from 'react';
 
-<<<<<<< HEAD
 import BRAND from './theme';
 
-=======
-const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  light: '#f8fafc',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 export default function ProjectCard({ project }) {
   return (
     <div
       style={{
-<<<<<<< HEAD
         background: BRAND.card,
         color: BRAND.text,
         borderRadius: 20,
         boxShadow: BRAND.shadows.md,
 
-=======
-        background: '#fff',
-        borderRadius: 20,
-        boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         overflow: 'hidden',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         display: 'flex',
         flexDirection: 'column',
-<<<<<<< HEAD
         border: `1px solid ${BRAND.border || 'rgba(30,58,95,0.05)'}`,
 
-=======
-        border: '1px solid rgba(30,58,95,0.05)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         position: 'relative',
       }}
       onMouseOver={(e) => {
@@ -81,11 +62,7 @@ export default function ProjectCard({ project }) {
           {project.category}
         </div>
       </div>
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       <div style={{ padding: '24px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <h3 style={{
           marginTop: 0,
@@ -107,20 +84,12 @@ export default function ProjectCard({ project }) {
         }}>
           {project.description}
         </p>
-<<<<<<< HEAD
 
         <div style={{
           marginTop: 'auto',
           paddingTop: 16,
           borderTop: `1px solid ${BRAND.border || '#e5e7eb'}`,
 
-=======
-        
-        <div style={{
-          marginTop: 'auto',
-          paddingTop: 16,
-          borderTop: '1px solid #e5e7eb',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'

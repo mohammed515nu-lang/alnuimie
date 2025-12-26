@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { requestsAPI, projectsAPI, getUser } from "../../utils/api";
-<<<<<<< HEAD
 import BRAND from "../../theme";
 
-=======
-
-const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  light: '#f8fafc',
-  dark: '#0f172a',
-  muted: '#64748b',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 export default function ClientRequests() {
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -23,11 +11,8 @@ export default function ClientRequests() {
   const [allItems, setAllItems] = useState([]); // دمج Requests و Projects
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-<<<<<<< HEAD
   const user = getUser();
 
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
   const getStatusBadge = (status) => {
     const styles = {
@@ -70,11 +55,7 @@ export default function ClientRequests() {
 
         const clientId = user.id || user._id;
         console.log('🔍 Client ID:', clientId, 'User:', user);
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         // جلب Requests
         const requestFilters = { client: clientId };
         if (filter !== 'all') {
@@ -158,15 +139,9 @@ export default function ClientRequests() {
             key={f.key}
             onClick={() => setFilter(f.key)}
             style={{
-<<<<<<< HEAD
               background: filter === f.key ? BRAND.gradient : BRAND.background,
               color: filter === f.key ? '#fff' : BRAND.text,
               border: filter === f.key ? 'none' : `2px solid ${BRAND.border || '#e5e7eb'}`,
-=======
-              background: filter === f.key ? BRAND.gradient : '#fff',
-              color: filter === f.key ? '#fff' : BRAND.dark,
-              border: filter === f.key ? 'none' : '2px solid #e5e7eb',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               borderRadius: 12,
               padding: '10px 20px',
               fontWeight: 700,
@@ -193,11 +168,7 @@ export default function ClientRequests() {
           >
             <span>{f.label}</span>
             <span style={{
-<<<<<<< HEAD
               background: filter === f.key ? 'rgba(255,255,255,0.3)' : BRAND.background,
-=======
-              background: filter === f.key ? 'rgba(255,255,255,0.3)' : BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               padding: '2px 8px',
               borderRadius: 12,
               fontSize: 12,
@@ -211,20 +182,12 @@ export default function ClientRequests() {
 
       {/* Requests Table */}
       <div style={{
-<<<<<<< HEAD
         background: BRAND.card,
         color: BRAND.text,
         borderRadius: 20,
         boxShadow: BRAND.shadows.lg,
         overflow: 'hidden',
         border: `1px solid ${BRAND.border || 'rgba(30,58,95,0.05)'}`
-=======
-        background: '#fff',
-        borderRadius: 20,
-        boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
-        overflow: 'hidden',
-        border: '1px solid rgba(30,58,95,0.05)'
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       }}>
         {isLoading ? (
           <div style={{
@@ -371,13 +334,8 @@ export default function ClientRequests() {
                           e.currentTarget.style.transform = 'translateY(-2px)';
                         }}
                         onMouseOut={e => {
-<<<<<<< HEAD
                           e.currentTarget.style.background = BRAND.background;
                           e.currentTarget.style.color = BRAND.text;
-=======
-                          e.currentTarget.style.background = '#f1f5f9';
-                          e.currentTarget.style.color = BRAND.dark;
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                           e.currentTarget.style.transform = 'none';
                         }}
                       >
@@ -414,23 +372,15 @@ export default function ClientRequests() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-<<<<<<< HEAD
               background: BRAND.card,
               color: BRAND.text,
-=======
-              background: '#fff',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               borderRadius: 20,
               padding: 32,
               maxWidth: 600,
               width: '100%',
               boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-<<<<<<< HEAD
               border: `1px solid ${BRAND.border || 'rgba(30,58,95,0.1)'}`,
 
-=======
-              border: '1px solid rgba(30,58,95,0.1)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               animation: 'slideIn 0.3s ease'
             }}
           >
@@ -446,22 +396,14 @@ export default function ClientRequests() {
                 }
               }
             `}</style>
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: 24,
               paddingBottom: 16,
-<<<<<<< HEAD
               borderBottom: `2px solid ${BRAND.background}`
-=======
-              borderBottom: '2px solid ' + BRAND.light
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             }}>
               <h3 style={{
                 margin: 0,
@@ -498,11 +440,7 @@ export default function ClientRequests() {
                 ✕
               </button>
             </div>
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             <div style={{ lineHeight: 1.8 }}>
               <div style={{ marginBottom: 16 }}>
                 <strong style={{ color: BRAND.dark }}>{selectedRequest.itemType === 'project' ? 'رقم المشروع:' : 'رقم الطلب:'}</strong>{' '}
@@ -538,13 +476,8 @@ export default function ClientRequests() {
                 <strong style={{ color: BRAND.dark }}>تاريخ متوقع:</strong>{' '}
                 <span style={{ color: BRAND.muted }}>{
                   selectedRequest.expectedDate ? new Date(selectedRequest.expectedDate).toLocaleDateString('ar-SA') :
-<<<<<<< HEAD
                     selectedRequest.expectedEndDate ? new Date(selectedRequest.expectedEndDate).toLocaleDateString('ar-SA') :
                       '-'
-=======
-                  selectedRequest.expectedEndDate ? new Date(selectedRequest.expectedEndDate).toLocaleDateString('ar-SA') :
-                  '-'
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 }</span>
               </div>
               <div style={{ marginBottom: 16 }}>
@@ -572,11 +505,7 @@ export default function ClientRequests() {
                 <div style={{
                   marginTop: 8,
                   padding: 12,
-<<<<<<< HEAD
                   background: BRAND.background,
-=======
-                  background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                   borderRadius: 8,
                   color: BRAND.muted
                 }}>

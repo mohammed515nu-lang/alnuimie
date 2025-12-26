@@ -8,7 +8,6 @@ const reportSchema = new mongoose.Schema({
   },
   reportType: {
     type: String,
-<<<<<<< HEAD
     enum: ['financial', 'inventory', 'project', 'supplier', 'custom', 'invoice'],
     required: true
   },
@@ -19,12 +18,6 @@ const reportSchema = new mongoose.Schema({
   },
   title: {
 
-=======
-    enum: ['financial', 'inventory', 'project', 'supplier', 'custom'],
-    required: true
-  },
-  title: {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
     type: String,
     required: true,
     trim: true
@@ -44,13 +37,10 @@ const reportSchema = new mongoose.Schema({
   data: {
     type: mongoose.Schema.Types.Mixed
   },
-<<<<<<< HEAD
   content: {
     type: String
   },
 
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -65,18 +55,13 @@ const reportSchema = new mongoose.Schema({
     trim: true
   }
 }, {
-<<<<<<< HEAD
   timestamps: true,
   strictPopulate: false
-=======
-  timestamps: true
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 });
 
 reportSchema.index({ reportType: 1 });
 reportSchema.index({ generatedAt: -1 });
 
-<<<<<<< HEAD
 reportSchema.pre('validate', async function (next) {
   if (!this.reportNumber) {
     try {
@@ -85,12 +70,6 @@ reportSchema.pre('validate', async function (next) {
     } catch (err) {
       this.reportNumber = `RPT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     }
-=======
-reportSchema.pre('save', async function(next) {
-  if (!this.reportNumber) {
-    const count = await mongoose.model('Report').countDocuments();
-    this.reportNumber = `RPT-${Date.now()}-${count + 1}`;
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   }
   next();
 });
@@ -98,26 +77,3 @@ reportSchema.pre('save', async function(next) {
 const Report = mongoose.model('Report', reportSchema);
 
 module.exports = Report;
-<<<<<<< HEAD
-=======
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc

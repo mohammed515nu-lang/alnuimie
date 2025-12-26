@@ -1,16 +1,6 @@
 import React from "react";
-<<<<<<< HEAD
 import BRAND from "./theme";
 
-=======
-
-const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  light: '#f8fafc',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 export default function Modal({ isOpen, onClose, title, children, size = 'medium' }) {
   if (!isOpen) return null;
@@ -42,17 +32,12 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-<<<<<<< HEAD
           background: BRAND.card,
           color: BRAND.text,
-=======
-          background: '#fff',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           padding: '32px',
           borderRadius: 24,
           width: '95%',
           maxWidth: maxWidth,
-<<<<<<< HEAD
           boxShadow: BRAND.shadows?.xl || '0 20px 60px rgba(0,0,0,0.3)',
           animation: 'modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
@@ -61,15 +46,6 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
           overflowY: 'auto'
         }}
 
-=======
-          boxShadow: '0 20px 60px rgba(30,58,95,0.3)',
-          animation: 'modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          position: 'relative',
-          border: '1px solid rgba(30,58,95,0.1)',
-          maxHeight: '90vh',
-          overflowY: 'auto'
-        }}
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       >
         <button
           onClick={onClose}
@@ -105,25 +81,16 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
         >
           &times;
         </button>
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
           marginBottom: 24,
           paddingBottom: 16,
-<<<<<<< HEAD
           borderBottom: `2px solid ${BRAND.background}`
         }}>
 
-=======
-          borderBottom: '2px solid ' + BRAND.light
-        }}>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           <div style={{
             width: 40,
             height: 40,
@@ -146,11 +113,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
             {title}
           </h2>
         </div>
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         <div style={{ direction: 'rtl' }}>
           {children}
         </div>

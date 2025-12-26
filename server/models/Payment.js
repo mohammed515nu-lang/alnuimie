@@ -11,13 +11,10 @@ const paymentSchema = new mongoose.Schema({
     ref: 'Supplier',
     required: true
   },
-<<<<<<< HEAD
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project'
   },
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   purchase: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Purchase'
@@ -54,22 +51,14 @@ const paymentSchema = new mongoose.Schema({
     ref: 'User'
   }
 }, {
-<<<<<<< HEAD
   timestamps: true,
   strictPopulate: false
-=======
-  timestamps: true
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 });
 
 paymentSchema.index({ supplier: 1 });
 paymentSchema.index({ paymentDate: -1 });
 
-<<<<<<< HEAD
 paymentSchema.pre('save', async function (next) {
-=======
-paymentSchema.pre('save', async function(next) {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   // Generate paymentNumber if not provided or if it's a temporary value
   if (!this.paymentNumber || this.paymentNumber.startsWith('TEMP-')) {
     try {
@@ -84,20 +73,13 @@ paymentSchema.pre('save', async function(next) {
 });
 
 // Ensure paymentNumber is set before validation
-<<<<<<< HEAD
 paymentSchema.pre('validate', function (next) {
   if (!this.paymentNumber) {
-=======
-paymentSchema.pre('validate', function(next) {
-  if (!this.paymentNumber) {
-    // Temporary unique value - will be replaced in pre-save
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
     this.paymentNumber = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
   next();
 });
 
-<<<<<<< HEAD
 // Update Supplier totals after save
 paymentSchema.post('save', async function (doc) {
   await updateSupplierPaymentBalance(doc.supplier);
@@ -134,14 +116,3 @@ async function updateSupplierPaymentBalance(supplierId) {
 const Payment = mongoose.model('Payment', paymentSchema);
 
 module.exports = Payment;
-=======
-const Payment = mongoose.model('Payment', paymentSchema);
-
-module.exports = Payment;
-
-
-
-
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc

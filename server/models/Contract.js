@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const mongoose = require('mongoose');
 
 const contractSchema = new mongoose.Schema({
@@ -100,8 +99,3 @@ contractSchema.pre('validate', function (next) {
 const Contract = mongoose.model('Contract', contractSchema);
 
 module.exports = Contract;
-=======
-
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc

@@ -15,11 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-<<<<<<< HEAD
     required: function () {
-=======
-    required: function() {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       return !this.googleId; // Password not required if using Google OAuth
     },
     minlength: 6
@@ -67,15 +63,11 @@ const userSchema = new mongoose.Schema({
   company: {
     type: String,
     trim: true
-<<<<<<< HEAD
   },
   profilePicture: {
     type: String // We'll store as Base64 or URL
   }
 
-=======
-  }
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 }, {
   timestamps: true
 });

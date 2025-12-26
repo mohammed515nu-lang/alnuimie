@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../utils/api';
 import heroBg from '../assets/images/hero-bg.svg';
-=======
-
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../utils/api';
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 import '../assets/styles/landing.css';
 
 const BRAND = {
@@ -247,11 +240,7 @@ export default function Login() {
           left: 0,
           right: 0,
           bottom: 0,
-<<<<<<< HEAD
           backgroundImage: `url(${heroBg})`,
-=======
-          backgroundImage: 'url(https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&h=1080&fit=crop)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.4

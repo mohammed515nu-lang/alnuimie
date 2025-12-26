@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { requestsAPI, usersAPI, getUser } from "../../utils/api";
 import { useNotifications } from "../../components/NotificationSystem";
-<<<<<<< HEAD
 import BRAND from "../../theme";
 
-=======
-
-const BRAND = {
-  primary: '#1e3a5f',
-  accent: '#2a9d8f',
-  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2a9d8f 50%, #264653 100%)',
-  light: '#f8fafc',
-  dark: '#0f172a',
-  muted: '#64748b',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 export default function ClientAddProject() {
   const notifications = useNotifications();
@@ -89,11 +77,7 @@ export default function ClientAddProject() {
       notifications.warning('تحذير', 'يرجى ملء جميع الحقول المطلوبة بشكل صحيح');
       return;
     }
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
     setIsSubmitting(true);
     try {
       const user = getUser();
@@ -118,11 +102,7 @@ export default function ClientAddProject() {
       console.log('📤 إرسال طلب مشروع:', requestData);
       const result = await requestsAPI.create(requestData);
       console.log('✅ تم إرسال الطلب:', result);
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       notifications.success('نجح', `تم إرسال طلب المشروع "${form.name}" بنجاح! سيتم مراجعته من قبل المتعاقد.`);
       setForm({ name: "", details: "", budget: "", location: "", expectedDate: "", contractor: "" });
     } catch (error) {
@@ -153,7 +133,6 @@ export default function ClientAddProject() {
 
       {/* Form */}
       <div style={{
-<<<<<<< HEAD
         background: BRAND.card,
         color: BRAND.text,
         borderRadius: 20,
@@ -162,14 +141,6 @@ export default function ClientAddProject() {
         border: `1px solid ${BRAND.border || 'rgba(30,58,95,0.05)'}`
       }}>
 
-=======
-        background: '#fff',
-        borderRadius: 20,
-        boxShadow: '0 4px 20px rgba(30,58,95,0.08)',
-        padding: 32,
-        border: '1px solid rgba(30,58,95,0.05)'
-      }}>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -229,16 +200,11 @@ export default function ClientAddProject() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${errors.name ? '#ef4444' : (BRAND.border || '#e5e7eb')}`,
-=======
-                border: `2px solid ${errors.name ? '#ef4444' : '#e5e7eb'}`,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 borderRadius: 12,
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease',
-<<<<<<< HEAD
                 background: BRAND.background,
                 color: BRAND.text
               }}
@@ -252,19 +218,6 @@ export default function ClientAddProject() {
               }}
             />
 
-=======
-                background: BRAND.light
-              }}
-              onFocus={e => {
-                e.target.style.borderColor = BRAND.accent;
-                e.target.style.background = '#fff';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = errors.name ? '#ef4444' : '#e5e7eb';
-                e.target.style.background = BRAND.light;
-              }}
-            />
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             {errors.name && (
               <div style={{ color: '#ef4444', fontSize: 12, marginTop: 6 }}>
                 {errors.name}
@@ -290,16 +243,11 @@ export default function ClientAddProject() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${errors.contractor ? '#ef4444' : (BRAND.border || '#e5e7eb')}`,
-=======
-                border: `2px solid ${errors.contractor ? '#ef4444' : '#e5e7eb'}`,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 borderRadius: 12,
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease',
-<<<<<<< HEAD
                 background: BRAND.background,
                 color: BRAND.text
               }}
@@ -313,19 +261,6 @@ export default function ClientAddProject() {
               }}
             >
 
-=======
-                background: BRAND.light
-              }}
-              onFocus={e => {
-                e.target.style.borderColor = BRAND.accent;
-                e.target.style.background = '#fff';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = errors.contractor ? '#ef4444' : '#e5e7eb';
-                e.target.style.background = BRAND.light;
-              }}
-            >
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               <option value="">اختر المقاول</option>
               {isLoadingContractors ? (
                 <option value="" disabled>جاري تحميل المقاولين...</option>
@@ -373,16 +308,11 @@ export default function ClientAddProject() {
                 style={{
                   width: '100%',
                   padding: 14,
-<<<<<<< HEAD
                   border: `2px solid ${errors.budget ? '#ef4444' : (BRAND.border || '#e5e7eb')}`,
-=======
-                  border: `2px solid ${errors.budget ? '#ef4444' : '#e5e7eb'}`,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                   borderRadius: 12,
                   fontSize: 15,
                   outline: 'none',
                   transition: 'all 0.3s ease',
-<<<<<<< HEAD
                   background: BRAND.background,
                   color: BRAND.text
                 }}
@@ -396,19 +326,6 @@ export default function ClientAddProject() {
                 }}
               />
 
-=======
-                  background: BRAND.light
-                }}
-                onFocus={e => {
-                  e.target.style.borderColor = BRAND.accent;
-                  e.target.style.background = '#fff';
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = errors.budget ? '#ef4444' : '#e5e7eb';
-                  e.target.style.background = BRAND.light;
-                }}
-              />
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               {errors.budget && (
                 <div style={{ color: '#ef4444', fontSize: 12, marginTop: 6 }}>
                   {errors.budget}
@@ -433,16 +350,11 @@ export default function ClientAddProject() {
                 style={{
                   width: '100%',
                   padding: 14,
-<<<<<<< HEAD
                   border: `2px solid ${BRAND.border || '#e5e7eb'}`,
-=======
-                  border: '2px solid #e5e7eb',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                   borderRadius: 12,
                   fontSize: 15,
                   outline: 'none',
                   transition: 'all 0.3s ease',
-<<<<<<< HEAD
                   background: BRAND.background,
                   color: BRAND.text
                 }}
@@ -456,19 +368,6 @@ export default function ClientAddProject() {
                 }}
               />
 
-=======
-                  background: BRAND.light
-                }}
-                onFocus={e => {
-                  e.target.style.borderColor = BRAND.accent;
-                  e.target.style.background = '#fff';
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = '#e5e7eb';
-                  e.target.style.background = BRAND.light;
-                }}
-              />
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             </div>
           </div>
 
@@ -490,16 +389,11 @@ export default function ClientAddProject() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${BRAND.border || '#e5e7eb'}`,
-=======
-                border: '2px solid #e5e7eb',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 borderRadius: 12,
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease',
-<<<<<<< HEAD
                 background: BRAND.background,
                 color: BRAND.text
               }}
@@ -513,19 +407,6 @@ export default function ClientAddProject() {
               }}
             />
 
-=======
-                background: BRAND.light
-              }}
-              onFocus={e => {
-                e.target.style.borderColor = BRAND.accent;
-                e.target.style.background = '#fff';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = BRAND.light;
-              }}
-            />
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           </div>
 
           <div>
@@ -548,27 +429,18 @@ export default function ClientAddProject() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${errors.details ? '#ef4444' : (BRAND.border || '#e5e7eb')}`,
-=======
-                border: `2px solid ${errors.details ? '#ef4444' : '#e5e7eb'}`,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 borderRadius: 12,
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease',
-<<<<<<< HEAD
                 background: BRAND.background,
                 color: BRAND.text,
-=======
-                background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 fontFamily: 'inherit',
                 resize: 'vertical'
               }}
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
-<<<<<<< HEAD
                 e.target.style.background = BRAND.card;
               }}
               onBlur={e => {
@@ -577,15 +449,6 @@ export default function ClientAddProject() {
               }}
             />
 
-=======
-                e.target.style.background = '#fff';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = errors.details ? '#ef4444' : '#e5e7eb';
-                e.target.style.background = BRAND.light;
-              }}
-            />
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             {errors.details && (
               <div style={{ color: '#ef4444', fontSize: 12, marginTop: 6 }}>
                 {errors.details}
@@ -605,15 +468,9 @@ export default function ClientAddProject() {
               type="button"
               onClick={() => setForm({ name: "", details: "", budget: "", location: "", expectedDate: "", contractor: "" })}
               style={{
-<<<<<<< HEAD
                 background: BRAND.background,
                 color: BRAND.text,
                 border: `1px solid ${BRAND.border || '#e2e8f0'}`,
-=======
-                background: '#f1f5f9',
-                color: BRAND.dark,
-                border: 0,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 padding: '14px 28px',
                 borderRadius: 12,
                 cursor: 'pointer',
@@ -622,28 +479,17 @@ export default function ClientAddProject() {
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={e => {
-<<<<<<< HEAD
                 e.currentTarget.style.background = BRAND.card;
                 e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseOut={e => {
                 e.currentTarget.style.background = BRAND.background;
-=======
-                e.currentTarget.style.background = '#e2e8f0';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseOut={e => {
-                e.currentTarget.style.background = '#f1f5f9';
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 e.currentTarget.style.transform = 'none';
               }}
             >
               مسح النموذج
             </button>
-<<<<<<< HEAD
 
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             <button
               type="submit"
               disabled={isSubmitting}

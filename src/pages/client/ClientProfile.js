@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { usersAPI, getUser } from "../../utils/api";
 import { useNotifications } from "../../components/NotificationSystem";
-<<<<<<< HEAD
 import BRAND from "../../theme";
 
-=======
-
-const BRAND = {
-  primary: '#4caf50',
-  accent: '#66bb6a',
-  secondary: '#388e3c',
-  gradient: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-  gradientLight: 'linear-gradient(135deg, #388e3c 0%, #4caf50 50%, #66bb6a 100%)',
-  light: '#f8fafc',
-  dark: '#2e7d32',
-  muted: '#6c757d',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 export default function ClientProfile() {
   const notifications = useNotifications();
@@ -24,15 +10,10 @@ export default function ClientProfile() {
     name: '',
     email: '',
     phone: '',
-<<<<<<< HEAD
     address: '',
     profilePicture: ''
   });
 
-=======
-    address: ''
-  });
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [originalForm, setOriginalForm] = useState(null);
@@ -53,17 +34,11 @@ export default function ClientProfile() {
           name: userData.name || '',
           email: userData.email || '',
           phone: userData.phone || '',
-<<<<<<< HEAD
           address: userData.address || '',
           profilePicture: userData.profilePicture || ''
         };
 
 
-=======
-          address: userData.address || ''
-        };
-        
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         setForm(profileData);
         setOriginalForm(profileData);
       } catch (err) {
@@ -80,7 +55,6 @@ export default function ClientProfile() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-<<<<<<< HEAD
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -98,9 +72,6 @@ export default function ClientProfile() {
 
   const saveProfile = async () => {
 
-=======
-  const saveProfile = async () => {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
     if (!form.name || !form.email) {
       notifications.warning('تحذير', 'يرجى ملء الحقول المطلوبة (الاسم والبريد الإلكتروني)');
       return;
@@ -113,7 +84,6 @@ export default function ClientProfile() {
         name: form.name,
         email: form.email,
         phone: form.phone,
-<<<<<<< HEAD
         address: form.address,
         profilePicture: form.profilePicture
       };
@@ -125,17 +95,6 @@ export default function ClientProfile() {
       const updatedUser = { ...user, ...updateData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
-=======
-        address: form.address
-      };
-
-      await usersAPI.update(user.id || user._id, updateData);
-      
-      // Update local storage
-      const updatedUser = { ...user, ...updateData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       setOriginalForm({ ...form });
       notifications.success('نجح', 'تم حفظ بيانات الملف الشخصي بنجاح');
     } catch (err) {
@@ -155,13 +114,8 @@ export default function ClientProfile() {
 
   if (isLoading) {
     return (
-<<<<<<< HEAD
       <div style={{
         direction: 'rtl',
-=======
-      <div style={{ 
-        direction: 'rtl', 
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         fontFamily: 'Cairo, system-ui, Arial',
         display: 'flex',
         justifyContent: 'center',
@@ -186,14 +140,9 @@ export default function ClientProfile() {
         marginBottom: 32,
         position: 'relative',
         overflow: 'hidden',
-<<<<<<< HEAD
         boxShadow: BRAND.glass.shadow
       }}>
 
-=======
-        boxShadow: '0 8px 30px rgba(76, 175, 80, 0.2)'
-      }}>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         {/* Decorative circles */}
         <div style={{
           position: 'absolute',
@@ -215,11 +164,7 @@ export default function ClientProfile() {
           background: 'rgba(255, 255, 255, 0.08)',
           filter: 'blur(30px)'
         }} />
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -233,19 +178,14 @@ export default function ClientProfile() {
             width: 120,
             height: 120,
             borderRadius: '50%',
-<<<<<<< HEAD
             background: BRAND.gradient,
 
-=======
-            background: 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 48,
             fontWeight: 700,
             color: BRAND.primary,
-<<<<<<< HEAD
             border: `4px solid ${BRAND.card}`,
             boxShadow: BRAND.shadows.lg,
 
@@ -290,15 +230,6 @@ export default function ClientProfile() {
           </div>
 
 
-=======
-            border: '4px solid rgba(255, 255, 255, 0.5)',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-            flexShrink: 0
-          }}>
-            {form.name ? form.name.charAt(0).toUpperCase() : '👤'}
-          </div>
-          
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           <div style={{ flex: 1, minWidth: 250 }}>
             <h2 style={{
               fontWeight: 900,
@@ -310,15 +241,9 @@ export default function ClientProfile() {
             }}>
               {form.name || 'الملف الشخصي'}
             </h2>
-<<<<<<< HEAD
             <p style={{
               color: 'rgba(255, 255, 255, 0.9)',
               fontSize: 16,
-=======
-            <p style={{ 
-              color: 'rgba(255, 255, 255, 0.9)', 
-              fontSize: 16, 
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               margin: '0 0 12px 0',
               fontWeight: 600
             }}>
@@ -432,7 +357,6 @@ export default function ClientProfile() {
 
       {/* Profile Form */}
       <div style={{
-<<<<<<< HEAD
         background: BRAND.card,
         color: BRAND.text,
         borderRadius: 24,
@@ -441,14 +365,6 @@ export default function ClientProfile() {
         border: `2px solid ${BRAND.border || 'rgba(102, 187, 106, 0.1)'}`
       }}>
 
-=======
-        background: '#ffffff',
-        borderRadius: 24,
-        boxShadow: '0 4px 20px rgba(76, 175, 80, 0.08)',
-        padding: 40,
-        border: '2px solid rgba(102, 187, 106, 0.1)'
-      }}>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         <h3 style={{
           fontSize: 22,
           fontWeight: 800,
@@ -495,23 +411,16 @@ export default function ClientProfile() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${BRAND.border || '#e5e7eb'}`,
                 borderRadius: 12,
                 background: BRAND.background,
                 color: BRAND.text,
-=======
-                border: '2px solid #e5e7eb',
-                borderRadius: 12,
-                background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease'
               }}
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
-<<<<<<< HEAD
                 e.target.style.background = BRAND.card;
                 e.target.style.boxShadow = `0 0 0 4px ${BRAND.accent}20`;
               }}
@@ -521,16 +430,6 @@ export default function ClientProfile() {
                 e.target.style.boxShadow = 'none';
               }}
 
-=======
-                e.target.style.background = '#fff';
-                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = BRAND.light;
-                e.target.style.boxShadow = 'none';
-              }}
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             />
           </div>
           <div>
@@ -553,23 +452,16 @@ export default function ClientProfile() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${BRAND.border || '#e5e7eb'}`,
                 borderRadius: 12,
                 background: BRAND.background,
                 color: BRAND.text,
-=======
-                border: '2px solid #e5e7eb',
-                borderRadius: 12,
-                background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease'
               }}
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
-<<<<<<< HEAD
                 e.target.style.background = BRAND.card;
                 e.target.style.boxShadow = `0 0 0 4px ${BRAND.accent}20`;
               }}
@@ -579,16 +471,6 @@ export default function ClientProfile() {
                 e.target.style.boxShadow = 'none';
               }}
 
-=======
-                e.target.style.background = '#fff';
-                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = BRAND.light;
-                e.target.style.boxShadow = 'none';
-              }}
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             />
           </div>
           <div>
@@ -610,23 +492,16 @@ export default function ClientProfile() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${BRAND.border || '#e5e7eb'}`,
                 borderRadius: 12,
                 background: BRAND.background,
                 color: BRAND.text,
-=======
-                border: '2px solid #e5e7eb',
-                borderRadius: 12,
-                background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease'
               }}
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
-<<<<<<< HEAD
                 e.target.style.background = BRAND.card;
                 e.target.style.boxShadow = `0 0 0 4px ${BRAND.accent}20`;
               }}
@@ -636,16 +511,6 @@ export default function ClientProfile() {
                 e.target.style.boxShadow = 'none';
               }}
 
-=======
-                e.target.style.background = '#fff';
-                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = BRAND.light;
-                e.target.style.boxShadow = 'none';
-              }}
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             />
           </div>
           <div>
@@ -667,23 +532,16 @@ export default function ClientProfile() {
               style={{
                 width: '100%',
                 padding: 14,
-<<<<<<< HEAD
                 border: `2px solid ${BRAND.border || '#e5e7eb'}`,
                 borderRadius: 12,
                 background: BRAND.background,
                 color: BRAND.text,
-=======
-                border: '2px solid #e5e7eb',
-                borderRadius: 12,
-                background: BRAND.light,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
                 fontSize: 15,
                 outline: 'none',
                 transition: 'all 0.3s ease'
               }}
               onFocus={e => {
                 e.target.style.borderColor = BRAND.accent;
-<<<<<<< HEAD
                 e.target.style.background = BRAND.card;
                 e.target.style.boxShadow = `0 0 0 4px ${BRAND.accent}20`;
               }}
@@ -693,16 +551,6 @@ export default function ClientProfile() {
                 e.target.style.boxShadow = 'none';
               }}
 
-=======
-                e.target.style.background = '#fff';
-                e.target.style.boxShadow = '0 0 0 4px rgba(102, 187, 106, 0.1)';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = BRAND.light;
-                e.target.style.boxShadow = 'none';
-              }}
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             />
           </div>
         </div>

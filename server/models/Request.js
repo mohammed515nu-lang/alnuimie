@@ -62,20 +62,12 @@ const requestSchema = new mongoose.Schema({
     trim: true
   }
 }, {
-<<<<<<< HEAD
   timestamps: true,
   strictPopulate: false
 });
 
 // Pre-validate hook to assign temporary requestNumber
 requestSchema.pre('validate', function (next) {
-=======
-  timestamps: true
-});
-
-// Pre-validate hook to assign temporary requestNumber
-requestSchema.pre('validate', function(next) {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   if (!this.requestNumber) {
     this.requestNumber = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -83,11 +75,7 @@ requestSchema.pre('validate', function(next) {
 });
 
 // Pre-save hook to generate unique requestNumber
-<<<<<<< HEAD
 requestSchema.pre('save', async function (next) {
-=======
-requestSchema.pre('save', async function(next) {
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   if (this.requestNumber && this.requestNumber.startsWith('TEMP')) {
     // Generate unique request number
     let requestNumber;

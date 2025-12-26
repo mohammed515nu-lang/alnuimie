@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const mongoose = require('mongoose');
 
 const purchaseSchema = new mongoose.Schema({
@@ -195,8 +194,3 @@ purchaseSchema.post('findOneAndDelete', async function (doc) {
 const Purchase = mongoose.model('Purchase', purchaseSchema);
 
 module.exports = Purchase;
-=======
-
-
-
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc

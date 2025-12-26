@@ -1,24 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "./company-logo.jpeg";
-<<<<<<< HEAD
 import { getUser } from "./utils/api";
 import { useTheme } from "./ThemeContext";
 import BRAND from './theme';
 
-=======
-
-const BRAND = {
-  primary: '#e5e7eb',
-  accent: '#C26B3A',
-  secondary: '#9ca3af',
-  gradient: 'linear-gradient(145deg, #060B1B 0%, #111827 45%, #1f2937 100%)',
-  gradientLight: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(31,41,55,1) 100%)',
-  light: '#111827',
-  dark: '#020617',
-  muted: '#6b7280',
-};
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 
 const baseMenu = [
   { to: "/showcase", label: "الأعمال المنجزة", icon: "📋" },
@@ -39,18 +25,12 @@ const contractorMenu = [
 ];
 
 const clientMenu = [
-<<<<<<< HEAD
   { to: "/client/dashboard", label: "الصفحة الرئيسية", icon: "🏠" },
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   { to: "/client/profile", label: "الملف الشخصي", icon: "👤" },
   { to: "/client/projects", label: "استعراض المشاريع", icon: "👀" },
   { to: "/client/projects/add", label: "إضافة مشروع", icon: "📝" },
   { to: "/client/requests", label: "طلباتي", icon: "✉️" },
-<<<<<<< HEAD
   { to: "/client/reports", label: "التقارير", icon: "📊" },
-=======
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
 ];
 
 export default function Sidebar() {
@@ -59,17 +39,12 @@ export default function Sidebar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isContractor = location.pathname.startsWith('/contractor');
   const isClient = location.pathname.startsWith('/client');
-<<<<<<< HEAD
   const user = getUser();
   const { isDarkMode, toggleTheme } = useTheme();
   const menu = isClient ? clientMenu : isContractor ? contractorMenu : baseMenu;
 
 
 
-=======
-  const menu = isClient ? clientMenu : isContractor ? contractorMenu : baseMenu;
-  
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -81,11 +56,7 @@ export default function Sidebar() {
       <div style={{
         width: 80,
         height: 80,
-<<<<<<< HEAD
         background: BRAND.gradientDark,
-=======
-        background: BRAND.gradientLight,
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
         borderRadius: 24,
         overflow: 'hidden',
         margin: '32px 0 16px',
@@ -93,7 +64,6 @@ export default function Sidebar() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-<<<<<<< HEAD
         border: '2px solid rgba(148,163,184,0.45)',
         position: 'relative'
       }}>
@@ -104,12 +74,6 @@ export default function Sidebar() {
         )}
       </div>
 
-=======
-        border: '2px solid rgba(148,163,184,0.45)'
-      }}>
-        <img src={logo} alt="الشعار" style={{ width: '70%', height: '70%', objectFit: 'contain' }} />
-      </div>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       <div style={{
         fontWeight: 900,
         fontSize: 19,
@@ -119,7 +83,6 @@ export default function Sidebar() {
         userSelect: 'none',
         textAlign: 'center'
       }}>
-<<<<<<< HEAD
         {user?.name || 'شركة المقاولات'}
       </div>
 
@@ -158,10 +121,6 @@ export default function Sidebar() {
       </div>
 
 
-=======
-        شركة المقاولات
-      </div>
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
       <nav style={{
         display: 'flex',
         flexDirection: 'column',
@@ -171,17 +130,10 @@ export default function Sidebar() {
         marginTop: 10
       }}>
         {menu.map((item) => {
-<<<<<<< HEAD
           const isActive = location.pathname === item.to ||
             (item.to !== '/contractor' && item.to !== '/client/profile' &&
               item.to !== '/client/projects' && item.to !== '/showcase' &&
               location.pathname.startsWith(item.to + '/'));
-=======
-          const isActive = location.pathname === item.to || 
-            (item.to !== '/contractor' && item.to !== '/client/profile' && 
-             item.to !== '/client/projects' && item.to !== '/showcase' && 
-             location.pathname.startsWith(item.to + '/'));
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
           return (
             <Link
               key={item.label}
@@ -306,11 +258,7 @@ export default function Sidebar() {
             top: 20,
             right: 20,
             zIndex: 21,
-<<<<<<< HEAD
             background: BRAND.gradientDark,
-=======
-            background: 'rgba(6,11,27,0.96)',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
             color: '#fff',
             border: 0,
             borderRadius: 14,
@@ -349,11 +297,7 @@ export default function Sidebar() {
             style={{
               height: '100vh',
               width: isMobile ? '100%' : 280,
-<<<<<<< HEAD
               background: BRAND.gradientDark,
-=======
-              background: '#2D374D',
->>>>>>> b0b3e7e3988920175cf99ac38c343c8fdac3bdfc
               borderRadius: '0 24px 24px 0',
               boxShadow: '8px 0 40px rgba(0,0,0,0.3)',
               display: 'flex',

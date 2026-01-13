@@ -57,11 +57,42 @@ const callApi = async (endpoint, method = 'GET', data = null, auth = true) => {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const responseData = await response.json();
+    // Add timeout to prevent hanging requests (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...config,
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
+    // Try to parse JSON, but handle non-JSON responses
+    let responseData;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        responseData = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        throw new Error('استجابة غير صالحة من الخادم');
+      }
+    } else {
+      // If response is not JSON, read as text
+      const text = await response.text();
+      if (!response.ok) {
+        throw new Error(text || `خطأ ${response.status}: ${response.statusText}`);
+      }
+      return { message: text || 'تمت العملية بنجاح' };
+    }
 
     if (!response.ok) {
-      const apiError = new Error(responseData.message || responseData.error || 'Something went wrong');
+      const apiError = new Error(
+        responseData.message || 
+        responseData.error || 
+        `خطأ ${response.status}: ${response.statusText || 'حدث خطأ غير معروف'}`
+      );
       // Preserve error details for better error handling
       if (responseData.details) {
         apiError.details = responseData.details;
@@ -69,11 +100,33 @@ const callApi = async (endpoint, method = 'GET', data = null, auth = true) => {
       if (responseData.hint) {
         apiError.hint = responseData.hint;
       }
+      apiError.status = response.status;
       throw apiError;
     }
     return responseData;
   } catch (error) {
     console.error(`API Error (${method} ${endpoint}):`, error);
+    
+    // Handle network errors
+    if (error.name === 'AbortError') {
+      const networkError = new Error('انتهت مهلة الاتصال. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+      networkError.isTimeout = true;
+      throw networkError;
+    }
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `لا يمكن الاتصال بالخادم. يرجى التحقق من:\n` +
+        `1. اتصالك بالإنترنت\n` +
+        `2. أن الخادم يعمل على: ${API_BASE_URL}\n` +
+        `3. إعدادات CORS في الخادم`
+      );
+      networkError.isNetworkError = true;
+      networkError.apiUrl = API_BASE_URL;
+      throw networkError;
+    }
+    
+    // Re-throw other errors as-is
     throw error;
   }
 };
@@ -206,5 +259,12 @@ export const reportsAPI = {
   update: (id, updateData) => callApi(`/reports/${id}`, 'PUT', updateData),
   remove: (id) => callApi(`/reports/${id}`, 'DELETE'),
   deleteBulk: (ids) => callApi('/reports/bulk-delete', 'POST', { ids }),
+};
+
+// Stripe Payment API
+export const stripeAPI = {
+  createPaymentIntent: (paymentData) => callApi('/stripe/create-payment-intent', 'POST', paymentData),
+  confirmPayment: (paymentData) => callApi('/stripe/confirm-payment', 'POST', paymentData),
+  getPaymentStatus: (paymentId) => callApi(`/stripe/payment-status/${paymentId}`),
 };
 

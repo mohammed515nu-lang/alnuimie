@@ -11,18 +11,61 @@ const baseMenu = [
   { to: "/login", label: "تسجيل الدخول", icon: "🔑" },
 ];
 
-const contractorMenu = [
-  { to: "/contractor", label: "الصفحة الرئيسية", icon: "🏠" },
-  { to: "/contractor/projects/add", label: "إضافة مشروع + طلبات العملاء", icon: "➕" },
-  { to: "/contractor/projects/list", label: "المشاريع", icon: "📋" },
-  { to: "/contractor/inventory", label: "المخازن والمواد", icon: "📦" },
-  { to: "/contractor/purchases-issue", label: "مشتريات وصرف المواد", icon: "🛒" },
-  { to: "/contractor/clients-contractors", label: "العملاء والمتعاقدون", icon: "🤝" },
-  { to: "/contractor/contracts-supplies", label: "التعاقدات والتوريدات", icon: "📝" },
-  { to: "/contractor/suppliers-payments", label: "الموردون والسداد", icon: "💰" },
-  { to: "/contractor/reports-invoices", label: "التقارير والفواتير", icon: "📊" },
-  { to: "/contractor/profile", label: "الملف الشخصي", icon: "👤" },
+// القائمة الجانبية للمقاول مع تصنيف منطقي
+const contractorMenuSections = [
+  {
+    title: "الصفحة الرئيسية",
+    items: [
+      { to: "/contractor", label: "لوحة التحكم", icon: "🏠", description: "نظرة عامة على المشاريع والإحصائيات" }
+    ]
+  },
+  {
+    title: "📊 إدارة المشاريع",
+    items: [
+      { to: "/contractor/projects/add", label: "إضافة مشروع", icon: "➕", description: "إنشاء مشروع جديد وإدارة طلبات العملاء" },
+      { to: "/contractor/projects/list", label: "قائمة المشاريع", icon: "📋", description: "عرض وإدارة جميع المشاريع" }
+    ]
+  },
+  {
+    title: "📦 إدارة المخزون",
+    items: [
+      { to: "/contractor/inventory", label: "المخازن والمواد", icon: "📦", description: "إدارة المواد في المخازن" },
+      { to: "/contractor/purchases-issue", label: "المشتريات والصرف", icon: "🛒", description: "شراء المواد وصرفها للمشاريع" }
+    ]
+  },
+  {
+    title: "👥 إدارة العلاقات",
+    items: [
+      { to: "/contractor/clients-contractors", label: "العملاء والمتعاقدين", icon: "🤝", description: "إدارة العملاء والمتعاقدين الفرعيين" }
+    ]
+  },
+  {
+    title: "💰 الإدارة المالية",
+    items: [
+      { to: "/contractor/contracts-supplies", label: "العقود والتوريدات", icon: "📝", description: "عقود العملاء وتوريدات الموردين" },
+      { to: "/contractor/suppliers-payments", label: "الموردين والسداد", icon: "💰", description: "إدارة الموردين وسداد المدفوعات" }
+    ]
+  },
+  {
+    title: "📄 التقارير والمستندات",
+    items: [
+      { to: "/contractor/reports-invoices", label: "التقارير والفواتير", icon: "📊", description: "التقارير المالية والفواتير" }
+    ]
+  },
+  {
+    title: "⚙️ الإعدادات",
+    items: [
+      { to: "/contractor/profile", label: "الملف الشخصي", icon: "👤", description: "إعدادات الحساب والملف الشخصي" }
+    ]
+  }
 ];
+
+// قائمة مسطحة للتوافق مع الكود الحالي (بدون وصف)
+const contractorMenu = contractorMenuSections.flatMap(section => section.items.map(item => ({
+  to: item.to,
+  label: item.label,
+  icon: item.icon
+})));
 
 const clientMenu = [
   { to: "/client/dashboard", label: "الصفحة الرئيسية", icon: "🏠" },
@@ -124,78 +167,184 @@ export default function Sidebar() {
       <nav style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 8,
+        gap: 16,
         width: '92%',
         alignItems: 'center',
         marginTop: 10
       }}>
-        {menu.map((item) => {
-          const isActive = location.pathname === item.to ||
-            (item.to !== '/contractor' && item.to !== '/client/profile' &&
-              item.to !== '/client/projects' && item.to !== '/showcase' &&
-              location.pathname.startsWith(item.to + '/'));
-          return (
-            <Link
-              key={item.label}
-              to={item.to}
-              onClick={() => setOpen(false)}
-              style={{
-                textDecoration: 'none',
-                color: isActive ? '#f9fafb' : 'rgba(229,231,235,0.8)',
-                padding: '14px 16px',
-                borderRadius: 14,
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(148,163,184,0.18), rgba(15,23,42,0.95))'
-                  : 'rgba(15,23,42,0.85)',
-                fontWeight: 700,
-                fontSize: 15,
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: isActive
-                  ? '0 18px 40px rgba(0,0,0,0.7)'
-                  : '0 8px 24px rgba(0,0,0,0.55)',
-                position: 'relative',
-                border: isActive ? '1px solid rgba(249,250,251,0.45)' : '1px solid rgba(15,23,42,0.9)'
-              }}
-              onMouseOver={e => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(15,23,42,0.98)';
-                  e.currentTarget.style.transform = 'translateX(-4px)';
-                  e.currentTarget.style.color = '#f9fafb';
-                }
-              }}
-              onMouseOut={e => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(15,23,42,0.85)';
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.color = 'rgba(229,231,235,0.8)';
-                }
-              }}
-            >
-              <span style={{
-                fontSize: 22,
-                width: 28,
-                textAlign: 'center',
-                display: 'inline-block'
-              }}>
-                {item.icon}
-              </span>
-              <span style={{ flex: 1, lineHeight: 1.3 }}>{item.label}</span>
-              {isActive && (
+        {isContractor ? (
+          // عرض القائمة المصنفة للمقاول
+          contractorMenuSections.map((section, sectionIndex) => (
+            <div key={section.title} style={{ width: '100%' }}>
+              {/* عنوان القسم */}
+              {section.title !== "الصفحة الرئيسية" && (
                 <div style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: '50%',
-                  background: '#fff',
-                  boxShadow: '0 0 8px rgba(255,255,255,0.8)'
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  marginBottom: 8,
+                  padding: '0 16px',
+                  textAlign: 'right'
+                }}>
+                  {section.title}
+                </div>
+              )}
+              
+              {/* عناصر القسم */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {section.items.map((item) => {
+                  const isActive = location.pathname === item.to ||
+                    (item.to !== '/contractor' && item.to !== '/client/profile' &&
+                      item.to !== '/client/projects' && item.to !== '/showcase' &&
+                      location.pathname.startsWith(item.to + '/'));
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setOpen(false)}
+                      title={item.description}
+                      style={{
+                        textDecoration: 'none',
+                        color: isActive ? '#f9fafb' : 'rgba(229,231,235,0.8)',
+                        padding: '12px 16px',
+                        borderRadius: 12,
+                        background: isActive
+                          ? 'linear-gradient(135deg, rgba(148,163,184,0.18), rgba(15,23,42,0.95))'
+                          : 'rgba(15,23,42,0.85)',
+                        fontWeight: 700,
+                        fontSize: 14,
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: isActive
+                          ? '0 18px 40px rgba(0,0,0,0.7)'
+                          : '0 8px 24px rgba(0,0,0,0.55)',
+                        position: 'relative',
+                        border: isActive ? '1px solid rgba(249,250,251,0.45)' : '1px solid rgba(15,23,42,0.9)'
+                      }}
+                      onMouseOver={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'rgba(15,23,42,0.98)';
+                          e.currentTarget.style.transform = 'translateX(-4px)';
+                          e.currentTarget.style.color = '#f9fafb';
+                        }
+                      }}
+                      onMouseOut={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'rgba(15,23,42,0.85)';
+                          e.currentTarget.style.transform = 'none';
+                          e.currentTarget.style.color = 'rgba(229,231,235,0.8)';
+                        }
+                      }}
+                    >
+                      <span style={{
+                        fontSize: 20,
+                        width: 26,
+                        textAlign: 'center',
+                        display: 'inline-block'
+                      }}>
+                        {item.icon}
+                      </span>
+                      <span style={{ flex: 1, lineHeight: 1.3, fontSize: 14 }}>{item.label}</span>
+                      {isActive && (
+                        <div style={{
+                          width: 4,
+                          height: 4,
+                          borderRadius: '50%',
+                          background: '#fff',
+                          boxShadow: '0 0 8px rgba(255,255,255,0.8)'
+                        }} />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+              
+              {/* فاصل بين الأقسام */}
+              {sectionIndex < contractorMenuSections.length - 1 && section.title !== "الصفحة الرئيسية" && (
+                <div style={{
+                  height: 1,
+                  background: 'rgba(255,255,255,0.1)',
+                  margin: '12px 0',
+                  width: '100%'
                 }} />
               )}
-            </Link>
-          );
-        })}
+            </div>
+          ))
+        ) : (
+          // عرض القائمة العادية للعميل والزوار
+          menu.map((item) => {
+            const isActive = location.pathname === item.to ||
+              (item.to !== '/contractor' && item.to !== '/client/profile' &&
+                item.to !== '/client/projects' && item.to !== '/showcase' &&
+                location.pathname.startsWith(item.to + '/'));
+            return (
+              <Link
+                key={item.label}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                style={{
+                  textDecoration: 'none',
+                  color: isActive ? '#f9fafb' : 'rgba(229,231,235,0.8)',
+                  padding: '14px 16px',
+                  borderRadius: 14,
+                  background: isActive
+                    ? 'linear-gradient(135deg, rgba(148,163,184,0.18), rgba(15,23,42,0.95))'
+                    : 'rgba(15,23,42,0.85)',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: isActive
+                    ? '0 18px 40px rgba(0,0,0,0.7)'
+                    : '0 8px 24px rgba(0,0,0,0.55)',
+                  position: 'relative',
+                  border: isActive ? '1px solid rgba(249,250,251,0.45)' : '1px solid rgba(15,23,42,0.9)'
+                }}
+                onMouseOver={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(15,23,42,0.98)';
+                    e.currentTarget.style.transform = 'translateX(-4px)';
+                    e.currentTarget.style.color = '#f9fafb';
+                  }
+                }}
+                onMouseOut={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(15,23,42,0.85)';
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.color = 'rgba(229,231,235,0.8)';
+                  }
+                }}
+              >
+                <span style={{
+                  fontSize: 22,
+                  width: 28,
+                  textAlign: 'center',
+                  display: 'inline-block'
+                }}>
+                  {item.icon}
+                </span>
+                <span style={{ flex: 1, lineHeight: 1.3 }}>{item.label}</span>
+                {isActive && (
+                  <div style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    background: '#fff',
+                    boxShadow: '0 0 8px rgba(255,255,255,0.8)'
+                  }} />
+                )}
+              </Link>
+            );
+          })
+        )}
         <div style={{
           borderTop: '1px solid rgba(255,255,255,0.15)',
           width: '100%',

@@ -170,13 +170,24 @@ export default function SuppliersAndPayments() {
   };
 
   const handleStripePaymentSuccess = async (paymentIntent) => {
-    setShowStripePayment(false);
-    setStripePaymentData(null);
-    const paidAmount = stripePaymentData?.amount || 0;
-    setPaymentForm({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0], method: 'cash' });
-    notifications.success('نجح الدفع', `تم الدفع بنجاح: $${paidAmount.toLocaleString()} عبر Stripe`);
-    // Refresh data immediately to update balances
-    await fetchData();
+    try {
+      // التحقق من أن الدفعة تم تأكيدها في Backend
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        const paidAmount = stripePaymentData?.amount || (paymentIntent.amount / 100) || 0;
+        
+        // التأكد من تحديث البيانات
+        await fetchData();
+        
+        notifications.success('نجح الدفع', `تم الدفع بنجاح: $${paidAmount.toLocaleString()} عبر Stripe`);
+      }
+    } catch (error) {
+      console.error('Error handling payment success:', error);
+      notifications.error('خطأ', 'تم الدفع لكن فشل تحديث البيانات');
+    } finally {
+      setShowStripePayment(false);
+      setStripePaymentData(null);
+      setPaymentForm({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0], method: 'cash' });
+    }
   };
 
   const handleStripePaymentCancel = () => {

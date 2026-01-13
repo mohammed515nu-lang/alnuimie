@@ -25,24 +25,24 @@ import { ThemeProvider } from "./ThemeContext";
 import BRAND from "./theme";
 import "./index.css";
 
-// Contractor Pages
-import AddProjectAndRequests from "./pages/contractor/AddProjectAndRequests";
-import ProjectsList from "./pages/contractor/ProjectsList";
-import InventoryMaterials from "./pages/contractor/InventoryMaterials";
-import PurchasesAndIssue from "./pages/contractor/PurchasesAndIssue";
-import ClientsAndContractors from "./pages/contractor/ClientsAndContractors";
-import ContractsAndSupplies from "./pages/contractor/ContractsAndSupplies";
-import SuppliersAndPayments from "./pages/contractor/SuppliersAndPayments";
-import ReportsAndInvoices from "./pages/contractor/ReportsAndInvoices";
-import ContractorProfile from "./pages/contractor/ContractorProfile";
+// Contractor Pages - Lazy Loading for better performance
+const AddProjectAndRequests = lazy(() => import("./pages/contractor/AddProjectAndRequests"));
+const ProjectsList = lazy(() => import("./pages/contractor/ProjectsList"));
+const InventoryMaterials = lazy(() => import("./pages/contractor/InventoryMaterials"));
+const PurchasesAndIssue = lazy(() => import("./pages/contractor/PurchasesAndIssue"));
+const ClientsAndContractors = lazy(() => import("./pages/contractor/ClientsAndContractors"));
+const ContractsAndSupplies = lazy(() => import("./pages/contractor/ContractsAndSupplies"));
+const SuppliersAndPayments = lazy(() => import("./pages/contractor/SuppliersAndPayments"));
+const ReportsAndInvoices = lazy(() => import("./pages/contractor/ReportsAndInvoices"));
+const ContractorProfile = lazy(() => import("./pages/contractor/ContractorProfile"));
 
-// Client Pages
-import ClientProfile from "./pages/client/ClientProfile";
-import ClientProjects from "./pages/client/ClientProjects";
-import ClientAddProject from "./pages/client/ClientAddProject";
-import ClientRequests from "./pages/client/ClientRequests";
-import ClientDashboard from "./pages/client/ClientDashboard";
-import ClientReports from "./pages/client/ClientReports";
+// Client Pages - Lazy Loading for better performance
+const ClientProfile = lazy(() => import("./pages/client/ClientProfile"));
+const ClientProjects = lazy(() => import("./pages/client/ClientProjects"));
+const ClientAddProject = lazy(() => import("./pages/client/ClientAddProject"));
+const ClientRequests = lazy(() => import("./pages/client/ClientRequests"));
+const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
+const ClientReports = lazy(() => import("./pages/client/ClientReports"));
 
 // Public Pages
 import TestimonialsPage from "./pages/public/TestimonialsPage";

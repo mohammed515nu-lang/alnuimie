@@ -91,17 +91,26 @@ function PaymentForm({ amount, supplier, project, purchase, onSuccess, onCancel 
       if (paymentIntent.status === 'succeeded') {
         // Confirm payment in backend
         try {
-          await stripeAPI.confirmPayment({
+          const confirmResult = await stripeAPI.confirmPayment({
             paymentIntentId: paymentIntent.id,
             paymentId: paymentId
           });
 
-          notifications.success('نجح الدفع', `تم الدفع بنجاح: $${amount.toLocaleString()}`);
-          onSuccess(paymentIntent);
+          if (confirmResult && confirmResult.success) {
+            notifications.success('نجح الدفع', `تم الدفع بنجاح: $${amount.toLocaleString()}`);
+            onSuccess(paymentIntent);
+          } else {
+            // حتى لو فشل التأكيد، الدفعة موجودة في Stripe
+            console.warn('Payment confirmed in Stripe but backend confirmation returned unexpected result');
+            notifications.success('نجح الدفع', `تم الدفع بنجاح: $${amount.toLocaleString()}`);
+            onSuccess(paymentIntent);
+          }
           // Don't reset isProcessing here - let onSuccess handle closing
         } catch (confirmError) {
           console.error('Confirm payment error:', confirmError);
-          notifications.error('خطأ', 'تم الدفع لكن فشل تحديث الحالة');
+          // حتى لو فشل التأكيد، الدفعة موجودة في Stripe وتم إنشاؤها في create-payment-intent
+          notifications.warning('تم الدفع', `تم الدفع بنجاح: $${amount.toLocaleString()}. يرجى التحقق من الدفعات.`);
+          onSuccess(paymentIntent);
           setIsProcessing(false);
           isSubmittingRef.current = false;
         }

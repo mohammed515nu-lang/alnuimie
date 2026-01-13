@@ -91,6 +91,39 @@ router.post('/', async (req, res) => {
           }
         }
       }
+
+      // Validate payment amount
+      const paymentAmount = parseFloat(req.body.amount);
+      if (!paymentAmount || paymentAmount <= 0) {
+        return res.status(400).json({ error: 'Payment amount must be greater than 0' });
+      }
+
+      // Check supplier remaining balance
+      if (req.body.supplier) {
+        const Supplier = require('../models/Supplier');
+        const supplier = await Supplier.findById(req.body.supplier);
+        if (supplier) {
+          const remainingBalance = (supplier.totalPurchases || 0) - (supplier.totalPaid || 0);
+          
+          // For Stripe payments, allow pending status (will be updated when confirmed)
+          const isStripePayment = req.body.paymentMethod === 'stripe';
+          
+          if (!isStripePayment && paymentAmount > remainingBalance) {
+            return res.status(400).json({ 
+              error: 'Payment amount exceeds remaining balance',
+              message: `المبلغ المدخل ($${paymentAmount.toLocaleString()}) أكبر من الرصيد المتبقي ($${remainingBalance.toLocaleString()})`,
+              remainingBalance: remainingBalance
+            });
+          }
+
+          if (remainingBalance <= 0 && !isStripePayment) {
+            return res.status(400).json({ 
+              error: 'No remaining balance',
+              message: 'تم دفع كامل المبلغ لهذا المورد. لا يوجد رصيد متبقي'
+            });
+          }
+        }
+      }
     }
     
     const payment = new Payment(req.body);

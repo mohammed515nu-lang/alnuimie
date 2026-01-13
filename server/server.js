@@ -25,6 +25,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Stripe webhook must be before express.json() middleware (needs raw body)
+const stripeWebhook = require('./routes/stripe');
+app.use('/api/stripe/webhook', stripeWebhook.webhookRouter);
+
 // زيادة حد حجم الطلب لدعم الصور الكبيرة (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -78,6 +82,7 @@ const issueRoutes = require('./routes/issues');
 const contractRoutes = require('./routes/contracts');
 const requestRoutes = require('./routes/requests');
 const reportRoutes = require('./routes/reports');
+const stripeRoutes = require('./routes/stripe');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -90,6 +95,7 @@ app.use('/api/issues', issueRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // 404 handler - يجب أن يكون بعد جميع routes
 app.use((req, res) => {

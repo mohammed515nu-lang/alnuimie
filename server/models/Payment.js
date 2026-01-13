@@ -31,7 +31,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'bank-transfer', 'check', 'credit-card'],
+    enum: ['cash', 'bank-transfer', 'check', 'credit-card', 'stripe'],
     default: 'cash'
   },
   checkNumber: {
@@ -43,6 +43,24 @@ const paymentSchema = new mongoose.Schema({
     trim: true
   },
   notes: {
+    type: String,
+    trim: true
+  },
+  // Stripe payment fields
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'],
+    default: 'pending'
+  },
+  stripePaymentIntentId: {
+    type: String,
+    trim: true
+  },
+  stripeClientSecret: {
+    type: String,
+    trim: true
+  },
+  transactionId: {
     type: String,
     trim: true
   },
@@ -97,8 +115,25 @@ async function updateSupplierPaymentBalance(supplierId) {
     const Supplier = mongoose.model('Supplier');
     const Payment = mongoose.model('Payment');
 
-    const payments = await Payment.find({ supplier: supplierId });
-    const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    // Only count completed payments (exclude failed, cancelled, refunded)
+    const payments = await Payment.find({ 
+      supplier: supplierId,
+      $or: [
+        { paymentStatus: { $exists: false } }, // Legacy payments without status
+        { paymentStatus: 'completed' },
+        { paymentStatus: 'pending' }, // Include pending as they're expected to complete
+        { paymentStatus: { $exists: false, paymentMethod: { $ne: 'stripe' } } } // Non-Stripe payments
+      ]
+    });
+    
+    const totalPaid = payments.reduce((sum, p) => {
+      // For Stripe payments, only count completed ones
+      if (p.paymentMethod === 'stripe') {
+        return (p.paymentStatus === 'completed') ? sum + (p.amount || 0) : sum;
+      }
+      // For other payment methods, count all (they're typically completed immediately)
+      return sum + (p.amount || 0);
+    }, 0);
 
     const supplier = await Supplier.findById(supplierId);
     if (supplier) {

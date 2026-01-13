@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Modal from "../../Modal";
 import { suppliersAPI, paymentsAPI, purchasesAPI, getUser } from "../../utils/api";
 import { useNotifications } from "../../components/NotificationSystem";
+import StripePaymentForm from "../../components/StripePaymentForm";
 import BRAND from "../../theme";
 
 export default function SuppliersAndPayments() {
@@ -17,8 +18,18 @@ export default function SuppliersAndPayments() {
   const [isSupplierModalOpen, setSupplierModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
 
-  const [paymentForm, setPaymentForm] = useState({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0] });
+  const [paymentForm, setPaymentForm] = useState({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0], method: 'cash' });
   const [supplierForm, setSupplierForm] = useState({ name: '', companyName: '', phone: '', email: '', address: '', totalPurchases: '' });
+  const [showStripePayment, setShowStripePayment] = useState(false);
+  const [stripePaymentData, setStripePaymentData] = useState(null);
+  
+  // Calculate remaining balance for selected supplier
+  const getSelectedSupplierRemaining = () => {
+    if (!paymentForm.supplier) return 0;
+    const supplier = suppliers.find(s => (s._id || s.id) === paymentForm.supplier);
+    if (!supplier) return 0;
+    return (supplier.totalPurchases || 0) - (supplier.totalPaid || 0);
+  };
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -93,27 +104,84 @@ export default function SuppliersAndPayments() {
 
   const submitPayment = async (e) => {
     e.preventDefault();
-    if (!paymentForm.supplier || !paymentForm.amount) return;
+    if (!paymentForm.supplier || !paymentForm.amount) {
+      notifications.warning('بيانات ناقصة', 'يرجى اختيار المورد وإدخال المبلغ');
+      return;
+    }
 
-    setIsSubmitting(true);
+    // Get selected supplier
+    const selectedSupplier = suppliers.find(s => (s._id || s.id) === paymentForm.supplier);
+    if (!selectedSupplier) {
+      notifications.error('خطأ', 'المورد المحدد غير موجود');
+      return;
+    }
+
+    // Calculate remaining balance
+    const remainingBalance = (selectedSupplier.totalPurchases || 0) - (selectedSupplier.totalPaid || 0);
+    const paymentAmount = parseFloat(paymentForm.amount);
+
+    // Validate payment amount
+    if (paymentAmount <= 0) {
+      notifications.warning('مبلغ غير صالح', 'المبلغ يجب أن يكون أكبر من صفر');
+      return;
+    }
+
+    if (remainingBalance <= 0) {
+      notifications.info('معلومة', 'تم دفع كامل المبلغ لهذا المورد. لا يوجد رصيد متبقي');
+      return;
+    }
+
+    if (paymentAmount > remainingBalance) {
+      notifications.warning('مبلغ زائد', `المبلغ المدخل ($${paymentAmount.toLocaleString()}) أكبر من الرصيد المتبقي ($${remainingBalance.toLocaleString()})`);
+      return;
+    }
+
+    // If Stripe payment, show Stripe form
+    if (paymentForm.method === 'stripe') {
+      setStripePaymentData({
+        amount: paymentAmount,
+        supplier: paymentForm.supplier,
+        date: paymentForm.date
+      });
+      setShowStripePayment(true);
+      return;
+    }
+
+    // Traditional payment methods (cash, bank-transfer, etc.)
     setIsSubmitting(true);
     try {
       await paymentsAPI.create({
         supplier: paymentForm.supplier,
         amount: parseFloat(paymentForm.amount),
-        paymentDate: paymentForm.date
+        paymentDate: paymentForm.date,
+        paymentMethod: paymentForm.method
       });
-      notifications.success('تم السداد', 'تم تسجيل الدفعة المالية');
-      setPaymentForm({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0] });
+      const paidAmount = parseFloat(paymentForm.amount);
+      notifications.success('تم السداد', `تم تسجيل الدفعة المالية: $${paidAmount.toLocaleString()}`);
+      setPaymentForm({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0], method: 'cash' });
 
-      // Delay slightly to allow backend hooks to complete
-      setTimeout(() => fetchData(), 500);
+      // Refresh data immediately to update balances
+      await fetchData();
     } catch (err) {
-
       notifications.error('فشل', err.message);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStripePaymentSuccess = async (paymentIntent) => {
+    setShowStripePayment(false);
+    setStripePaymentData(null);
+    const paidAmount = stripePaymentData?.amount || 0;
+    setPaymentForm({ supplier: '', amount: '', date: new Date().toISOString().split('T')[0], method: 'cash' });
+    notifications.success('نجح الدفع', `تم الدفع بنجاح: $${paidAmount.toLocaleString()} عبر Stripe`);
+    // Refresh data immediately to update balances
+    await fetchData();
+  };
+
+  const handleStripePaymentCancel = () => {
+    setShowStripePayment(false);
+    setStripePaymentData(null);
   };
 
   if (isLoading && suppliers.length === 0) {
@@ -225,20 +293,130 @@ export default function SuppliersAndPayments() {
             <form onSubmit={submitPayment}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600 }}>المورد</label>
-                <select className="input-fld" value={paymentForm.supplier} onChange={e => setPaymentForm({ ...paymentForm, supplier: e.target.value })} required>
+                <select className="input-fld" value={paymentForm.supplier} onChange={e => setPaymentForm({ ...paymentForm, supplier: e.target.value, amount: '' })} required>
                   <option value="">-- اختر المورد --</option>
-                  {suppliers.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>)}
+                  {suppliers.map(s => {
+                    const debt = (s.totalPurchases || 0) - (s.totalPaid || 0);
+                    return (
+                      <option key={s._id || s.id} value={s._id || s.id}>
+                        {s.name} {debt > 0 ? `(متبقي: $${debt.toLocaleString()})` : '(مسدد بالكامل)'}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
+
+              {/* Show remaining balance */}
+              {paymentForm.supplier && (() => {
+                const remaining = getSelectedSupplierRemaining();
+                if (remaining <= 0) {
+                  return (
+                    <div style={{
+                      marginTop: 15,
+                      padding: '12px',
+                      background: '#f0fdf4',
+                      border: '2px solid #86efac',
+                      borderRadius: 10,
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>✅ تم دفع كامل المبلغ</div>
+                      <div style={{ fontSize: 11, color: '#16a34a', marginTop: 5 }}>لا يوجد رصيد متبقي</div>
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{
+                    marginTop: 15,
+                    padding: '12px',
+                    background: remaining > 0 ? '#fff1f2' : '#f0fdf4',
+                    border: `2px solid ${remaining > 0 ? '#fecdd3' : '#86efac'}`,
+                    borderRadius: 10,
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: 11, color: BRAND.muted, marginBottom: 5 }}>الرصيد المتبقي</div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: remaining > 0 ? '#be123c' : '#15803d' }}>
+                      ${remaining.toLocaleString()}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div style={{ marginTop: 15 }}>
                 <label style={{ fontSize: 12, fontWeight: 600 }}>المبلغ ($)</label>
-                <input type="number" className="input-fld" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} placeholder="0.00" required />
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  className="input-fld" 
+                  value={paymentForm.amount} 
+                  onChange={e => {
+                    const value = e.target.value;
+                    const remaining = getSelectedSupplierRemaining();
+                    if (value && parseFloat(value) > remaining) {
+                      notifications.warning('تحذير', `المبلغ لا يمكن أن يتجاوز الرصيد المتبقي ($${remaining.toLocaleString()})`);
+                    }
+                    setPaymentForm({ ...paymentForm, amount: value });
+                  }}
+                  placeholder="0.00"
+                  max={paymentForm.supplier ? getSelectedSupplierRemaining() : undefined}
+                  required
+                  disabled={paymentForm.supplier && getSelectedSupplierRemaining() <= 0}
+                />
+                {paymentForm.supplier && getSelectedSupplierRemaining() > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentForm({ ...paymentForm, amount: getSelectedSupplierRemaining().toString() })}
+                    style={{
+                      marginTop: 8,
+                      padding: '6px 12px',
+                      background: BRAND.primary,
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      width: '100%'
+                    }}
+                  >
+                    💰 دفع كامل الرصيد المتبقي
+                  </button>
+                )}
+              </div>
+              <div style={{ marginTop: 15 }}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>طريقة الدفع</label>
+                <select className="input-fld" value={paymentForm.method} onChange={e => setPaymentForm({ ...paymentForm, method: e.target.value })} required>
+                  <option value="cash">نقدي</option>
+                  <option value="bank-transfer">تحويل بنكي</option>
+                  <option value="check">شيك</option>
+                  <option value="stripe">💳 بطاقة ائتمانية (Stripe)</option>
+                </select>
               </div>
               <div style={{ marginTop: 15 }}>
                 <label style={{ fontSize: 12, fontWeight: 600 }}>التاريخ</label>
                 <input type="date" className="input-fld" value={paymentForm.date} onChange={e => setPaymentForm({ ...paymentForm, date: e.target.value })} />
               </div>
-              <button type="submit" disabled={isSubmitting} className="btn-main" style={{ width: '100%', marginTop: 20 }}>{isSubmitting ? 'جاري الحفظ...' : 'تأكيد السداد'}</button>
+              <button 
+                type="submit" 
+                disabled={
+                  isSubmitting || 
+                  !paymentForm.supplier || 
+                  !paymentForm.amount || 
+                  getSelectedSupplierRemaining() <= 0 ||
+                  parseFloat(paymentForm.amount || 0) <= 0
+                } 
+                className="btn-main" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: 20,
+                  opacity: (isSubmitting || !paymentForm.supplier || !paymentForm.amount || getSelectedSupplierRemaining() <= 0) ? 0.5 : 1,
+                  cursor: (isSubmitting || !paymentForm.supplier || !paymentForm.amount || getSelectedSupplierRemaining() <= 0) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? 'جاري الحفظ...' : 
+                 getSelectedSupplierRemaining() <= 0 ? '✅ تم الدفع بالكامل' :
+                 paymentForm.method === 'stripe' ? '💳 الدفع بالبطاقة' : 
+                 '✅ تأكيد السداد'}
+              </button>
             </form>
           </div>
 
@@ -279,6 +457,17 @@ export default function SuppliersAndPayments() {
       {selectedSupplier && (
         <Modal isOpen={!!selectedSupplier} onClose={() => setSelectedSupplier(null)} title="ملف المورد">
           <SupplierDetails supplier={selectedSupplier} onClose={() => setSelectedSupplier(null)} />
+        </Modal>
+      )}
+
+      {showStripePayment && stripePaymentData && (
+        <Modal isOpen={showStripePayment} onClose={handleStripePaymentCancel} title="💳 الدفع بالبطاقة الائتمانية" style={{ maxWidth: 500 }}>
+          <StripePaymentForm
+            amount={stripePaymentData.amount}
+            supplier={stripePaymentData.supplier}
+            onSuccess={handleStripePaymentSuccess}
+            onCancel={handleStripePaymentCancel}
+          />
         </Modal>
       )}
     </div>

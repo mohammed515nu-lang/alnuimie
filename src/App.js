@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Outlet } from "react-router-dom";
 import SplashScreen from "./SplashScreen";
 import RoleLogin from "./RoleLogin";
@@ -20,6 +20,7 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import { NotificationProvider } from "./components/NotificationSystem";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./ThemeContext";
 import BRAND from "./theme";
 import "./index.css";
@@ -44,7 +45,6 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientReports from "./pages/client/ClientReports";
 
 // Public Pages
-import PublicProjectsPage from "./pages/public/ProjectsPage";
 import TestimonialsPage from "./pages/public/TestimonialsPage";
 import FAQPage from "./pages/public/FAQPage";
 import HowItWorksPage from "./pages/public/HowItWorksPage";
@@ -492,137 +492,148 @@ function MainLayout() {
 
 export default function App() {
   return (
-    <NotificationProvider>
-      <ThemeProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Landing */}
-            <Route path="/" element={<LandingPage />} />
-            {/* Login */}
-            <Route path="/login" element={<LoginPage />} />
-            {/* Reset Password */}
-            <Route path="/reset-password" element={<ResetPassword />} />
-            {/* Google OAuth Callback */}
-            <Route path="/auth/google/callback" element={<GoogleCallbackHandler />} />
-            {/* Public Pages */}
-            <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/testimonials" element={<TestimonialsPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/how-it-works" element={<HowItWorksPage />} />
-            <Route path="/contractors" element={<ContractorsPage />} />
-            <Route path="/contractors/:id" element={<ContractorDetailsPage />} />
-            <Route path="/training" element={<TrainingPage />} />
-            <Route path="/training/register" element={<TrainingRegistrationPage />} />
-            <Route path="/trainers" element={<TrainersPage />} />
-            <Route path="/consulting" element={<ConsultingPage />} />
-            <Route path="/consulting/request" element={<ConsultingRequestPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            {/* App layout */}
-            <Route element={<MainLayout />}>
-              {/* Public/Showcase */}
-              <Route path="/showcase" element={<ShowcasePage />} />
-              <Route path="/project/:id" element={<ProjectDetailsPage />} />
+    <ErrorBoundary>
+      <NotificationProvider>
+        <ThemeProvider>
+          <BrowserRouter>
+          <Suspense fallback={
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#fff' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '40px', marginBottom: '20px', animation: 'spin 2s linear infinite' }}>⚙️</div>
+                <p>جاري التحميل...</p>
+              </div>
+            </div>
+          }>
+            <Routes>
+              {/* Landing */}
+              <Route path="/" element={<LandingPage />} />
+              {/* Login */}
+              <Route path="/login" element={<LoginPage />} />
+              {/* Reset Password */}
+              <Route path="/reset-password" element={<ResetPassword />} />
+              {/* Google OAuth Callback */}
+              <Route path="/auth/google/callback" element={<GoogleCallbackHandler />} />
+              {/* Public Pages */}
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/how-it-works" element={<HowItWorksPage />} />
+              <Route path="/contractors" element={<ContractorsPage />} />
+              <Route path="/contractors/:id" element={<ContractorDetailsPage />} />
+              <Route path="/training" element={<TrainingPage />} />
+              <Route path="/training/register" element={<TrainingRegistrationPage />} />
+              <Route path="/trainers" element={<TrainersPage />} />
+              <Route path="/consulting" element={<ConsultingPage />} />
+              <Route path="/consulting/request" element={<ConsultingRequestPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              {/* App layout */}
+              <Route element={<MainLayout />}>
+                {/* Public/Showcase */}
+                <Route path="/showcase" element={<ShowcasePage />} />
+                <Route path="/project/:id" element={<ProjectDetailsPage />} />
 
-              {/* Contractor Routes - Protected */}
-              <Route path="/contractor" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ContractorDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/projects/add" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <AddProjectAndRequests />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/projects/list" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ProjectsList />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/inventory" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <InventoryMaterials />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/purchases-issue" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <PurchasesAndIssue />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/clients-contractors" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ClientsAndContractors />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/contracts-supplies" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ContractsAndSupplies />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/suppliers-payments" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <SuppliersAndPayments />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/reports-invoices" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ReportsAndInvoices />
-                </ProtectedRoute>
-              } />
-              <Route path="/contractor/profile" element={
-                <ProtectedRoute allowedRoles="contractor">
-                  <ContractorProfile />
-                </ProtectedRoute>
-              } />
+                {/* Contractor Routes - Protected */}
+                <Route path="/contractor" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ContractorDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/projects/add" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <AddProjectAndRequests />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/projects/list" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ProjectsList />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/inventory" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <InventoryMaterials />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/purchases-issue" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <PurchasesAndIssue />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/clients-contractors" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ClientsAndContractors />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/contracts-supplies" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ContractsAndSupplies />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/suppliers-payments" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <SuppliersAndPayments />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/reports-invoices" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ReportsAndInvoices />
+                  </ProtectedRoute>
+                } />
+                <Route path="/contractor/profile" element={
+                  <ProtectedRoute allowedRoles="contractor">
+                    <ContractorProfile />
+                  </ProtectedRoute>
+                } />
 
-              {/* Client Routes - Protected */}
-              <Route path="/client/profile" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/client/projects" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientProjects />
-                </ProtectedRoute>
-              } />
-              <Route path="/client/projects/add" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientAddProject />
-                </ProtectedRoute>
-              } />
-              <Route path="/client" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/client/dashboard" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/client/requests" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientRequests />
-                </ProtectedRoute>
-              } />
-              <Route path="/client/reports" element={
-                <ProtectedRoute allowedRoles="client">
-                  <ClientReports />
-                </ProtectedRoute>
-              } />
+                {/* Client Routes - Protected */}
+                <Route path="/client/profile" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/projects" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientProjects />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/projects/add" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientAddProject />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/dashboard" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/requests" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientRequests />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/reports" element={
+                  <ProtectedRoute allowedRoles="client">
+                    <ClientReports />
+                  </ProtectedRoute>
+                } />
 
-              {/* Legacy/Deprecated - Protected for authenticated users */}
-              <Route path="/profile" element={
-                <ProtectedRoute allowedRoles={['client', 'contractor']}>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } />
-            </Route>
-          </Routes>
+                {/* Legacy/Deprecated - Protected for authenticated users */}
+                <Route path="/profile" element={
+                  <ProtectedRoute allowedRoles={['client', 'contractor']}>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                } />
+              </Route>
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </ThemeProvider>
     </NotificationProvider>
+    </ErrorBoundary>
   );
 }

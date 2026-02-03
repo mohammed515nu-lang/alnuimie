@@ -1,110 +1,131 @@
-# 🎓 نظام إدارة المقاولات - مشروع تخرج
+# 📱 تطبيق موبايل - نظام إدارة المقاولات
 
-## 📋 معلومات المشروع
-
-**نوع المشروع:** مشروع تخرج أكاديمي  
-**الاسم:** نظام إدارة المقاولات - المستقبل لإدارة المقاولات  
-**الوصف:** نظام شامل لإدارة المشاريع والمقاولات والمواد والطلبات  
-**التقنيات:** React.js, Node.js, Express.js, MongoDB
-
----
-
-## 🏗️ هيكل المشروع
-
-```
-client/
-├── src/                    # Frontend (React)
-│   ├── components/        # مكونات React
-│   ├── pages/             # الصفحات الرئيسية
-│   └── utils/             # أدوات مساعدة
-├── server/                # Backend (Node.js)
-│   ├── models/            # نماذج قاعدة البيانات (MongoDB)
-│   ├── routes/            # مسارات API
-│   └── server.js          # الخادم الرئيسي
-└── docs/                  # التوثيق
-    ├── frontend/          # توثيق Frontend
-    ├── backend/           # توثيق Backend
-    └── deployment/        # توثيق النشر
-```
-
----
+تطبيق موبايل مبني باستخدام React Native و Expo لنظام إدارة المقاولات.
 
 ## 🚀 البدء السريع
 
-### 1. Frontend
+### 1. تثبيت المتطلبات
+
+```bash
+# تأكد من تثبيت Node.js (v16+)
+node --version
+
+# تثبيت Expo CLI (اختياري)
+npm install -g expo-cli
+```
+
+### 2. تثبيت المكتبات
+
 ```bash
 npm install
+```
+
+### 3. تشغيل التطبيق
+
+```bash
 npm start
 ```
-راجع: [docs/frontend/README.md](docs/frontend/README.md)
 
-### 2. Backend
+### 4. فتح على الهاتف
+
+1. ثبت **Expo Go** على هاتفك:
+   - [iOS App Store](https://apps.apple.com/app/expo-go/id982107779)
+   - [Android Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
+
+2. تأكد أن الكمبيوتر والهاتف على نفس الشبكة (WiFi)
+
+3. امسح QR Code الذي يظهر في Terminal
+
+### 5. تشغيل على المحاكي
+
 ```bash
-cd server
-npm install
-npm run dev
+# iOS (Mac فقط)
+npm run ios
+
+# Android
+npm run android
 ```
-راجع: [docs/backend/README.md](docs/backend/README.md)
 
 ---
 
-## 📚 التوثيق
+## 📁 هيكل المشروع
 
-- **Frontend**: [docs/frontend/README.md](docs/frontend/README.md)
-- **Backend**: [docs/backend/README.md](docs/backend/README.md)
-- **النشر**: [docs/deployment/](docs/deployment/)
-
----
-
-## 🛠️ التقنيات المستخدمة
-
-### Frontend:
-- React.js
-- React Router DOM
-- CSS3
-
-### Backend:
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT
-- bcryptjs
+```
+alnuimie-mobile/
+├── App.js                 # نقطة الدخول
+├── app.json              # إعدادات Expo
+├── package.json
+├── src/
+│   ├── api/              # API calls
+│   │   └── index.js
+│   ├── screens/          # الشاشات
+│   │   └── auth/
+│   │       ├── LoginScreen.js
+│   │       └── RegisterScreen.js
+│   └── navigation/       # التنقل
+│       └── AppNavigator.js
+└── assets/               # الصور والخطوط
+```
 
 ---
 
-## 📊 قاعدة البيانات
+## ⚙️ الإعدادات
 
-10 Models رئيسية:
-- User, Project, Material, Supplier, Purchase, Payment, Issue, Contract, Request, Report
+### تغيير API URL
 
-راجع: `server/SCHEMA-COMPLETE.md` للتفاصيل الكاملة
+في `src/api/index.js`:
+```javascript
+const API_BASE_URL = __DEV__
+  ? 'http://YOUR_IP:4000/api'  // للتطوير (استبدل YOUR_IP بـ IP جهازك)
+  : 'https://construction-backend-nw0g.onrender.com/api';  // للإنتاج
+```
 
----
-
-## 🌐 النشر
-
-- **Frontend**: Vercel
-- **Backend**: Render
-
-راجع: `docs/deployment/` للتفاصيل
+**ملاحظة:** للاختبار على هاتف حقيقي، استخدم IP جهازك بدلاً من localhost.
 
 ---
 
-## 📝 ملاحظات مهمة
+## 📚 الميزات
 
-هذا مشروع تخرج أكاديمي يهدف إلى:
-- ✅ تطبيق المعارف النظرية في مشروع عملي
-- ✅ تطوير نظام متكامل لإدارة المقاولات
-- ✅ توثيق كامل للقاعدة البيانات والعلاقات
-
----
-
-## 📄 الترخيص
-
-هذا مشروع تخرج أكاديمي - للأغراض التعليمية فقط.
+✅ تسجيل الدخول والتسجيل
+✅ إدارة Token والمستخدم
+✅ API calls كاملة
+✅ تنقل حسب نوع المستخدم (عميل/مقاول)
+✅ تصميم responsive
 
 ---
 
-**تم التطوير باستخدام:** React.js, Node.js, Express.js, MongoDB  
-**نوع المشروع:** مشروع تخرج أكاديمي 🎓
+## 🔧 المكتبات المستخدمة
+
+- **React Native** - إطار العمل الأساسي
+- **Expo** - أدوات التطوير والنشر
+- **React Navigation** - التنقل بين الشاشات
+- **Axios** - HTTP requests
+- **AsyncStorage** - التخزين المحلي
+- **Expo Vector Icons** - الأيقونات
+
+---
+
+## 📝 الخطوات التالية
+
+1. إضافة المزيد من الشاشات (Dashboard، المشاريع، إلخ)
+2. تحسين التصميم
+3. إضافة ميزات موبايل (كاميرا، إشعارات)
+4. بناء ونشر التطبيق
+
+---
+
+## 🔗 روابط مفيدة
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Docs](https://reactnative.dev/)
+- [React Navigation](https://reactnavigation.org/)
+
+---
+
+## 📖 الدليل الكامل
+
+راجع `../alnuimie-main/MOBILE_APP_GUIDE.md` للدليل الشامل.
+
+---
+
+**تم إنشاء المشروع بنجاح! 🎉**

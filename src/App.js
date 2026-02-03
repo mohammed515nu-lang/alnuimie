@@ -24,6 +24,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./ThemeContext";
 import BRAND from "./theme";
 import "./index.css";
+import TestimonialsPage from "./pages/public/TestimonialsPage";
+import FAQPage from "./pages/public/FAQPage";
+import HowItWorksPage from "./pages/public/HowItWorksPage";
+import ResetPassword from "./pages/auth/ResetPassword";
+import logo from "./assets/images/logo-future.jpeg";
+import splashBg from "./55.jpeg";
 
 // Contractor Pages - Lazy Loading for better performance
 const AddProjectAndRequests = lazy(() => import("./pages/contractor/AddProjectAndRequests"));
@@ -43,17 +49,6 @@ const ClientAddProject = lazy(() => import("./pages/client/ClientAddProject"));
 const ClientRequests = lazy(() => import("./pages/client/ClientRequests"));
 const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
 const ClientReports = lazy(() => import("./pages/client/ClientReports"));
-
-// Public Pages
-import TestimonialsPage from "./pages/public/TestimonialsPage";
-import FAQPage from "./pages/public/FAQPage";
-import HowItWorksPage from "./pages/public/HowItWorksPage";
-
-// Auth Pages
-import ResetPassword from "./pages/auth/ResetPassword";
-
-import logo from "./assets/images/logo-future.jpeg";
-import splashBg from "./55.jpeg";
 
 const demoProjects = [
   { id: 1, name: 'فيلا حديثة في الرياض', description: 'تم إنجاز فيلا بتصميم عصري مع مسبح وحدائق خارجية.', imageUrl: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=400&q=80', category: 'سكني' },
@@ -261,16 +256,36 @@ function ProfilePage() {
 function GoogleCallbackHandler() {
   const navigate = useNavigate();
   const [searchParams] = React.useState(() => new URLSearchParams(window.location.search));
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const processedCodeRef = React.useRef(null);
+  
   React.useEffect(() => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const role = localStorage.getItem('selectedRole') || 'client';
+    
+    // Prevent processing the same code twice
+    if (code && processedCodeRef.current === code) {
+      console.log('Code already processed, skipping...');
+      return;
+    }
+    
+    if (isProcessing) {
+      console.log('Already processing, skipping...');
+      return;
+    }
+    
     if (error) {
       alert(`❌ فشل تسجيل الدخول عبر Google: ${error}`);
       navigate('/login');
       return;
     }
+    
     if (code) {
+      // Mark code as processed immediately to prevent duplicate calls
+      processedCodeRef.current = code;
+      setIsProcessing(true);
+      
       // Exchange code for token
       const handleGoogleCallback = async () => {
         try {
@@ -300,7 +315,7 @@ function GoogleCallbackHandler() {
             } else if (error.details.error === 'invalid_client') {
               errorMessage = 'خطأ: Client ID أو Client Secret غير صحيح.\n\nيرجى التحقق من ملف .env في مجلد server/';
             } else if (error.details.error === 'invalid_grant') {
-              errorMessage = 'انتهت صلاحية رمز المصادقة.\n\nيرجى المحاولة مرة أخرى.';
+              errorMessage = 'انتهت صلاحية رمز المصادقة أو تم استخدامه مسبقاً.\n\nيرجى المحاولة مرة أخرى من صفحة تسجيل الدخول.';
             } else if (error.details.error_description) {
               errorMessage = `خطأ: ${error.details.error_description}`;
             } else if (error.details.error) {
@@ -308,6 +323,9 @@ function GoogleCallbackHandler() {
             }
           }
           alert(`❌ ${errorMessage}`);
+          // Clear the processed code so user can try again
+          processedCodeRef.current = null;
+          setIsProcessing(false);
           navigate('/login');
         }
       };
@@ -315,7 +333,7 @@ function GoogleCallbackHandler() {
     } else {
       navigate('/login');
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, isProcessing]);
   return (
     <div style={{
       minHeight: '100vh',
@@ -335,103 +353,6 @@ function GoogleCallbackHandler() {
         <h2 style={{ color: '#1d4ed8', marginBottom: 16 }}>جاري تسجيل الدخول...</h2>
         <p style={{ color: '#64748b' }}>يرجى الانتظار</p>
       </div>
-    </div>
-  );
-}
-
-function AuthRouter() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const navigate = useNavigate();
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  return showSplash ? (
-    <SplashScreen logo={logo} splashBg={splashBg} onFinish={() => setShowSplash(false)} />
-  ) : (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      position: 'relative',
-      overflow: 'hidden',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 40%, #0ea5e9 100%)'
-    }}>
-      {/* Unified Background Effects */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.28) 0%, transparent 55%)',
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.26) 0%, transparent 55%)',
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }} />
-
-      {/* Main Container - Centered */}
-      <div style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: isMobile ? '40px 20px' : '60px 40px',
-        position: 'relative',
-        zIndex: 1,
-        minHeight: '100vh'
-      }}>
-        {/* Login Form - Centered */}
-        <div style={{
-          width: '100%',
-          maxWidth: 500,
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <RoleLogin
-            onLogin={(role, email, password) => {
-              if (role === "مقاول") {
-                navigate("/contractor");
-              } else if (role === "عميل") {
-                navigate("/client/profile");
-              } else {
-                alert(`تم تسجيل الدخول (${role})!`);
-              }
-            }}
-            onGuest={() => navigate("/showcase")}
-          />
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        position: 'fixed',
-        bottom: 16,
-        width: '100%',
-        textAlign: 'center',
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 13,
-        fontWeight: 500,
-        zIndex: 10,
-        pointerEvents: 'none',
-        textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
-      }}>
-        كل الحقوق محفوظة © {new Date().getFullYear()} – إدارة المقاولات
-      </div>
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-      `}</style>
     </div>
   );
 }

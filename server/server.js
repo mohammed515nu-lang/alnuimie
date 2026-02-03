@@ -16,10 +16,11 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // CORS Configuration - يسمح بالوصول من أي مصدر في Production
+// تحديث: السماح بالاتصال من تطبيق الموبايل أيضاً
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? '*' // في Production، اتركه مفتوحاً أو ضع Domains محددة
-    : 'http://localhost:3000', // في Development
+    : ['http://localhost:3000', '*'], // في Development - يسمح من أي مصدر
   credentials: true,
   optionsSuccessStatus: 200
 };

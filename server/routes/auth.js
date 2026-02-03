@@ -86,6 +86,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // التحقق من أن المستخدم لديه كلمة مرور (ليس سجل عبر Google فقط)
+    if (!user.password) {
+      return res.status(401).json({ 
+        error: 'This account was created with Google. Please use Google sign-in.' 
+      });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -138,8 +145,11 @@ router.get('/google/url', (req, res) => {
   const scope = 'openid email profile';
   const responseType = 'code';
   
-  if (!clientId) {
-    return res.status(500).json({ error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID environment variable.' });
+  // Check if Google OAuth is configured (not placeholder)
+  if (!clientId || clientId === 'your-google-client-id-here' || clientId.includes('your-google')) {
+    return res.status(500).json({ 
+      error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID environment variable in server/.env file. See ENV_TEMPLATE.md for instructions.' 
+    });
   }
   
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -154,6 +164,26 @@ router.get('/google/url', (req, res) => {
     authUrl,
     redirectUri: redirectUri, // Include for debugging
     frontendUrl: frontendUrl // Include for debugging
+  });
+});
+
+// Google OAuth - Check if configured
+router.get('/google/status', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  
+  const isConfigured = clientId && 
+    clientSecret && 
+    clientId !== 'your-google-client-id-here' && 
+    !clientId.includes('your-google') &&
+    clientSecret !== 'your-google-client-secret-here' &&
+    !clientSecret.includes('your-google');
+  
+  res.json({
+    enabled: isConfigured,
+    message: isConfigured 
+      ? 'Google OAuth is configured' 
+      : 'Google OAuth is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in server/.env'
   });
 });
 
@@ -221,14 +251,20 @@ router.post('/google/callback', async (req, res) => {
     
     const redirectUri = `${frontendUrl}/auth/google/callback`;
 
-    // Check if credentials are configured
-    if (!clientId || !clientSecret) {
+    // Check if credentials are configured (not placeholder)
+    const isPlaceholder = !clientId || !clientSecret || 
+      clientId === 'your-google-client-id-here' || 
+      clientId.includes('your-google') ||
+      clientSecret === 'your-google-client-secret-here' ||
+      clientSecret.includes('your-google');
+    
+    if (isPlaceholder) {
       console.error('Google OAuth credentials not configured');
       return res.status(500).json({ 
-        error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.',
+        error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables in server/.env file. See ENV_TEMPLATE.md for instructions.',
         details: {
-          hasClientId: !!clientId,
-          hasClientSecret: !!clientSecret,
+          hasClientId: !!clientId && clientId !== 'your-google-client-id-here',
+          hasClientSecret: !!clientSecret && clientSecret !== 'your-google-client-secret-here',
           frontendUrl: frontendUrl,
           redirectUri: redirectUri
         }
@@ -292,7 +328,7 @@ router.post('/google/callback', async (req, res) => {
       
       let hint = 'Please check your Google OAuth configuration.';
       if (tokenData.error === 'invalid_grant') {
-        hint = 'The authorization code may have expired or already been used. Please try logging in again.';
+        hint = 'The authorization code may have expired or already been used. This can happen if you refresh the page or the code was used twice. Please try logging in again from the login page.';
       } else if (tokenData.error === 'redirect_uri_mismatch') {
         hint = `Redirect URI mismatch. Expected: ${redirectUri}. Make sure this exact URL is added to Authorized redirect URIs in Google Cloud Console. Current redirect URIs must match exactly.`;
       } else if (tokenData.error === 'invalid_client') {

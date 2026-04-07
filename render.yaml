@@ -15,11 +15,19 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
+      - key: FRONTEND_URL
+        value: https://alnuimie515.vercel.app
       # Note: MONGODB_URI and JWT_SECRET يجب إضافتها يدوياً في Render Dashboard
       # لأنها معلومات حساسة
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
         sync: false

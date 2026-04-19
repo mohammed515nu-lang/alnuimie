@@ -213,16 +213,25 @@ webhookRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// Export both regular router and webhook router
-module.exports = router;
-module.exports.webhookRouter = webhookRouter;
+// helper functions defined below, final export at end of file
+
+async function updateTransferByIntent(intentId, status) {
+  try {
+    const Transfer = require('../models/Transfer');
+    const t = await Transfer.findOne({ stripePaymentIntentId: intentId });
+    if (t) {
+      t.status = status;
+      await t.save();
+      console.log(`🔄 Transfer ${t._id} -> ${status}`);
+    }
+  } catch (e) {
+    console.error('Error updating transfer:', e.message);
+  }
+}
 
 async function handlePaymentSuccess(paymentIntent) {
   try {
-    const payment = await Payment.findOne({ 
-      stripePaymentIntentId: paymentIntent.id 
-    });
-
+    const payment = await Payment.findOne({ stripePaymentIntentId: paymentIntent.id });
     if (payment) {
       payment.paymentStatus = 'completed';
       payment.transactionId = paymentIntent.id;
@@ -230,6 +239,7 @@ async function handlePaymentSuccess(paymentIntent) {
       await payment.save();
       console.log(`✅ Payment ${payment._id} marked as completed`);
     }
+    await updateTransferByIntent(paymentIntent.id, 'completed');
   } catch (error) {
     console.error('Error handling payment success:', error);
   }
@@ -237,15 +247,13 @@ async function handlePaymentSuccess(paymentIntent) {
 
 async function handlePaymentFailure(paymentIntent) {
   try {
-    const payment = await Payment.findOne({ 
-      stripePaymentIntentId: paymentIntent.id 
-    });
-
+    const payment = await Payment.findOne({ stripePaymentIntentId: paymentIntent.id });
     if (payment) {
       payment.paymentStatus = 'failed';
       await payment.save();
       console.log(`❌ Payment ${payment._id} marked as failed`);
     }
+    await updateTransferByIntent(paymentIntent.id, 'failed');
   } catch (error) {
     console.error('Error handling payment failure:', error);
   }
@@ -253,15 +261,13 @@ async function handlePaymentFailure(paymentIntent) {
 
 async function handlePaymentCanceled(paymentIntent) {
   try {
-    const payment = await Payment.findOne({ 
-      stripePaymentIntentId: paymentIntent.id 
-    });
-
+    const payment = await Payment.findOne({ stripePaymentIntentId: paymentIntent.id });
     if (payment) {
       payment.paymentStatus = 'cancelled';
       await payment.save();
       console.log(`⚠️ Payment ${payment._id} marked as cancelled`);
     }
+    await updateTransferByIntent(paymentIntent.id, 'cancelled');
   } catch (error) {
     console.error('Error handling payment cancellation:', error);
   }
@@ -323,4 +329,5 @@ router.get('/payment-status/:paymentId', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.webhookRouter = webhookRouter;
 

@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: function () {
-      return !this.googleId; // Password not required if using Google OAuth
+      return !this.googleId;
     },
     minlength: 6
   },
@@ -25,52 +25,34 @@ const userSchema = new mongoose.Schema({
     sparse: true,
     unique: true
   },
-  resetPasswordToken: {
-    type: String
-  },
-  resetPasswordExpires: {
-    type: Date
-  },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   role: {
     type: String,
     enum: ['client', 'contractor'],
     default: 'client'
   },
-  phone: {
-    type: String,
-    trim: true
-  },
-  address: {
-    type: String,
-    trim: true
-  },
-  companyName: {
-    type: String,
-    trim: true
-  },
-  website: {
-    type: String,
-    trim: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  bio: {
-    type: String,
-    trim: true
-  },
-  company: {
-    type: String,
-    trim: true
-  },
-  profilePicture: {
-    type: String // We'll store as Base64 or URL
-  }
+  phone: { type: String, trim: true },
+  address: { type: String, trim: true },
+  companyName: { type: String, trim: true },
+  website: { type: String, trim: true },
+  description: { type: String, trim: true },
+  bio: { type: String, trim: true },
+  company: { type: String, trim: true },
+  profilePicture: { type: String },
 
+  // Social / public-profile extras
+  city: { type: String, trim: true },
+  specialty: { type: String, trim: true },
+  yearsExperience: { type: Number, min: 0 },
+  avatarUri: { type: String },
+
+  // Stripe Customer (created on first card save)
+  stripeCustomerId: { type: String, index: true }
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('User', userSchema);
+userSchema.index({ name: 'text', email: 'text', specialty: 'text', city: 'text' });
 
+module.exports = mongoose.model('User', userSchema);

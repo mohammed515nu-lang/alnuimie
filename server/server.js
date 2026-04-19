@@ -84,6 +84,11 @@ const contractRoutes = require('./routes/contracts');
 const requestRoutes = require('./routes/requests');
 const reportRoutes = require('./routes/reports');
 const stripeRoutes = require('./routes/stripe');
+const portfolioRoutes = require('./routes/portfolio');
+const connectionRoutes = require('./routes/connections');
+const ratingRoutes = require('./routes/ratings');
+const chatRoutes = require('./routes/chats');
+const walletRoutes = require('./routes/wallet');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -97,6 +102,11 @@ app.use('/api/contracts', contractRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // 404 handler - يجب أن يكون بعد جميع routes
 app.use((req, res) => {

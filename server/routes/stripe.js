@@ -168,7 +168,7 @@ router.post('/confirm-payment', async (req, res) => {
 // Note: This route must be registered BEFORE express.json() middleware in server.js
 // For now, we'll handle it with a special route that bypasses JSON parsing
 const webhookRouter = express.Router();
-webhookRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+webhookRouter.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
   // Check if Stripe is configured
   if (!stripe) {
     console.error('❌ Stripe webhook called but Stripe is not configured');

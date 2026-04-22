@@ -17,7 +17,6 @@ import type {
 
 type AppState = {
   user: AuthUser | null;
-  isAuthenticated: boolean;
 
   myPublicProfile: PublicProfile | null;
 
@@ -76,7 +75,6 @@ export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       user: null,
-      isAuthenticated: false,
 
       myPublicProfile: null,
 
@@ -92,7 +90,7 @@ export const useStore = create<AppState>()(
       transfers: [],
       walletSummary: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: (user) => set({ user }),
 
       logout: async () => {
         await authAPI.logout();
@@ -103,7 +101,6 @@ export const useStore = create<AppState>()(
         }
         set({
           user: null,
-          isAuthenticated: false,
           myPublicProfile: null,
           searchResults: [],
           connections: [],
@@ -273,7 +270,6 @@ export const useStore = create<AppState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

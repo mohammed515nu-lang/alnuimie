@@ -12,6 +12,22 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Transfer } from '../../api/types';
+import { colors, radius, space } from '../../theme';
+
+function transferTypeAr(t: string) {
+  switch (t) {
+    case 'client_to_contractor':
+      return 'عميل → مقاول';
+    case 'contractor_to_supplier':
+      return 'مقاول → مورد';
+    case 'topup':
+      return 'شحن رصيد';
+    case 'withdraw':
+      return 'سحب';
+    default:
+      return t;
+  }
+}
 
 function statusLabel(s: string) {
   switch (s) {
@@ -76,7 +92,7 @@ export function TransfersScreen() {
   const renderItem = ({ item }: { item: Transfer }) => (
     <View style={styles.card}>
       <Text style={styles.title}>
-        {item.type} • {item.amount} {item.currency.toUpperCase()}
+        {transferTypeAr(String(item.type))} • {item.amount} {item.currency.toUpperCase()}
       </Text>
       <Text style={styles.meta}>الحالة: {statusLabel(String(item.status))}</Text>
       {item.description ? <Text style={styles.meta}>الوصف: {item.description}</Text> : null}
@@ -89,7 +105,7 @@ export function TransfersScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -100,29 +116,33 @@ export function TransfersScreen() {
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ padding: 16, paddingBottom: 30, backgroundColor: '#0B1220' }}
-      ListHeaderComponent={
-        error ? (
-          <Text style={{ color: '#FB7185', marginBottom: 10, textAlign: 'center' }}>{error}</Text>
-        ) : null
-      }
+      contentContainerStyle={styles.listContent}
+      ListHeaderComponent={error ? <Text style={styles.bannerError}>{error}</Text> : null}
       ListEmptyComponent={<Text style={styles.empty}>لا تحويلات</Text>}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center' },
-  card: {
-    backgroundColor: 'rgba(15,23,42,0.72)',
-    borderColor: '#1F2937',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
+  bannerError: {
+    color: colors.error,
+    marginBottom: space.sm + 2,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: space.sm,
   },
-  title: { color: '#F8FAFC', fontWeight: '900' },
-  meta: { color: '#CBD5E1', marginTop: 6 },
-  small: { color: '#64748B', marginTop: 8, fontSize: 12 },
-  empty: { color: '#64748B', textAlign: 'center', marginTop: 18 },
+  card: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.xl,
+    padding: space.md,
+    marginBottom: space.sm + 2,
+  },
+  title: { color: colors.text, fontWeight: '900' },
+  meta: { color: colors.textSubtle, marginTop: space.sm - 2 },
+  small: { color: colors.placeholder, marginTop: space.sm, fontSize: 12 },
+  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });

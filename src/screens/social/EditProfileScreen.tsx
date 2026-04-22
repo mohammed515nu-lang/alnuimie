@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 export function EditProfileScreen() {
   const refreshMyProfile = useStore((s) => s.refreshMyProfile);
@@ -22,7 +33,7 @@ export function EditProfileScreen() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         await refreshMyProfile();
       } catch {
@@ -83,26 +94,43 @@ export function EditProfileScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.root}>
-      <Text style={styles.title}>تعديل ملفي العام</Text>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>تعديل ملفي العام</Text>
 
-      <Pressable onPress={pickAvatar} style={styles.secondary}>
-        <Text style={styles.secondaryText}>اختيار صورة شخصية</Text>
-      </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={pickAvatar}
+          {...pressableRipple(colors.primaryTint12)}
+          style={styles.secondary}
+        >
+          <Text style={styles.secondaryText}>اختيار صورة شخصية</Text>
+        </Pressable>
 
-      <Field label="الاسم" value={name} onChangeText={setName} />
-      <Field label="الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-      <Field label="المدينة" value={city} onChangeText={setCity} />
-      <Field label="التخصص" value={specialty} onChangeText={setSpecialty} />
-      <Field label="نبذة" value={bio} onChangeText={setBio} multiline />
-      <Field label="سنوات الخبرة" value={years} onChangeText={setYears} keyboardType="number-pad" />
-      <Field label="اسم الشركة" value={companyName} onChangeText={setCompanyName} />
-      <Field label="الموقع" value={website} onChangeText={setWebsite} autoCapitalize="none" />
+        <Field label="الاسم" value={name} onChangeText={setName} />
+        <Field label="الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <Field label="المدينة" value={city} onChangeText={setCity} />
+        <Field label="التخصص" value={specialty} onChangeText={setSpecialty} />
+        <Field label="نبذة" value={bio} onChangeText={setBio} multiline />
+        <Field label="سنوات الخبرة" value={years} onChangeText={setYears} keyboardType="number-pad" />
+        <Field label="اسم الشركة" value={companyName} onChangeText={setCompanyName} />
+        <Field label="الموقع" value={website} onChangeText={setWebsite} autoCapitalize="none" />
 
-      <Pressable disabled={saving} onPress={onSave} style={[styles.primary, saving && { opacity: 0.6 }]}>
-        <Text style={styles.primaryText}>حفظ</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          accessibilityRole="button"
+          disabled={saving}
+          onPress={onSave}
+          {...pressableRipple(colors.primaryTint18)}
+          style={[styles.primary, saving && { opacity: 0.6 }]}
+        >
+          <Text style={styles.primaryText}>حفظ</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -115,12 +143,12 @@ function Field(props: {
   autoCapitalize?: 'none' | 'sentences';
 }) {
   return (
-    <View style={{ marginBottom: 10 }}>
+    <View style={{ marginBottom: space.sm + 2 }}>
       <Text style={styles.label}>{props.label}</Text>
       <TextInput
         value={props.value}
         onChangeText={props.onChangeText}
-        placeholderTextColor="#64748B"
+        placeholderTextColor={colors.placeholder}
         style={[styles.input, props.multiline && { minHeight: 90, textAlignVertical: 'top' }]}
         multiline={props.multiline}
         keyboardType={props.keyboardType}
@@ -131,20 +159,37 @@ function Field(props: {
 }
 
 const styles = StyleSheet.create({
-  root: { padding: 16, paddingBottom: 30, backgroundColor: '#0B1220' },
-  title: { color: '#F8FAFC', fontSize: 18, fontWeight: '900', marginBottom: 12 },
-  label: { color: '#94A3B8', marginBottom: 6, fontWeight: '700' },
+  flex: { flex: 1, backgroundColor: colors.background },
+  root: { padding: space.lg, paddingBottom: space.xxl + 8 },
+  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.md },
+  label: { color: colors.textMuted, marginBottom: space.sm - 2, fontWeight: '700' },
   input: {
-    backgroundColor: '#0B1220',
-    borderColor: '#1F2937',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    color: colors.textSecondary,
+    minHeight: touch.minHeight,
   },
-  primary: { backgroundColor: '#38BDF8', borderRadius: 12, paddingVertical: 12, marginTop: 8 },
-  primaryText: { color: '#0B1220', textAlign: 'center', fontWeight: '900' },
-  secondary: { borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: '#334155', marginBottom: 12 },
-  secondaryText: { color: '#E2E8F0', textAlign: 'center', fontWeight: '800' },
+  primary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    marginTop: space.sm,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
+  secondary: {
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    marginBottom: space.md,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
 });

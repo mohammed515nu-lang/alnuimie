@@ -15,6 +15,7 @@ import { useStore } from '../../store/useStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { getApiErrorMessage } from '../../api/http';
 import type { PublicProfile } from '../../api/types';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -49,7 +50,12 @@ export function SearchScreen() {
   const data = useMemo(() => results, [results]);
 
   const renderItem = ({ item }: { item: PublicProfile }) => (
-    <Pressable style={styles.row} onPress={() => navigation.navigate('PublicProfile', { userId: item._id })}>
+    <Pressable
+      accessibilityRole="button"
+      style={styles.row}
+      onPress={() => navigation.navigate('PublicProfile', { userId: item._id })}
+      {...pressableRipple(colors.primaryTint12)}
+    >
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.meta}>
@@ -64,31 +70,42 @@ export function SearchScreen() {
   return (
     <View style={styles.root}>
       <Text style={styles.title}>بحث المستخدمين</Text>
+      <Text style={styles.hint}>افتح الملف العام → تواصل → بعد القبول يمكنك الدفع أو الدردشة.</Text>
       <TextInput
         placeholder="ابحث بالاسم/الإيميل/التخصص..."
-        placeholderTextColor="#64748B"
+        placeholderTextColor={colors.placeholder}
         style={styles.input}
         value={q}
         onChangeText={setQ}
+        returnKeyType="search"
+        clearButtonMode="while-editing"
       />
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={colors.primary} />
         </View>
       ) : error ? (
         <View style={styles.center}>
           <Text style={styles.error}>{error}</Text>
-          <Pressable onPress={() => void run()} style={styles.retry}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => void run()}
+            {...pressableRipple(colors.primaryTint12)}
+            style={styles.retry}
+          >
             <Text style={styles.retryText}>إعادة المحاولة</Text>
           </Pressable>
         </View>
       ) : (
         <FlatList
+          style={styles.list}
           data={data}
           keyExtractor={(x) => x._id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={styles.empty}>لا نتائج</Text>}
         />
       )}
@@ -97,35 +114,49 @@ export function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0B1220', padding: 16, paddingTop: 18 },
-  title: { color: '#F8FAFC', fontSize: 20, fontWeight: '900', marginBottom: 10 },
+  root: { flex: 1, backgroundColor: colors.background, padding: space.lg, paddingTop: space.lg + 2 },
+  title: { color: colors.text, fontSize: 20, fontWeight: '900', marginBottom: space.sm - 2 },
+  hint: { color: colors.placeholder, marginBottom: space.sm + 2, lineHeight: 18, fontSize: 13 },
   input: {
-    backgroundColor: '#0B1220',
-    borderColor: '#1F2937',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#E2E8F0',
-    marginBottom: 10,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    color: colors.textSecondary,
+    marginBottom: space.sm + 2,
+    minHeight: touch.minHeight,
   },
+  list: { flex: 1 },
+  listContent: { paddingBottom: space.xxl },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingVertical: space.md,
+    paddingHorizontal: space.md,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#1F2937',
-    backgroundColor: 'rgba(15,23,42,0.55)',
-    marginBottom: 10,
+    borderColor: colors.border,
+    backgroundColor: colors.cardSoft,
+    marginBottom: space.sm + 2,
+    minHeight: touch.minHeight,
   },
-  name: { color: '#F8FAFC', fontWeight: '900' },
-  meta: { color: '#94A3B8', marginTop: 4 },
-  chev: { color: '#94A3B8', fontSize: 26, paddingLeft: 8 },
-  center: { paddingTop: 30, alignItems: 'center' },
-  error: { color: '#FB7185', textAlign: 'center' },
-  retry: { marginTop: 12, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#334155' },
-  retryText: { color: '#E2E8F0', fontWeight: '800' },
-  empty: { color: '#64748B', textAlign: 'center', marginTop: 18 },
+  name: { color: colors.text, fontWeight: '900' },
+  meta: { color: colors.textMuted, marginTop: space.xs },
+  chev: { color: colors.textMuted, fontSize: 26, paddingLeft: space.sm },
+  center: { flex: 1, paddingTop: space.xxl + 6, alignItems: 'center' },
+  error: { color: colors.error, textAlign: 'center', paddingHorizontal: space.md },
+  retry: {
+    marginTop: space.md,
+    paddingHorizontal: space.md - 2,
+    paddingVertical: space.sm + 2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  retryText: { color: colors.textSecondary, fontWeight: '800' },
+  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });

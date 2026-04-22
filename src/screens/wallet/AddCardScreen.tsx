@@ -6,6 +6,7 @@ import { walletAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 export function AddCardScreen() {
   const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
@@ -55,7 +56,13 @@ export function AddCardScreen() {
         سيتم فتح واجهة Stripe الآمنة لإدخال بيانات البطاقة. بعد النجاح، يتم حفظ PaymentMethod على الخادم.
       </Text>
 
-      <Pressable disabled={busy} onPress={onAdd} style={[styles.primary, busy && { opacity: 0.6 }]}>
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        onPress={onAdd}
+        {...pressableRipple(colors.primaryTint18)}
+        style={[styles.primary, busy && { opacity: 0.6 }]}
+      >
         <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'بدء إضافة البطاقة'}</Text>
       </Pressable>
     </View>
@@ -63,9 +70,15 @@ export function AddCardScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0B1220', padding: 16 },
-  title: { color: '#F8FAFC', fontSize: 18, fontWeight: '900', marginBottom: 10 },
-  body: { color: '#94A3B8', lineHeight: 22, marginBottom: 14 },
-  primary: { backgroundColor: '#38BDF8', borderRadius: 12, paddingVertical: 12 },
-  primaryText: { color: '#0B1220', textAlign: 'center', fontWeight: '900' },
+  root: { flex: 1, backgroundColor: colors.background, padding: space.lg },
+  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm + 2 },
+  body: { color: colors.textMuted, lineHeight: 22, marginBottom: space.md - 2 },
+  primary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
 });

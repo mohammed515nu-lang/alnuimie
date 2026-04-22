@@ -16,8 +16,22 @@ import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Connection } from '../../api/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+function statusAr(s: string) {
+  switch (s) {
+    case 'pending':
+      return 'قيد الانتظار';
+    case 'accepted':
+      return 'مقبول';
+    case 'rejected':
+      return 'مرفوض';
+    default:
+      return s;
+  }
+}
 
 export function ConnectionRequestsScreen() {
   const navigation = useNavigation<Nav>();
@@ -71,13 +85,14 @@ export function ConnectionRequestsScreen() {
   const renderItem = ({ item }: { item: Connection }) => (
     <View style={styles.card}>
       <Text style={styles.title}>{otherName(item)}</Text>
-      <Text style={styles.meta}>الحالة: {item.status}</Text>
+      <Text style={styles.meta}>الحالة: {statusAr(String(item.status))}</Text>
       {item.message ? <Text style={styles.msg}>الرسالة: {item.message}</Text> : null}
 
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+      <View style={{ flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2, flexWrap: 'wrap' }}>
         {isIncomingPending(item) ? (
           <>
             <Pressable
+              accessibilityRole="button"
               onPress={async () => {
                 try {
                   await acceptConnection(item.id);
@@ -85,11 +100,13 @@ export function ConnectionRequestsScreen() {
                   Alert.alert('تعذر القبول', getApiErrorMessage(e));
                 }
               }}
+              {...pressableRipple(colors.primaryTint18)}
               style={styles.primary}
             >
               <Text style={styles.primaryText}>قبول</Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               onPress={async () => {
                 try {
                   await rejectConnection(item.id);
@@ -97,6 +114,7 @@ export function ConnectionRequestsScreen() {
                   Alert.alert('تعذر الرفض', getApiErrorMessage(e));
                 }
               }}
+              {...pressableRipple('rgba(248,113,113,0.2)')}
               style={styles.danger}
             >
               <Text style={styles.dangerText}>رفض</Text>
@@ -106,6 +124,7 @@ export function ConnectionRequestsScreen() {
 
         {item.status === 'pending' && item.fromUserId === me?._id ? (
           <Pressable
+            accessibilityRole="button"
             onPress={async () => {
               try {
                 await cancelConnection(item.id);
@@ -113,6 +132,7 @@ export function ConnectionRequestsScreen() {
                 Alert.alert('تعذر الإلغاء', getApiErrorMessage(e));
               }
             }}
+            {...pressableRipple(colors.primaryTint12)}
             style={styles.secondary}
           >
             <Text style={styles.secondaryText}>إلغاء الطلب</Text>
@@ -121,6 +141,7 @@ export function ConnectionRequestsScreen() {
 
         {item.status === 'accepted' ? (
           <Pressable
+            accessibilityRole="button"
             onPress={async () => {
               try {
                 const thread = await ensureChatThread(otherId(item));
@@ -129,6 +150,7 @@ export function ConnectionRequestsScreen() {
                 Alert.alert('تعذر فتح المحادثة', getApiErrorMessage(e));
               }
             }}
+            {...pressableRipple(colors.primaryTint18)}
             style={styles.primary}
           >
             <Text style={styles.primaryText}>فتح محادثة</Text>
@@ -141,7 +163,7 @@ export function ConnectionRequestsScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -151,31 +173,57 @@ export function ConnectionRequestsScreen() {
       data={sorted}
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
+      keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ padding: 16, paddingBottom: 30, backgroundColor: '#0B1220' }}
+      contentContainerStyle={styles.listContent}
       ListEmptyComponent={<Text style={styles.empty}>لا طلبات</Text>}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
   card: {
-    backgroundColor: 'rgba(15,23,42,0.72)',
-    borderColor: '#1F2937',
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: radius.xl,
+    padding: space.md,
+    marginBottom: space.sm + 2,
   },
-  title: { color: '#F8FAFC', fontWeight: '900', fontSize: 16 },
-  meta: { color: '#94A3B8', marginTop: 6, fontWeight: '700' },
-  msg: { color: '#E2E8F0', marginTop: 8 },
-  primary: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: '#38BDF8' },
-  primaryText: { color: '#0B1220', fontWeight: '900' },
-  secondary: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#334155' },
-  secondaryText: { color: '#E2E8F0', fontWeight: '800' },
-  danger: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#7F1D1D', backgroundColor: 'rgba(127,29,29,0.15)' },
-  dangerText: { color: '#FCA5A5', fontWeight: '900' },
-  empty: { color: '#64748B', textAlign: 'center', marginTop: 18 },
+  title: { color: colors.text, fontWeight: '900', fontSize: 16 },
+  meta: { color: colors.textMuted, marginTop: space.sm - 2, fontWeight: '700' },
+  msg: { color: colors.textSecondary, marginTop: space.sm },
+  primary: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  primaryText: { color: colors.onPrimary, fontWeight: '900' },
+  secondary: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  secondaryText: { color: colors.textSecondary, fontWeight: '800' },
+  danger: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.dangerBorder,
+    backgroundColor: colors.dangerBg,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  dangerText: { color: colors.dangerText, fontWeight: '900' },
+  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });

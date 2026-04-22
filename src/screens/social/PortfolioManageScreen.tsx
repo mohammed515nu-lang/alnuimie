@@ -14,6 +14,7 @@ import {
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { PortfolioItem } from '../../api/types';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 export function PortfolioManageScreen() {
   const refreshPortfolio = useStore((s) => s.refreshPortfolio);
@@ -26,7 +27,7 @@ export function PortfolioManageScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [images, setImages] = useState(''); // comma separated URLs or one data URL
+  const [images, setImages] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -113,23 +114,39 @@ export function PortfolioManageScreen() {
 
   const header = useMemo(
     () => (
-      <View style={{ marginBottom: 12 }}>
+      <View style={{ marginBottom: space.md }}>
         <Text style={styles.title}>معرض الأعمال</Text>
         <Text style={styles.hint}>الصور: ضع رابط/روابط مفصولة بفاصلة، أو data URL واحد (base64).</Text>
-        <TextInput placeholder="العنوان" placeholderTextColor="#64748B" style={styles.input} value={title} onChangeText={setTitle} />
-        <TextInput placeholder="الوصف" placeholderTextColor="#64748B" style={[styles.input, { minHeight: 80 }]} value={description} onChangeText={setDescription} multiline />
-        <TextInput placeholder="صور" placeholderTextColor="#64748B" style={[styles.input, { minHeight: 70 }]} value={images} onChangeText={setImages} multiline />
-        <Pressable onPress={onSubmit} style={styles.primary}>
+        <TextInput placeholder="العنوان" placeholderTextColor={colors.placeholder} style={styles.input} value={title} onChangeText={setTitle} />
+        <TextInput
+          placeholder="الوصف"
+          placeholderTextColor={colors.placeholder}
+          style={[styles.input, { minHeight: 88 }]}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+        <TextInput
+          placeholder="صور"
+          placeholderTextColor={colors.placeholder}
+          style={[styles.input, { minHeight: 76 }]}
+          value={images}
+          onChangeText={setImages}
+          multiline
+        />
+        <Pressable accessibilityRole="button" onPress={onSubmit} {...pressableRipple(colors.primaryTint18)} style={styles.primary}>
           <Text style={styles.primaryText}>{editingId ? 'تحديث' : 'إضافة'}</Text>
         </Pressable>
         {editingId ? (
           <Pressable
+            accessibilityRole="button"
             onPress={() => {
               setEditingId(null);
               setTitle('');
               setDescription('');
               setImages('');
             }}
+            {...pressableRipple(colors.primaryTint12)}
             style={styles.secondary}
           >
             <Text style={styles.secondaryText}>إلغاء التعديل</Text>
@@ -143,7 +160,7 @@ export function PortfolioManageScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -153,17 +170,28 @@ export function PortfolioManageScreen() {
       data={items}
       keyExtractor={(x) => x.id}
       ListHeaderComponent={header}
+      keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ padding: 16, paddingBottom: 30, backgroundColor: '#0B1220' }}
+      contentContainerStyle={styles.listContent}
       renderItem={({ item }) => (
         <View style={styles.card}>
           <Text style={styles.itemTitle}>{item.title}</Text>
           {item.description ? <Text style={styles.itemDesc}>{item.description}</Text> : null}
-          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-            <Pressable onPress={() => onEdit(item)} style={styles.smallBtn}>
+          <View style={{ flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2 }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onEdit(item)}
+              {...pressableRipple(colors.primaryTint12)}
+              style={styles.smallBtn}
+            >
               <Text style={styles.smallBtnText}>تعديل</Text>
             </Pressable>
-            <Pressable onPress={() => void onDelete(item)} style={styles.smallDanger}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void onDelete(item)}
+              {...pressableRipple('rgba(248,113,113,0.2)')}
+              style={styles.smallDanger}
+            >
               <Text style={styles.smallDangerText}>حذف</Text>
             </Pressable>
           </View>
@@ -175,37 +203,70 @@ export function PortfolioManageScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#F8FAFC', fontSize: 18, fontWeight: '900' },
-  hint: { color: '#94A3B8', marginTop: 8, marginBottom: 10 },
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background },
+  title: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  hint: { color: colors.textMuted, marginTop: space.sm, marginBottom: space.sm + 2, lineHeight: 20 },
   input: {
-    backgroundColor: '#0B1220',
-    borderColor: '#1F2937',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#E2E8F0',
-    marginBottom: 10,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    color: colors.textSecondary,
+    marginBottom: space.sm + 2,
     textAlignVertical: 'top',
+    minHeight: touch.minHeight,
   },
-  primary: { backgroundColor: '#38BDF8', borderRadius: 12, paddingVertical: 12 },
-  primaryText: { color: '#0B1220', textAlign: 'center', fontWeight: '900' },
-  secondary: { marginTop: 10, borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: '#334155' },
-  secondaryText: { color: '#E2E8F0', textAlign: 'center', fontWeight: '800' },
-  card: {
-    backgroundColor: 'rgba(15,23,42,0.72)',
-    borderColor: '#1F2937',
+  primary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
+  secondary: {
+    marginTop: space.sm + 2,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+    borderColor: colors.borderMuted,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
   },
-  itemTitle: { color: '#F8FAFC', fontWeight: '900' },
-  itemDesc: { color: '#CBD5E1', marginTop: 6 },
-  smallBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: '#334155', paddingVertical: 10 },
-  smallBtnText: { color: '#E2E8F0', textAlign: 'center', fontWeight: '800' },
-  smallDanger: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: '#7F1D1D', paddingVertical: 10, backgroundColor: 'rgba(127,29,29,0.15)' },
-  smallDangerText: { color: '#FCA5A5', textAlign: 'center', fontWeight: '900' },
-  empty: { color: '#64748B', textAlign: 'center', marginTop: 10 },
+  secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
+  card: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.xl,
+    padding: space.md,
+    marginBottom: space.sm + 2,
+  },
+  itemTitle: { color: colors.text, fontWeight: '900' },
+  itemDesc: { color: colors.textSubtle, marginTop: space.sm - 2, lineHeight: 20 },
+  smallBtn: {
+    flex: 1,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    paddingVertical: space.sm + 2,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  smallBtnText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
+  smallDanger: {
+    flex: 1,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.dangerBorder,
+    paddingVertical: space.sm + 2,
+    backgroundColor: colors.dangerBg,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  smallDangerText: { color: colors.dangerText, textAlign: 'center', fontWeight: '900' },
+  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.sm + 2 },
 });

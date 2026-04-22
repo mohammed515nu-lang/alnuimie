@@ -4,10 +4,19 @@ import type { AuthUser } from '../types';
 type LoginResponse = { token: string; user: AuthUser };
 type RegisterResponse = LoginResponse;
 
+function idToString(raw: unknown): string {
+  if (raw == null) return '';
+  if (typeof raw === 'string' || typeof raw === 'number') return String(raw);
+  if (typeof raw === 'object' && 'toString' in raw && typeof (raw as { toString: () => string }).toString === 'function') {
+    return String((raw as { toString: () => string }).toString());
+  }
+  return String(raw);
+}
+
 function normalizeUser(u: unknown): AuthUser {
   const anyU = u as { _id?: unknown; id?: unknown; name?: string; email?: string; role?: string; phone?: string };
   return {
-    _id: String(anyU._id ?? anyU.id ?? ''),
+    _id: idToString(anyU._id ?? anyU.id),
     name: String(anyU.name ?? ''),
     email: String(anyU.email ?? ''),
     role: String(anyU.role ?? 'client'),

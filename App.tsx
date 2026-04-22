@@ -14,19 +14,34 @@ export default function App() {
   const hydrate = useStore((s) => s.setUser);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    const restoreSession = async () => {
       const token = await SecureStore.getItemAsync('auth_token');
-      if (!token) return;
+      if (!token) {
+        if (useStore.getState().user) hydrate(null);
+        return;
+      }
       try {
         const user = await authAPI.me();
-        hydrate(user);
-        useStore.setState({ isAuthenticated: true });
+        if (!cancelled) hydrate(user);
       } catch {
-        await setAuthToken(null);
-        hydrate(null);
-        useStore.setState({ isAuthenticated: false });
+        if (!cancelled) {
+          await setAuthToken(null);
+          hydrate(null);
+        }
       }
-    })();
+    };
+
+    const unsub = useStore.persist.onFinishHydration(() => {
+      void restoreSession();
+    });
+    if (useStore.persist.hasHydrated()) void restoreSession();
+
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, [hydrate]);
 
   const pk = getStripePublishableKey();

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 
 import { useStore } from '../store/useStore';
+import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
 import { LoginScreen } from '../screens/auth/LoginScreen';
@@ -31,9 +32,11 @@ function MainTabs() {
     <Tabs.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#38BDF8',
-        tabBarInactiveTintColor: '#94A3B8',
-        tabBarStyle: { backgroundColor: '#0B1220', borderTopColor: '#1F2937' },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border },
+        tabBarHideOnKeyboard: true,
+        tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
         tabBarIcon: ({ color, size }) => {
           const map: Record<string, keyof typeof Ionicons.glyphMap> = {
             Home: 'home',
@@ -55,19 +58,20 @@ function MainTabs() {
 }
 
 export function AppNavigator() {
-  const isAuthenticated = useStore((s) => s.isAuthenticated);
+  const user = useStore((s) => s.user);
+  const isAuthenticated = !!user;
 
   const theme = useMemo(
     () => ({
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: '#0B1220',
-        card: '#0B1220',
-        primary: '#38BDF8',
-        text: '#E2E8F0',
-        border: '#1F2937',
-        notification: '#F97316',
+        background: colors.background,
+        card: colors.background,
+        primary: colors.primary,
+        text: colors.textSecondary,
+        border: colors.border,
+        notification: colors.notification,
       },
     }),
     []
@@ -81,16 +85,26 @@ export function AppNavigator() {
         ) : (
           <>
             <Stack.Screen name="App" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ title: 'ملف عام' }} />
-            <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ title: 'محادثة' }} />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'تعديل ملفي' }} />
-            <Stack.Screen name="PortfolioManage" component={PortfolioManageScreen} options={{ title: 'معرض أعمالي' }} />
-            <Stack.Screen name="ConnectionRequests" component={ConnectionRequestsScreen} options={{ title: 'طلبات التواصل' }} />
-            <Stack.Screen name="ManageCards" component={ManageCardsScreen} options={{ title: 'البطاقات' }} />
-            <Stack.Screen name="AddCard" component={AddCardScreen} options={{ title: 'إضافة بطاقة' }} />
-            <Stack.Screen name="PayContractor" component={PayContractorScreen} options={{ title: 'دفع للمقاول' }} />
-            <Stack.Screen name="ContractorPaySupplier" component={ContractorPaySupplierScreen} options={{ title: 'دفع للمورد' }} />
-            <Stack.Screen name="Transfers" component={TransfersScreen} options={{ title: 'التحويلات' }} />
+            <Stack.Group
+              screenOptions={{
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.textSecondary,
+                headerTitleStyle: { fontWeight: '800' },
+                headerShadowVisible: false,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            >
+              <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ title: 'ملف عام' }} />
+              <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ title: 'محادثة' }} />
+              <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'تعديل ملفي' }} />
+              <Stack.Screen name="PortfolioManage" component={PortfolioManageScreen} options={{ title: 'معرض أعمالي' }} />
+              <Stack.Screen name="ConnectionRequests" component={ConnectionRequestsScreen} options={{ title: 'طلبات التواصل' }} />
+              <Stack.Screen name="ManageCards" component={ManageCardsScreen} options={{ title: 'البطاقات' }} />
+              <Stack.Screen name="AddCard" component={AddCardScreen} options={{ title: 'إضافة بطاقة' }} />
+              <Stack.Screen name="PayContractor" component={PayContractorScreen} options={{ title: 'دفع للمقاول' }} />
+              <Stack.Screen name="ContractorPaySupplier" component={ContractorPaySupplierScreen} options={{ title: 'دفع للمورد' }} />
+              <Stack.Screen name="Transfers" component={TransfersScreen} options={{ title: 'التحويلات' }} />
+            </Stack.Group>
           </>
         )}
       </Stack.Navigator>

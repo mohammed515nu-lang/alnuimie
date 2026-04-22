@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { PaymentCard } from '../../api/types';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 export function ManageCardsScreen() {
   const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
@@ -66,8 +67,9 @@ export function ManageCardsScreen() {
       <Text style={styles.meta}>
         {String(item.expMonth).padStart(2, '0')}/{item.expYear}
       </Text>
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+      <View style={{ flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2 }}>
         <Pressable
+          accessibilityRole="button"
           onPress={async () => {
             try {
               await setDefaultPaymentCard(item.id);
@@ -75,11 +77,13 @@ export function ManageCardsScreen() {
               Alert.alert('تعذر التعيين', getApiErrorMessage(e));
             }
           }}
+          {...pressableRipple(colors.primaryTint12)}
           style={styles.secondary}
         >
           <Text style={styles.secondaryText}>تعيين افتراضي</Text>
         </Pressable>
         <Pressable
+          accessibilityRole="button"
           onPress={async () => {
             Alert.alert('حذف', 'حذف البطاقة؟', [
               { text: 'إلغاء', style: 'cancel' },
@@ -96,6 +100,7 @@ export function ManageCardsScreen() {
               },
             ]);
           }}
+          {...pressableRipple('rgba(248,113,113,0.25)')}
           style={styles.danger}
         >
           <Text style={styles.dangerText}>حذف</Text>
@@ -107,7 +112,7 @@ export function ManageCardsScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -117,28 +122,47 @@ export function ManageCardsScreen() {
       data={cards}
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
+      keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ padding: 16, paddingBottom: 30, backgroundColor: '#0B1220' }}
+      contentContainerStyle={styles.listContent}
       ListEmptyComponent={<Text style={styles.empty}>لا بطاقات</Text>}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background },
   card: {
-    backgroundColor: 'rgba(15,23,42,0.72)',
-    borderColor: '#1F2937',
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: radius.xl,
+    padding: space.md,
+    marginBottom: space.sm + 2,
   },
-  title: { color: '#F8FAFC', fontWeight: '900', fontSize: 16 },
-  meta: { color: '#94A3B8', marginTop: 6, fontWeight: '700' },
-  secondary: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: '#334155', paddingVertical: 10 },
-  secondaryText: { color: '#E2E8F0', textAlign: 'center', fontWeight: '800' },
-  danger: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: '#7F1D1D', paddingVertical: 10, backgroundColor: 'rgba(127,29,29,0.15)' },
-  dangerText: { color: '#FCA5A5', textAlign: 'center', fontWeight: '900' },
-  empty: { color: '#64748B', textAlign: 'center', marginTop: 18 },
+  title: { color: colors.text, fontWeight: '900', fontSize: 16 },
+  meta: { color: colors.textMuted, marginTop: space.sm - 2, fontWeight: '700' },
+  secondary: {
+    flex: 1,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    paddingVertical: space.sm + 2,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
+  danger: {
+    flex: 1,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.dangerBorder,
+    paddingVertical: space.sm + 2,
+    backgroundColor: colors.dangerBg,
+    minHeight: touch.minHeight - 4,
+    justifyContent: 'center',
+  },
+  dangerText: { color: colors.dangerText, textAlign: 'center', fontWeight: '900' },
+  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });

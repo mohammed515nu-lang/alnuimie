@@ -28,6 +28,10 @@ export async function setAuthToken(token: string | null) {
 
 export function getApiErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
+    if (!err.response) {
+      if (err.code === 'ECONNABORTED') return 'انتهت مهلة الاتصال بالخادم.';
+      return 'تعذر الوصول للخادم. إذا كنت على هاتف، لا يعمل عنوان localhost — استخدم IP جهازك أو رابط الاستضافة في EXPO_PUBLIC_API_URL.';
+    }
     const data = err.response?.data as { message?: string; error?: string } | undefined;
     return data?.message || data?.error || err.message || 'حدث خطأ غير متوقع';
   }

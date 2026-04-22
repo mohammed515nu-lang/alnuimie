@@ -20,6 +20,7 @@ import { getApiErrorMessage } from '../../api/http';
 import type { RootStackParamList } from '../../navigation/types';
 import type { PortfolioItem, PublicProfileAggregate, Rating } from '../../api/types';
 import { useStore } from '../../store/useStore';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 type Route = RouteProp<RootStackParamList, 'PublicProfile'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -117,19 +118,24 @@ export function PublicProfileScreen() {
   if (loading || !profile) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView
-      style={{ backgroundColor: '#0B1220' }}
-      contentContainerStyle={{ padding: 16, paddingBottom: 30 }}
+      style={styles.flex}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>
-        {profile.avatarUri ? <Image source={{ uri: profile.avatarUri }} style={styles.avatar} /> : <View style={[styles.avatar, styles.avatarPh]} />}
+        {profile.avatarUri ? (
+          <Image source={{ uri: profile.avatarUri }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPh]} />
+        )}
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.meta}>
@@ -137,7 +143,8 @@ export function PublicProfileScreen() {
             {profile.city ? ` • ${profile.city}` : ''}
           </Text>
           <Text style={styles.meta2}>
-            ⭐ {profile.ratingAvg.toFixed(2)} ({profile.ratingCount}) • أعمال: {profile.completedProjects} • متابعون: {profile.followers}
+            ⭐ {profile.ratingAvg.toFixed(2)} ({profile.ratingCount}) • أعمال: {profile.completedProjects} • متابعون:{' '}
+            {profile.followers}
           </Text>
         </View>
       </View>
@@ -148,10 +155,20 @@ export function PublicProfileScreen() {
 
       {!isSelf ? (
         <View style={styles.actions}>
-          <Pressable onPress={() => setConnectOpen((v) => !v)} style={styles.btn}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setConnectOpen((v) => !v)}
+            {...pressableRipple(colors.primaryTint18)}
+            style={styles.btn}
+          >
             <Text style={styles.btnText}>طلب تواصل</Text>
           </Pressable>
-          <Pressable onPress={onMessage} style={styles.btnSecondary}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onMessage}
+            {...pressableRipple(colors.primaryTint12)}
+            style={styles.btnSecondary}
+          >
             <Text style={styles.btnSecondaryText}>مراسلة</Text>
           </Pressable>
         </View>
@@ -162,12 +179,12 @@ export function PublicProfileScreen() {
           <Text style={styles.cardTitle}>رسالة مع الطلب (اختياري)</Text>
           <TextInput
             placeholder="اكتب رسالة قصيرة..."
-            placeholderTextColor="#64748B"
+            placeholderTextColor={colors.placeholder}
             style={styles.input}
             value={connectMsg}
             onChangeText={setConnectMsg}
           />
-          <Pressable onPress={onConnect} style={styles.btn}>
+          <Pressable accessibilityRole="button" onPress={onConnect} {...pressableRipple(colors.primaryTint18)} style={styles.btn}>
             <Text style={styles.btnText}>إرسال</Text>
           </Pressable>
         </View>
@@ -176,9 +193,22 @@ export function PublicProfileScreen() {
       {me && me.role === 'client' && profile.role === 'contractor' && !isSelf ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>تقييم المقاول</Text>
-          <TextInput placeholder="1-5" placeholderTextColor="#64748B" style={styles.input} value={stars} onChangeText={setStars} keyboardType="number-pad" />
-          <TextInput placeholder="تعليق (اختياري)" placeholderTextColor="#64748B" style={styles.input} value={comment} onChangeText={setComment} />
-          <Pressable onPress={onRating} style={styles.btn}>
+          <TextInput
+            placeholder="1-5"
+            placeholderTextColor={colors.placeholder}
+            style={styles.input}
+            value={stars}
+            onChangeText={setStars}
+            keyboardType="number-pad"
+          />
+          <TextInput
+            placeholder="تعليق (اختياري)"
+            placeholderTextColor={colors.placeholder}
+            style={styles.input}
+            value={comment}
+            onChangeText={setComment}
+          />
+          <Pressable accessibilityRole="button" onPress={onRating} {...pressableRipple(colors.primaryTint18)} style={styles.btn}>
             <Text style={styles.btnText}>حفظ التقييم</Text>
           </Pressable>
         </View>
@@ -208,39 +238,57 @@ export function PublicProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  avatar: { width: 72, height: 72, borderRadius: 16, borderWidth: 1, borderColor: '#1F2937' },
-  avatarPh: { backgroundColor: '#111827' },
-  name: { color: '#F8FAFC', fontSize: 20, fontWeight: '900' },
-  meta: { color: '#94A3B8', marginTop: 4, fontWeight: '700' },
-  meta2: { color: '#CBD5E1', marginTop: 6 },
-  block: { color: '#E2E8F0', marginTop: 8 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  btn: { flex: 1, backgroundColor: '#38BDF8', borderRadius: 12, paddingVertical: 12 },
-  btnText: { color: '#0B1220', textAlign: 'center', fontWeight: '900' },
-  btnSecondary: { flex: 1, borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: '#334155' },
-  btnSecondaryText: { color: '#E2E8F0', textAlign: 'center', fontWeight: '900' },
+  flex: { flex: 1, backgroundColor: colors.background },
+  content: { padding: space.lg, paddingBottom: space.xxl + 8 },
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', gap: space.md, marginBottom: space.md },
+  avatar: { width: 76, height: 76, borderRadius: radius.lg + 2, borderWidth: 1, borderColor: colors.border },
+  avatarPh: { backgroundColor: colors.backgroundElevated },
+  name: { color: colors.text, fontSize: 20, fontWeight: '900' },
+  meta: { color: colors.textMuted, marginTop: space.xs, fontWeight: '700' },
+  meta2: { color: colors.textSubtle, marginTop: space.sm - 2, lineHeight: 20 },
+  block: { color: colors.textSecondary, marginTop: space.sm },
+  actions: { flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2 },
+  btn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  btnText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
+  btnSecondary: {
+    flex: 1,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  btnSecondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '900' },
   card: {
-    backgroundColor: 'rgba(15,23,42,0.72)',
-    borderColor: '#1F2937',
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    marginTop: 12,
+    borderRadius: radius.xl,
+    padding: space.md,
+    marginTop: space.md,
   },
-  cardTitle: { color: '#F8FAFC', fontWeight: '900', marginBottom: 8 },
+  cardTitle: { color: colors.text, fontWeight: '900', marginBottom: space.sm },
   input: {
-    backgroundColor: '#0B1220',
-    borderColor: '#1F2937',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#E2E8F0',
-    marginBottom: 10,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
+    color: colors.textSecondary,
+    marginBottom: space.sm + 2,
+    minHeight: touch.minHeight - 4,
   },
-  sectionTitle: { color: '#F8FAFC', fontSize: 16, fontWeight: '900', marginTop: 16, marginBottom: 8 },
-  itemTitle: { color: '#F8FAFC', fontWeight: '900' },
-  empty: { color: '#64748B' },
+  sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '900', marginTop: space.lg, marginBottom: space.sm },
+  itemTitle: { color: colors.text, fontWeight: '900' },
+  empty: { color: colors.placeholder },
 });

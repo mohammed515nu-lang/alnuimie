@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+} from 'react-native';
 import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
 
 import { walletAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
+import { colors, pressableRipple, radius, space, touch } from '../../theme';
 
 export function ContractorPaySupplierScreen() {
   const refreshTransfers = useStore((s) => s.refreshTransfers);
@@ -74,33 +84,79 @@ export function ContractorPaySupplierScreen() {
   };
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>دفع مقاول → مورد</Text>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.title}>دفع مقاول → مورد</Text>
+        <Text style={styles.lead}>أدخل المبلغ واختياريًا اسم المورد والوصف.</Text>
 
-      <TextInput placeholder="المبلغ (USD)" placeholderTextColor="#64748B" style={styles.input} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
-      <TextInput placeholder="اسم المورد (اختياري)" placeholderTextColor="#64748B" style={styles.input} value={supplierName} onChangeText={setSupplierName} />
-      <TextInput placeholder="وصف (اختياري)" placeholderTextColor="#64748B" style={styles.input} value={description} onChangeText={setDescription} />
+        <TextInput
+          placeholder="المبلغ (USD)"
+          placeholderTextColor={colors.placeholder}
+          style={styles.input}
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="decimal-pad"
+        />
+        <TextInput
+          placeholder="اسم المورد (اختياري)"
+          placeholderTextColor={colors.placeholder}
+          style={styles.input}
+          value={supplierName}
+          onChangeText={setSupplierName}
+        />
+        <TextInput
+          placeholder="وصف (اختياري)"
+          placeholderTextColor={colors.placeholder}
+          style={styles.input}
+          value={description}
+          onChangeText={setDescription}
+        />
 
-      <Pressable disabled={busy} onPress={onPay} style={[styles.primary, busy && { opacity: 0.6 }]}>
-        <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
-      </Pressable>
-    </View>
+        <Pressable
+          accessibilityRole="button"
+          disabled={busy}
+          onPress={onPay}
+          {...pressableRipple(colors.primaryTint18)}
+          style={[styles.primary, busy && { opacity: 0.6 }]}
+        >
+          <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0B1220', padding: 16 },
-  title: { color: '#F8FAFC', fontSize: 18, fontWeight: '900', marginBottom: 12 },
+  flex: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
+  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm },
+  lead: { color: colors.textMuted, marginBottom: space.md, lineHeight: 20 },
   input: {
-    backgroundColor: '#0B1220',
-    borderColor: '#1F2937',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#E2E8F0',
-    marginBottom: 10,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    color: colors.textSecondary,
+    marginBottom: space.sm + 2,
+    minHeight: touch.minHeight,
   },
-  primary: { backgroundColor: '#38BDF8', borderRadius: 12, paddingVertical: 12, marginTop: 8 },
-  primaryText: { color: '#0B1220', textAlign: 'center', fontWeight: '900' },
+  primary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    marginTop: space.sm,
+    minHeight: touch.minHeight,
+    justifyContent: 'center',
+  },
+  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
 });

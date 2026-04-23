@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TopBar } from '../../components/TopBar';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function NewProjectScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createNewProjectStyles(colors), [colors]);
   const [clientName, setClientName] = useState('');
   const [city, setCity] = useState('');
   const [budget, setBudget] = useState('');
@@ -19,7 +22,11 @@ export function NewProjectScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <TopBar title="مشروع جديد" />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <View style={styles.card}>
           <Text style={styles.label}>اسم العميل</Text>
           <TextInput
@@ -98,7 +105,8 @@ export function NewProjectScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createNewProjectStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { paddingHorizontal: space.lg, paddingBottom: space.xxl },
   card: {
@@ -156,3 +164,4 @@ const styles = StyleSheet.create({
   },
   createBtnText: { color: colors.onPrimary, fontWeight: '900', fontSize: 16 },
 });
+}

@@ -14,7 +14,8 @@ import {
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { PortfolioItem } from '../../api/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function PortfolioManageScreen() {
   const refreshPortfolio = useStore((s) => s.refreshPortfolio);
@@ -22,6 +23,8 @@ export function PortfolioManageScreen() {
   const updatePortfolioItem = useStore((s) => s.updatePortfolioItem);
   const deletePortfolioItem = useStore((s) => s.deletePortfolioItem);
   const items = useStore((s) => s.portfolio);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createPortfolioManageStyles(colors), [colors]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -154,7 +157,7 @@ export function PortfolioManageScreen() {
         ) : null}
       </View>
     ),
-    [title, description, images, editingId]
+    [title, description, images, editingId, colors, styles]
   );
 
   if (loading) {
@@ -171,6 +174,7 @@ export function PortfolioManageScreen() {
       keyExtractor={(x) => x.id}
       ListHeaderComponent={header}
       keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       contentContainerStyle={styles.listContent}
       renderItem={({ item }) => (
@@ -202,7 +206,8 @@ export function PortfolioManageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createPortfolioManageStyles(colors: AppPalette) {
+  return StyleSheet.create({
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background },
   title: { color: colors.text, fontSize: 18, fontWeight: '900' },
@@ -270,3 +275,4 @@ const styles = StyleSheet.create({
   smallDangerText: { color: colors.dangerText, textAlign: 'center', fontWeight: '900' },
   empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.sm + 2 },
 });
+}

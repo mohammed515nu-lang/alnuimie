@@ -1,17 +1,15 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 import { TopBar } from '../../components/TopBar';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList, 'Invoices'>;
+import { pushStackRoute } from '../../navigation/href';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function InvoicesScreen() {
-  const navigation = useNavigation<Nav>();
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createInvoicesStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -20,7 +18,7 @@ export function InvoicesScreen() {
         leftAction={
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigation.navigate('NewInvoice')}
+            onPress={() => pushStackRoute('NewInvoice')}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Ionicons name="add" size={28} color={colors.text} />
@@ -32,7 +30,7 @@ export function InvoicesScreen() {
         <Text style={styles.empty}>لا توجد فواتير</Text>
         <Pressable
           accessibilityRole="button"
-          onPress={() => navigation.navigate('NewInvoice')}
+          onPress={() => pushStackRoute('NewInvoice')}
           {...pressableRipple(colors.primaryTint12)}
           style={styles.cta}
         >
@@ -43,7 +41,8 @@ export function InvoicesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createInvoicesStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 80 },
   empty: { color: colors.textMuted, fontSize: 16, fontWeight: '700', marginTop: space.lg },
@@ -58,3 +57,4 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: colors.onPrimary, fontWeight: '900', fontSize: 16 },
 });
+}

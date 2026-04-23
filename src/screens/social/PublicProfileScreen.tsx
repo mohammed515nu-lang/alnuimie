@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,28 +14,29 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import type { RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useLocalSearchParams } from 'expo-router';
 
 import { TopBar } from '../../components/TopBar';
 import { socialAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
-import type { RootStackParamList } from '../../navigation/types';
+import { pushStackRoute } from '../../navigation/href';
 import type { PortfolioItem, PublicProfileAggregate, Rating } from '../../api/types';
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticSuccess } from '../../utils/haptics';
+import type { AppPalette } from '../../theme/palettes';
 import { isConnectedWith } from '../../utils/connections';
-
-type Route = RouteProp<RootStackParamList, 'PublicProfile'>;
-type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const MAX_CONNECT = 300;
 
+function readParam(s: string | string[] | undefined) {
+  if (s === undefined) return '';
+  return Array.isArray(s) ? (s[0] ?? '') : s;
+}
+
 export function PublicProfileScreen() {
-  const route = useRoute<Route>();
-  const navigation = useNavigation<Nav>();
-  const userId = route.params.userId;
+  const { userId: userIdParam } = useLocalSearchParams<{ userId: string }>();
+  const userId = readParam(userIdParam);
 
   const me = useStore((s) => s.user);
   const connections = useStore((s) => s.connections);
@@ -55,6 +56,10 @@ export function PublicProfileScreen() {
   const [connectMsg, setConnectMsg] = useState('');
   const [stars, setStars] = useState('5');
   const [comment, setComment] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
+
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createPublicProfileStyles(colors), [colors]);
 
   const isSelf = useMemo(() => !!me && me._id === userId, [me, userId]);
   const connected = useMemo(
@@ -107,6 +112,7 @@ export function PublicProfileScreen() {
       await sendConnectionRequest(userId, connectMsg.trim() || undefined);
       setConnectModal(false);
       setConnectMsg('');
+      hapticSuccess();
       Alert.alert('تم', 'تم إرسال طلب التواصل');
     } catch (e) {
       Alert.alert('تعذر الإرسال', getApiErrorMessage(e));
@@ -121,7 +127,10 @@ export function PublicProfileScreen() {
     }
     try {
       const thread = await ensureChatThread(userId);
-      navigation.navigate('ChatRoom', { conversationId: thread.id, title: thread.otherUserName || 'محادثة' });
+      pushStackRoute('ChatRoom', {
+        conversationId: thread.id,
+        title: thread.otherUserName || 'محادثة',
+      });
     } catch (e) {
       Alert.alert('تعذر فتح المحادثة', getApiErrorMessage(e));
     }
@@ -133,6 +142,7 @@ export function PublicProfileScreen() {
     try {
       await upsertRating(userId, n, comment.trim() || undefined);
       await load();
+      hapticSuccess();
       Alert.alert('تم', 'تم حفظ التقييم');
     } catch (e) {
       Alert.alert('تعذر التقييم', getApiErrorMessage(e));
@@ -162,9 +172,11 @@ export function PublicProfileScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <TopBar title="الملف الشخصي" />
       <ScrollView
+        ref={scrollRef}
         style={styles.flex}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.hero}>
@@ -247,7 +259,9 @@ export function PublicProfileScreen() {
           <Text style={styles.sectionTitle}>التقييمات ({ratings.length})</Text>
           {me && me.role === 'client' && profile.role === 'contractor' && !isSelf ? (
             <Pressable
-              onPress={() => Alert.alert('تقييم', 'استخدم النموذج في أسفل الصفحة')}
+              accessibilityRole="button"
+              accessibilityLabel="الانتقال إلى نموذج التقييم"
+              onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
               style={styles.addRate}
               {...pressableRipple(colors.primaryTint12)}
             >
@@ -351,7 +365,8 @@ export function PublicProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createPublicProfileStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { padding: space.lg, paddingBottom: space.xxl + 8 },
@@ -502,3 +517,4 @@ const styles = StyleSheet.create({
   alertBtns: { flexDirection: 'row-reverse', justifyContent: 'flex-end', gap: space.lg, marginTop: space.lg },
   alertLink: { color: '#2dd4bf', fontWeight: '800', fontSize: 16 },
 });
+}

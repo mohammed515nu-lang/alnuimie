@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,7 +13,10 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticSuccess } from '../../utils/haptics';
+import { isIOS } from '../../utils/platformEnv';
+import type { AppPalette } from '../../theme/palettes';
 
 export function EditProfileScreen() {
   const refreshMyProfile = useStore((s) => s.refreshMyProfile);
@@ -31,6 +33,9 @@ export function EditProfileScreen() {
   const [website, setWebsite] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createEditProfileStyles(colors), [colors]);
 
   useEffect(() => {
     void (async () => {
@@ -85,6 +90,7 @@ export function EditProfileScreen() {
         website: website.trim() || undefined,
         avatarUri,
       });
+      hapticSuccess();
       Alert.alert('تم', 'تم حفظ الملف');
     } catch (e) {
       Alert.alert('تعذر الحفظ', getApiErrorMessage(e));
@@ -93,13 +99,41 @@ export function EditProfileScreen() {
     }
   };
 
+  function Field(props: {
+    label: string;
+    value: string;
+    onChangeText: (t: string) => void;
+    multiline?: boolean;
+    keyboardType?: 'default' | 'phone-pad' | 'number-pad';
+    autoCapitalize?: 'none' | 'sentences';
+  }) {
+    return (
+      <View style={{ marginBottom: space.sm + 2 }}>
+        <Text style={styles.label}>{props.label}</Text>
+        <TextInput
+          value={props.value}
+          onChangeText={props.onChangeText}
+          placeholderTextColor={colors.placeholder}
+          style={[styles.input, props.multiline && { minHeight: 90, textAlignVertical: 'top' }]}
+          multiline={props.multiline}
+          keyboardType={props.keyboardType}
+          autoCapitalize={props.autoCapitalize}
+        />
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      behavior={isIOS ? 'padding' : undefined}
+      keyboardVerticalOffset={isIOS ? 64 : 0}
     >
-      <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.root}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <Text style={styles.title}>تعديل ملفي العام</Text>
 
         <Pressable
@@ -134,31 +168,8 @@ export function EditProfileScreen() {
   );
 }
 
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  multiline?: boolean;
-  keyboardType?: 'default' | 'phone-pad' | 'number-pad';
-  autoCapitalize?: 'none' | 'sentences';
-}) {
-  return (
-    <View style={{ marginBottom: space.sm + 2 }}>
-      <Text style={styles.label}>{props.label}</Text>
-      <TextInput
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholderTextColor={colors.placeholder}
-        style={[styles.input, props.multiline && { minHeight: 90, textAlignVertical: 'top' }]}
-        multiline={props.multiline}
-        keyboardType={props.keyboardType}
-        autoCapitalize={props.autoCapitalize}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
+function createEditProfileStyles(colors: AppPalette) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   root: { padding: space.lg, paddingBottom: space.xxl + 8 },
   title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.md },
@@ -193,3 +204,4 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
 });
+}

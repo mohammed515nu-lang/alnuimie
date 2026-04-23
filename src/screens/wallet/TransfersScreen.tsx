@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Transfer } from '../../api/types';
-import { colors, radius, space } from '../../theme';
+import { useAppTheme, radius, space } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 function transferTypeAr(t: string) {
   switch (t) {
@@ -49,6 +50,8 @@ function statusLabel(s: string) {
 export function TransfersScreen() {
   const refreshTransfers = useStore((s) => s.refreshTransfers);
   const transfers = useStore((s) => s.transfers);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createTransfersStyles(colors), [colors]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -115,15 +118,23 @@ export function TransfersScreen() {
       data={transfers}
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
+      contentInsetAdjustmentBehavior="automatic"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       contentContainerStyle={styles.listContent}
-      ListHeaderComponent={error ? <Text style={styles.bannerError}>{error}</Text> : null}
+      ListHeaderComponent={
+        error ? (
+          <Text style={styles.bannerError} selectable>
+            {error}
+          </Text>
+        ) : null
+      }
       ListEmptyComponent={<Text style={styles.empty}>لا تحويلات</Text>}
     />
   );
 }
 
-const styles = StyleSheet.create({
+function createTransfersStyles(colors: AppPalette) {
+  return StyleSheet.create({
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
   bannerError: {
@@ -141,8 +152,9 @@ const styles = StyleSheet.create({
     padding: space.md,
     marginBottom: space.sm + 2,
   },
-  title: { color: colors.text, fontWeight: '900' },
+  title: { color: colors.text, fontWeight: '900', fontVariant: ['tabular-nums'] },
   meta: { color: colors.textSubtle, marginTop: space.sm - 2 },
-  small: { color: colors.placeholder, marginTop: space.sm, fontSize: 12 },
+  small: { color: colors.placeholder, marginTop: space.sm, fontSize: 12, fontVariant: ['tabular-nums'] },
   empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });
+}

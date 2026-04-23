@@ -1,0 +1,13 @@
+{
+  "codeConnect": {
+    "include": [
+      "src/**/*.figma.tsx",
+      "src/**/*.figma.ts",
+      "src/screens/**/*.{tsx,ts}",
+      "src/components/**/*.{tsx,ts}"
+    ],
+    "exclude": ["node_modules/**"],
+    "label": "Expo / React Native",
+    "language": "tsx"
+  }
+}

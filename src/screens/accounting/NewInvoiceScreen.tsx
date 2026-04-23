@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 const STATUSES = ['مسودة', 'مرسلة', 'مدفوعة', 'متأخرة'] as const;
 
 export function NewInvoiceScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createNewInvoiceStyles(colors), [colors]);
   const [client, setClient] = useState('');
   const [amount, setAmount] = useState('');
   const [issue, setIssue] = useState('2026-04-21');
@@ -17,7 +20,7 @@ export function NewInvoiceScreen() {
 
   const header = (
     <View style={styles.headerRow}>
-      <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
+      <Pressable onPress={() => router.back()} hitSlop={12}>
         <Text style={styles.cancel}>إلغاء</Text>
       </Pressable>
       <Text style={styles.headerTitle}>فاتورة جديدة</Text>
@@ -28,7 +31,11 @@ export function NewInvoiceScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {header}
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <Text style={styles.label}>
           المشروع <Text style={styles.star}>*</Text>
         </Text>
@@ -97,7 +104,8 @@ export function NewInvoiceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createNewInvoiceStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   headerRow: {
     flexDirection: 'row-reverse',
@@ -157,3 +165,4 @@ const styles = StyleSheet.create({
   },
   saveText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900', fontSize: 16 },
 });
+}

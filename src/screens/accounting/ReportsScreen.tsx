@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TopBar } from '../../components/TopBar';
-import { colors, radius, space } from '../../theme';
+import { useAppTheme, radius, space } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 const ROWS = [
   { label: 'نقل', value: '٠ ل.س' },
@@ -11,6 +13,9 @@ const ROWS = [
 ];
 
 export function ReportsScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createReportsStyles(colors), [colors]);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <TopBar title="التقارير" />
@@ -37,7 +42,8 @@ export function ReportsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createReportsStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background, paddingHorizontal: space.lg },
   card: {
     backgroundColor: colors.surfaceMid,
@@ -55,3 +61,4 @@ const styles = StyleSheet.create({
   placeholder: { color: colors.placeholder, textAlign: 'center', paddingVertical: space.lg },
   placeholder2: { color: colors.placeholder, textAlign: 'center', paddingVertical: space.md, lineHeight: 22 },
 });
+}

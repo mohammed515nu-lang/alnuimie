@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,23 +11,70 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { pushStackRoute } from '../../navigation/href';
 import { useStore } from '../../store/useStore';
-import type { RootStackParamList } from '../../navigation/types';
 import { getApiErrorMessage } from '../../api/http';
 import type { PublicProfile } from '../../api/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList, 'DiscoverUsers'>;
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
+import { hapticLight } from '../../utils/haptics';
+import { isIOS } from '../../utils/platformEnv';
 
 type RoleFilter = 'all' | 'contractor' | 'client';
 
+type SearchListStyles = ReturnType<typeof createSearchStyles>;
+
+type SearchResultRowProps = {
+  userId: string;
+  name: string;
+  roleLabel: string;
+  roleIcon: 'hammer' | 'person';
+  onOpenProfile: (userId: string) => void;
+  listStyles: SearchListStyles;
+  colors: AppPalette;
+};
+
+const SearchResultRow = memo(function SearchResultRow({
+  userId,
+  name,
+  roleLabel,
+  roleIcon,
+  onOpenProfile,
+  listStyles,
+  colors,
+}: SearchResultRowProps) {
+  const onPress = useCallback(() => {
+    onOpenProfile(userId);
+  }, [userId, onOpenProfile]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`فتح الملف: ${name}`}
+      style={listStyles.row}
+      onPress={onPress}
+      {...pressableRipple(colors.primaryTint12)}
+    >
+      <Ionicons name="chevron-back" size={18} color={colors.textMuted} />
+      <View style={listStyles.rowText}>
+        <Text style={listStyles.name}>{name}</Text>
+        <Text style={listStyles.meta}>{roleLabel}</Text>
+      </View>
+      <View style={listStyles.roleIcon}>
+        <Ionicons name={roleIcon} size={18} color={colors.onPrimary} />
+      </View>
+    </Pressable>
+  );
+});
+
 export function SearchScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation();
   const myRole = useStore((s) => s.user?.role);
   const searchUsers = useStore((s) => s.searchUsers);
   const results = useStore((s) => s.searchResults);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createSearchStyles(colors), [colors]);
 
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,6 +87,17 @@ export function SearchScreen() {
     else if (myRole === 'contractor') setRoleFilter('client');
     else setRoleFilter('all');
   }, [myRole]);
+
+  useLayoutEffect(() => {
+    if (!isIOS) return;
+    navigation.setOptions({
+      headerSearchBar: {
+        placeholder: 'ابحث بالاسم، المدينة، التخصص...',
+        onChangeText: (e: { nativeEvent: { text: string } }) => setQ(e.nativeEvent.text),
+        autoCapitalize: 'none',
+      },
+    } as never);
+  }, [navigation]);
 
   const run = useCallback(async () => {
     setError(null);
@@ -65,22 +123,29 @@ export function SearchScreen() {
     return results.filter((u) => u.role === roleFilter);
   }, [results, roleFilter]);
 
-  const renderItem = ({ item }: { item: PublicProfile }) => (
-    <Pressable
-      accessibilityRole="button"
-      style={styles.row}
-      onPress={() => navigation.navigate('PublicProfile', { userId: item._id })}
-      {...pressableRipple(colors.primaryTint12)}
-    >
-      <Ionicons name="chevron-back" size={18} color={colors.textMuted} />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.meta}>{item.role === 'contractor' ? 'مقاول' : item.role === 'client' ? 'عميل' : item.role}</Text>
-      </View>
-      <View style={styles.roleIcon}>
-        <Ionicons name={item.role === 'contractor' ? 'hammer' : 'person'} size={18} color={colors.onPrimary} />
-      </View>
-    </Pressable>
+  const openProfile = useCallback((userId: string) => {
+    hapticLight();
+    pushStackRoute('PublicProfile', { userId });
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: PublicProfile }) => {
+      const roleLabel =
+        item.role === 'contractor' ? 'مقاول' : item.role === 'client' ? 'عميل' : item.role;
+      const roleIcon: 'hammer' | 'person' = item.role === 'contractor' ? 'hammer' : 'person';
+      return (
+        <SearchResultRow
+          userId={item._id}
+          name={item.name}
+          roleLabel={roleLabel}
+          roleIcon={roleIcon}
+          onOpenProfile={openProfile}
+          listStyles={styles}
+          colors={colors}
+        />
+      );
+    },
+    [openProfile, styles, colors]
   );
 
   const chip = (key: RoleFilter, label: string) => {
@@ -88,7 +153,10 @@ export function SearchScreen() {
     return (
       <Pressable
         key={key}
-        onPress={() => setRoleFilter(key)}
+        onPress={() => {
+          hapticLight();
+          setRoleFilter(key);
+        }}
         style={[styles.chip, on && styles.chipOn]}
         {...pressableRipple(colors.primaryTint12)}
       >
@@ -100,18 +168,20 @@ export function SearchScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <View style={styles.root}>
-        <View style={styles.searchWrap}>
-          <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
-          <TextInput
-            placeholder="ابحث بالاسم، المدينة، التخصص..."
-            placeholderTextColor={colors.placeholder}
-            style={styles.input}
-            value={q}
-            onChangeText={setQ}
-            returnKeyType="search"
-            textAlign="right"
-          />
-        </View>
+        {!isIOS ? (
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
+            <TextInput
+              placeholder="ابحث بالاسم، المدينة، التخصص..."
+              placeholderTextColor={colors.placeholder}
+              style={styles.input}
+              value={q}
+              onChangeText={setQ}
+              returnKeyType="search"
+              textAlign="right"
+            />
+          </View>
+        ) : null}
 
         <View style={styles.chipsRow}>
           {chip('all', 'الكل')}
@@ -125,7 +195,9 @@ export function SearchScreen() {
           </View>
         ) : error ? (
           <View style={styles.center}>
-            <Text style={styles.error}>{error}</Text>
+            <Text style={styles.error} selectable>
+              {error}
+            </Text>
             <Pressable accessibilityRole="button" onPress={() => void run()} {...pressableRipple(colors.primaryTint12)} style={styles.retry}>
               <Text style={styles.retryText}>إعادة المحاولة</Text>
             </Pressable>
@@ -138,6 +210,7 @@ export function SearchScreen() {
             renderItem={renderItem}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={<Text style={styles.empty}>لا نتائج</Text>}
           />
@@ -147,7 +220,8 @@ export function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createSearchStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   root: { flex: 1, paddingHorizontal: space.lg, paddingTop: space.sm },
   searchWrap: {
@@ -194,6 +268,7 @@ const styles = StyleSheet.create({
     minHeight: touch.minHeight,
     gap: space.md,
   },
+  rowText: { flex: 1 },
   roleIcon: {
     width: 44,
     height: 44,
@@ -219,3 +294,4 @@ const styles = StyleSheet.create({
   retryText: { color: colors.textSecondary, fontWeight: '800' },
   empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });
+}

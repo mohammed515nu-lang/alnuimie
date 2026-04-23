@@ -9,16 +9,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+import { pushStackRoute } from '../../navigation/href';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Connection } from '../../api/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList>;
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 function statusAr(s: string) {
   switch (s) {
@@ -34,7 +30,6 @@ function statusAr(s: string) {
 }
 
 export function ConnectionRequestsScreen() {
-  const navigation = useNavigation<Nav>();
   const me = useStore((s) => s.user);
   const refreshConnections = useStore((s) => s.refreshConnections);
   const acceptConnection = useStore((s) => s.acceptConnection);
@@ -42,6 +37,8 @@ export function ConnectionRequestsScreen() {
   const cancelConnection = useStore((s) => s.cancelConnection);
   const ensureChatThread = useStore((s) => s.ensureChatThread);
   const connections = useStore((s) => s.connections);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createConnectionRequestsStyles(colors), [colors]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -82,7 +79,8 @@ export function ConnectionRequestsScreen() {
     return [...connections].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   }, [connections]);
 
-  const renderItem = ({ item }: { item: Connection }) => (
+  const renderItem = useCallback(
+    ({ item }: { item: Connection }) => (
     <View style={styles.card}>
       <Text style={styles.title}>{otherName(item)}</Text>
       <Text style={styles.meta}>الحالة: {statusAr(String(item.status))}</Text>
@@ -145,7 +143,7 @@ export function ConnectionRequestsScreen() {
             onPress={async () => {
               try {
                 const thread = await ensureChatThread(otherId(item));
-                navigation.navigate('ChatRoom', { conversationId: thread.id, title: otherName(item) });
+                pushStackRoute('ChatRoom', { conversationId: thread.id, title: otherName(item) });
               } catch (e) {
                 Alert.alert('تعذر فتح المحادثة', getApiErrorMessage(e));
               }
@@ -158,6 +156,8 @@ export function ConnectionRequestsScreen() {
         ) : null}
       </View>
     </View>
+    ),
+    [colors, styles, me?._id, acceptConnection, rejectConnection, cancelConnection, ensureChatThread]
   );
 
   if (loading) {
@@ -174,6 +174,7 @@ export function ConnectionRequestsScreen() {
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
       keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={<Text style={styles.empty}>لا طلبات</Text>}
@@ -181,7 +182,8 @@ export function ConnectionRequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createConnectionRequestsStyles(colors: AppPalette) {
+  return StyleSheet.create({
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
   card: {
@@ -227,3 +229,4 @@ const styles = StyleSheet.create({
   dangerText: { color: colors.dangerText, fontWeight: '900' },
   empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });
+}

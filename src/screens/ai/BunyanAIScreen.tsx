@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { SyriaFlag } from '../../components/SyriaFlag';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticLight, hapticSuccess } from '../../utils/haptics';
+import type { AppPalette } from '../../theme/palettes';
 
 const SUGGESTIONS_CONTRACTOR: { text: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { text: 'كيف أحسب هامش الربح لكل مشروع؟', icon: 'cash-outline' },
@@ -27,6 +30,8 @@ const SUGGESTIONS_CLIENT: { text: string; icon: keyof typeof Ionicons.glyphMap }
 export function BunyanAIScreen() {
   const [q, setQ] = useState('');
   const role = useStore((s) => s.user?.role);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createBunyanAiStyles(colors), [colors]);
   const isClient = role === 'client';
   const suggestions = useMemo(() => (isClient ? SUGGESTIONS_CLIENT : SUGGESTIONS_CONTRACTOR), [isClient]);
   const lead = isClient
@@ -34,10 +39,43 @@ export function BunyanAIScreen() {
     : 'اسألني عن إدارة المشاريع والموردين والربحية كمقاول';
   const placeholder = isClient ? '...سؤالك عن مشروعك أو المقاول' : '...اكتب سؤالك عن البناء والموقع';
 
+  const clearDraft = () => {
+    hapticLight();
+    setQ('');
+  };
+
+  const sendQuestion = () => {
+    const t = q.trim();
+    if (!t) {
+      hapticLight();
+      Alert.alert('تنبيه', 'اكتب سؤالاً في الحقل ثم اضغط إرسال.');
+      return;
+    }
+    hapticSuccess();
+    Alert.alert(
+      'قريباً على الخادم',
+      'سيتم ربط هذا الحقل بنموذج ذكاء اصطناعي عبر الـ API. يمكنك نسخ السؤال والاحتفاظ به مؤقتاً.',
+      [
+        { text: 'حسناً', style: 'default' },
+        {
+          text: 'مسح الحقل',
+          style: 'destructive',
+          onPress: () => setQ(''),
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.top}>
-        <Pressable accessibilityRole="button" style={styles.trashBtn} {...pressableRipple('rgba(255,255,255,0.08)')}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="مسح مسودة السؤال"
+          onPress={clearDraft}
+          style={styles.trashBtn}
+          {...pressableRipple('rgba(255,255,255,0.08)')}
+        >
           <Ionicons name="trash-outline" size={20} color={colors.textSecondary} />
         </Pressable>
         <View style={{ flex: 1 }} />
@@ -55,8 +93,14 @@ export function BunyanAIScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Text style={styles.flag}>🇸🇾</Text>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.flag}>
+          <SyriaFlag width={40} height={28} />
+        </View>
         <Text style={styles.hero}>مساعد بنيان الذكي</Text>
         <Text style={styles.sub}>{lead}</Text>
 
@@ -85,7 +129,13 @@ export function BunyanAIScreen() {
           onChangeText={setQ}
           textAlign="right"
         />
-        <Pressable accessibilityRole="button" style={styles.send} {...pressableRipple('rgba(255,255,255,0.15)')}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="إرسال السؤال"
+          onPress={sendQuestion}
+          style={styles.send}
+          {...pressableRipple('rgba(255,255,255,0.15)')}
+        >
           <Ionicons name="send" size={18} color={colors.onAiPurple} />
         </Pressable>
       </View>
@@ -93,7 +143,8 @@ export function BunyanAIScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createBunyanAiStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   top: {
     flexDirection: 'row-reverse',
@@ -127,7 +178,7 @@ const styles = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success, marginLeft: 6 },
   statusText: { color: colors.textMuted, fontSize: 12 },
   scroll: { padding: space.lg, paddingBottom: 120 },
-  flag: { fontSize: 28, textAlign: 'right', marginBottom: space.sm },
+  flag: { alignItems: 'flex-end', marginBottom: space.sm },
   hero: { color: colors.text, fontSize: 22, fontWeight: '900', textAlign: 'right' },
   sub: { color: colors.textMuted, textAlign: 'right', marginTop: space.sm, lineHeight: 22 },
   grid: {
@@ -178,3 +229,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+}

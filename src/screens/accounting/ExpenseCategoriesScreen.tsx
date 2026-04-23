@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { TopBar } from '../../components/TopBar';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 const DEFAULTS = ['مواد', 'عمالة', 'معدات', 'نقل', 'إدارية', 'أخرى'];
 
 export function ExpenseCategoriesScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createExpenseCategoriesStyles(colors), [colors]);
   const [items, setItems] = useState(DEFAULTS);
 
   const editAt = (i: number) => {
@@ -26,12 +29,17 @@ export function ExpenseCategoriesScreen() {
       <TopBar
         title="فئات المصروفات"
         leftAction={
-          <Pressable onPress={() => Alert.alert('جديد', 'إضافة فئة — قريباً')} hitSlop={12}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="إضافة فئة"
+            onPress={() => setItems((prev) => [...prev, `فئة ${prev.length + 1}`])}
+            hitSlop={12}
+          >
             <Ionicons name="add" size={28} color={colors.text} />
           </Pressable>
         }
       />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={styles.scroll} contentInsetAdjustmentBehavior="automatic">
         {items.map((label, i) => (
           <View key={`${label}-${i}`} style={styles.card}>
             <Text style={styles.label}>{label}</Text>
@@ -48,7 +56,8 @@ export function ExpenseCategoriesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createExpenseCategoriesStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, paddingBottom: space.xxl },
   card: {
@@ -66,3 +75,4 @@ const styles = StyleSheet.create({
   label: { flex: 1, color: colors.text, fontWeight: '800', fontSize: 16, textAlign: 'right' },
   iconBtn: { padding: space.sm },
 });
+}

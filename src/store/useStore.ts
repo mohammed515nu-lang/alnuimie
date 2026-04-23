@@ -15,8 +15,27 @@ import type {
   Transfer,
 } from '../api/types';
 
+export type AppearanceMode = 'light' | 'dark' | 'system';
+
+/** بيانات تُحمّل من الخادم لكل مستخدم — تُصفّر عند تغيّر الحساب أو الخروج */
+function emptySessionCaches() {
+  return {
+    myPublicProfile: null,
+    searchResults: [] as PublicProfile[],
+    connections: [] as Connection[],
+    portfolio: [] as PortfolioItem[],
+    ratings: [] as Rating[],
+    chatThreads: [] as ChatThread[],
+    chatMessagesByThread: {} as Record<string, ChatMessage[]>,
+    paymentCards: [] as PaymentCard[],
+    transfers: [] as Transfer[],
+    walletSummary: null as { incoming: number; outgoing: number; net: number } | null,
+  };
+}
+
 type AppState = {
   user: AuthUser | null;
+  appearance: AppearanceMode;
 
   myPublicProfile: PublicProfile | null;
 
@@ -33,6 +52,7 @@ type AppState = {
   walletSummary: { incoming: number; outgoing: number; net: number } | null;
 
   setUser: (user: AuthUser | null) => void;
+  setAppearance: (mode: AppearanceMode) => void;
   logout: () => Promise<void>;
 
   refreshMyProfile: () => Promise<void>;
@@ -75,6 +95,7 @@ export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       user: null,
+      appearance: 'system',
 
       myPublicProfile: null,
 
@@ -90,27 +111,22 @@ export const useStore = create<AppState>()(
       transfers: [],
       walletSummary: null,
 
-      setUser: (user) => set({ user }),
+      setUser: (user) =>
+        set((s) => {
+          const prevId = s.user?._id ?? null;
+          const nextId = user?._id ?? null;
+          if (prevId !== nextId) {
+            return { user, ...emptySessionCaches() };
+          }
+          return { user };
+        }),
+      setAppearance: (appearance) => set({ appearance }),
 
       logout: async () => {
         await authAPI.logout();
-        try {
-          await AsyncStorage.removeItem('bunyan-app');
-        } catch {
-          // ignore
-        }
         set({
           user: null,
-          myPublicProfile: null,
-          searchResults: [],
-          connections: [],
-          portfolio: [],
-          ratings: [],
-          chatThreads: [],
-          chatMessagesByThread: {},
-          paymentCards: [],
-          transfers: [],
-          walletSummary: null,
+          ...emptySessionCaches(),
         });
       },
 
@@ -270,6 +286,7 @@ export const useStore = create<AppState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,
+        appearance: state.appearance,
       }),
     }
   )

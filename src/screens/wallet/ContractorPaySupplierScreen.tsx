@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,8 +13,12 @@ import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-nati
 import { walletAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
+import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticSuccess } from '../../utils/haptics';
+import { isIOS } from '../../utils/platformEnv';
+import type { AppPalette } from '../../theme/palettes';
 
 export function ContractorPaySupplierScreen() {
   const refreshTransfers = useStore((s) => s.refreshTransfers);
@@ -27,6 +30,9 @@ export function ContractorPaySupplierScreen() {
   const [supplierName, setSupplierName] = useState('');
   const [description, setDescription] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createContractorPaySupplierStyles(colors), [colors]);
 
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
@@ -59,6 +65,7 @@ export function ContractorPaySupplierScreen() {
         customerEphemeralKeySecret: intent.ephemeralKeySecret,
         paymentIntentClientSecret: intent.clientSecret,
         allowsDelayedPaymentMethods: true,
+        returnURL: getStripePaymentReturnURL(),
       });
       if (initError) throw new Error(initError.message);
 
@@ -74,6 +81,7 @@ export function ContractorPaySupplierScreen() {
       const latest = await walletAPI.confirmTransfer(transferId);
       addTransferLocal(latest);
       await refreshTransfers();
+      hapticSuccess();
       Alert.alert('تم', 'تم إرسال الدفع للمعالجة/التأكيد من الخادم');
     } catch (e) {
       if (transferId) updateTransferLocal(transferId, { status: 'failed' });
@@ -86,13 +94,14 @@ export function ContractorPaySupplierScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      behavior={isIOS ? 'padding' : undefined}
+      keyboardVerticalOffset={isIOS ? 64 : 0}
     >
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
       >
         <Text style={styles.title}>دفع مقاول → مورد</Text>
         <Text style={styles.lead}>أدخل المبلغ واختياريًا اسم المورد والوصف.</Text>
@@ -134,7 +143,8 @@ export function ContractorPaySupplierScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createContractorPaySupplierStyles(colors: AppPalette) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
   title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm },
@@ -160,3 +170,4 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
 });
+}

@@ -1,21 +1,26 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+import { useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { WalletCard } from '../../components/wallet/WalletCard';
+import { pushStackRoute } from '../../navigation/href';
 import { useStore } from '../../store/useStore';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList>;
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function WalletHomeScreen() {
-  const navigation = useNavigation<Nav>();
   const user = useStore((s) => s.user);
   const isClient = user?.role === 'client';
+  const { colors, surfaceLift, resolved } = useAppTheme();
+  const styles = useMemo(
+    () => createWalletHomeStyles(colors, surfaceLift, resolved),
+    [colors, surfaceLift, resolved]
+  );
 
   return (
-    <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.root}
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+    >
       <Text style={styles.intro}>
         {isClient
           ? 'من هنا تدير بطاقاتك وتدفع للمقاولين بعد الاتصال.'
@@ -27,7 +32,7 @@ export function WalletHomeScreen() {
         <Text style={styles.cardTitle}>إجراءات</Text>
         <Pressable
           accessibilityRole="button"
-          onPress={() => navigation.navigate('ManageCards')}
+          onPress={() => pushStackRoute('ManageCards')}
           {...pressableRipple(colors.primaryTint18)}
           style={styles.primary}
         >
@@ -36,7 +41,7 @@ export function WalletHomeScreen() {
         {user?.role === 'client' ? (
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigation.navigate('PayContractor')}
+            onPress={() => pushStackRoute('PayContractor')}
             {...pressableRipple(colors.primaryTint12)}
             style={styles.secondary}
           >
@@ -46,7 +51,7 @@ export function WalletHomeScreen() {
         {user?.role === 'contractor' ? (
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigation.navigate('ContractorPaySupplier')}
+            onPress={() => pushStackRoute('ContractorPaySupplier')}
             {...pressableRipple(colors.primaryTint12)}
             style={styles.secondary}
           >
@@ -55,7 +60,7 @@ export function WalletHomeScreen() {
         ) : null}
         <Pressable
           accessibilityRole="button"
-          onPress={() => navigation.navigate('Transfers')}
+          onPress={() => pushStackRoute('Transfers')}
           {...pressableRipple(colors.primaryTint12)}
           style={styles.secondary}
         >
@@ -66,7 +71,14 @@ export function WalletHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createWalletHomeStyles(
+  colors: AppPalette,
+  surfaceLift: ViewStyle,
+  resolved: 'light' | 'dark'
+) {
+  const primaryShadow =
+    resolved === 'light' ? '0 8px 20px rgba(234, 88, 12, 0.22)' : '0 8px 20px rgba(245, 158, 11, 0.28)';
+  return StyleSheet.create({
   root: { padding: space.lg, paddingBottom: space.xxl + 4, backgroundColor: colors.background },
   intro: {
     color: colors.textMuted,
@@ -77,6 +89,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
+    ...surfaceLift,
     backgroundColor: colors.card,
     borderColor: colors.border,
     borderWidth: 1,
@@ -86,6 +99,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: { color: colors.text, fontWeight: '900', marginBottom: space.sm + 2 },
   primary: {
+    borderCurve: 'continuous',
+    boxShadow: primaryShadow,
     backgroundColor: colors.primary,
     borderRadius: radius.md,
     paddingVertical: space.md,
@@ -105,3 +120,4 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
 });
+}

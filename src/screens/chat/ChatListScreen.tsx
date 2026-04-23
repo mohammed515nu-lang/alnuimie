@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,23 +11,71 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { navigateFromRoot } from '../../navigation/rootNavigation';
+import { pushStackRoute } from '../../navigation/href';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { ChatThread } from '../../api/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
-type Nav = NavigationProp<RootStackParamList> & NavigationProp<ParamListBase>;
+type ChatListStyles = ReturnType<typeof createChatListStyles>;
+
+type ChatThreadRowProps = {
+  conversationId: string;
+  name: string;
+  lastMessage: string;
+  unread: number;
+  onOpen: (conversationId: string, title: string) => void;
+  listStyles: ChatListStyles;
+  colors: AppPalette;
+};
+
+const ChatThreadRow = memo(function ChatThreadRow({
+  conversationId,
+  name,
+  lastMessage,
+  unread,
+  onOpen,
+  listStyles,
+  colors,
+}: ChatThreadRowProps) {
+  const onPress = useCallback(() => {
+    onOpen(conversationId, name);
+  }, [conversationId, name, onOpen]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      style={listStyles.row}
+      onPress={onPress}
+      {...pressableRipple(colors.primaryTint12)}
+    >
+      <View style={listStyles.rowText}>
+        <Text style={listStyles.name}>{name}</Text>
+        <Text style={listStyles.last} numberOfLines={1}>
+          {lastMessage || '—'}
+        </Text>
+      </View>
+      {unread > 0 ? (
+        <View style={listStyles.badge} accessibilityLabel={`${unread} غير مقروء`}>
+          <Text style={listStyles.badgeText}>{unread > 99 ? '99+' : unread}</Text>
+        </View>
+      ) : (
+        <Ionicons name="chevron-back" size={20} color={colors.textMuted} />
+      )}
+    </Pressable>
+  );
+});
 
 export function ChatListScreen() {
-  const navigation = useNavigation<Nav>();
   const refreshChatThreads = useStore((s) => s.refreshChatThreads);
   const refreshConnections = useStore((s) => s.refreshConnections);
   const threads = useStore((s) => s.chatThreads);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createChatListStyles(colors), [colors]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +106,7 @@ export function ChatListScreen() {
     }, [load])
   );
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await load();
@@ -67,35 +115,37 @@ export function ChatListScreen() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [load]);
 
-  const filtered = threads.filter((t) => {
+  const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return true;
-    return (t.otherUserName ?? '').toLowerCase().includes(s);
-  });
+    if (!s) return threads;
+    return threads.filter((t) => (t.otherUserName ?? '').toLowerCase().includes(s));
+  }, [threads, q]);
 
-  const renderItem = ({ item }: { item: ChatThread }) => (
-    <Pressable
-      accessibilityRole="button"
-      style={styles.row}
-      onPress={() => navigation.navigate('ChatRoom', { conversationId: item.id, title: item.otherUserName })}
-      {...pressableRipple(colors.primaryTint12)}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{item.otherUserName}</Text>
-        <Text style={styles.last} numberOfLines={1}>
-          {item.lastMessage ?? '—'}
-        </Text>
-      </View>
-      {item.unread > 0 ? (
-        <View style={styles.badge} accessibilityLabel={`${item.unread} غير مقروء`}>
-          <Text style={styles.badgeText}>{item.unread > 99 ? '99+' : item.unread}</Text>
-        </View>
-      ) : (
-        <Ionicons name="chevron-back" size={20} color={colors.textMuted} />
-      )}
-    </Pressable>
+  const openThread = useCallback((conversationId: string, title: string) => {
+    pushStackRoute('ChatRoom', { conversationId, title });
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ChatThread }) => (
+      <ChatThreadRow
+        conversationId={item.id}
+        name={item.otherUserName}
+        lastMessage={item.lastMessage ?? ''}
+        unread={item.unread}
+        onOpen={openThread}
+        listStyles={styles}
+        colors={colors}
+      />
+    ),
+    [openThread, styles, colors]
+  );
+
+  const listContentStyle = useMemo(
+    () =>
+      threads.length === 0 && !q.trim() ? [styles.listContent, styles.emptyGrow] : styles.listContent,
+    [threads.length, q, styles.listContent, styles.emptyGrow]
   );
 
   if (loading) {
@@ -109,7 +159,12 @@ export function ChatListScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.head}>
-        <Pressable style={styles.searchBtn} {...pressableRipple(colors.primaryTint12)}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="بحث في المحادثات"
+          style={styles.searchBtn}
+          {...pressableRipple(colors.primaryTint12)}
+        >
           <Ionicons name="search" size={22} color={colors.text} />
         </Pressable>
         <Text style={styles.pageTitle}>المحادثات</Text>
@@ -132,16 +187,18 @@ export function ChatListScreen() {
         keyExtractor={(x) => x.id}
         renderItem={renderItem}
         keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={
-          threads.length === 0 && !q.trim() ? [styles.listContent, styles.emptyGrow] : styles.listContent
-        }
+        contentContainerStyle={listContentStyle}
         ListHeaderComponent={
           error ? (
             <View style={styles.errWrap}>
-              <Text style={styles.error}>{error}</Text>
+              <Text style={styles.error} selectable>
+                {error}
+              </Text>
               <Pressable
                 accessibilityRole="button"
+                accessibilityLabel="إعادة المحاولة"
                 onPress={() => void onRefresh()}
                 {...pressableRipple(colors.primaryTint12)}
                 style={styles.retry}
@@ -159,7 +216,7 @@ export function ChatListScreen() {
               <Text style={styles.emptySub}>ابحث عن مستخدم لبدء محادثة جديدة</Text>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => navigateFromRoot(navigation, 'DiscoverUsers')}
+                onPress={() => navigateFromRoot('DiscoverUsers')}
                 {...pressableRipple(colors.primaryTint12)}
                 style={styles.cta}
               >
@@ -176,7 +233,8 @@ export function ChatListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createChatListStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   head: {
@@ -224,6 +282,7 @@ const styles = StyleSheet.create({
     minHeight: touch.minHeight + 4,
     gap: space.md,
   },
+  rowText: { flex: 1 },
   name: { color: colors.text, fontWeight: '900', textAlign: 'right' },
   last: { color: colors.textMuted, marginTop: space.sm - 2, textAlign: 'right' },
   badge: {
@@ -265,3 +324,4 @@ const styles = StyleSheet.create({
   retryText: { color: colors.textSecondary, fontWeight: '800' },
   noMatch: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg },
 });
+}

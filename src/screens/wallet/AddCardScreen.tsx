@@ -5,12 +5,17 @@ import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-nati
 import { walletAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
+import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticSuccess } from '../../utils/haptics';
+import type { AppPalette } from '../../theme/palettes';
 
 export function AddCardScreen() {
   const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
   const [busy, setBusy] = useState(false);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createAddCardStyles(colors), [colors]);
 
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
@@ -27,6 +32,7 @@ export function AddCardScreen() {
         customerEphemeralKeySecret: si.ephemeralKeySecret,
         setupIntentClientSecret: si.setupIntentClientSecret,
         allowsDelayedPaymentMethods: true,
+        returnURL: getStripePaymentReturnURL(),
       });
       if (initError) throw new Error(initError.message);
 
@@ -41,6 +47,7 @@ export function AddCardScreen() {
 
       await walletAPI.saveCard(pmId, true);
       await refreshPaymentCards();
+      hapticSuccess();
       Alert.alert('تم', 'تم حفظ البطاقة');
     } catch (e) {
       Alert.alert('تعذر إضافة البطاقة', getApiErrorMessage(e));
@@ -69,7 +76,8 @@ export function AddCardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createAddCardStyles(colors: AppPalette) {
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background, padding: space.lg },
   title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm + 2 },
   body: { color: colors.textMuted, lineHeight: 22, marginBottom: space.md - 2 },
@@ -82,3 +90,4 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
 });
+}

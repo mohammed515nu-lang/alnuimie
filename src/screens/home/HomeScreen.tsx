@@ -1,26 +1,24 @@
-import { useEffect } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 import { WalletCard } from '../../components/wallet/WalletCard';
 import { navigateFromRoot } from '../../navigation/rootNavigation';
-import type { MainTabParamList } from '../../navigation/types';
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type TabNav = BottomTabNavigationProp<MainTabParamList>;
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function HomeScreen() {
-  const tabNavigation = useNavigation<TabNav>();
-  const rootNav = useNavigation<NavigationProp<ParamListBase>>();
+  const router = useRouter();
   const user = useStore((s) => s.user);
   const isContractor = user?.role === 'contractor';
   const isClient = user?.role === 'client';
   const refreshMyProfile = useStore((s) => s.refreshMyProfile);
+  const { colors, surfaceLift } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createHomeStyles(colors, surfaceLift), [colors, surfaceLift]);
 
   useEffect(() => {
     void (async () => {
@@ -34,7 +32,14 @@ export function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingBottom: space.xxl + 4 + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <View style={styles.header}>
           <View>
             <Text style={styles.hi}>مرحباً</Text>
@@ -55,7 +60,7 @@ export function HomeScreen() {
         <View style={styles.grid}>
           <Pressable
             style={styles.tile}
-            onPress={() => tabNavigation.navigate('Accounting')}
+            onPress={() => router.push('/(main)/(tabs)/accounting' as any)}
             {...pressableRipple(colors.primaryTint12)}
           >
             <Ionicons name="calculator-outline" size={28} color={colors.primary} />
@@ -63,7 +68,7 @@ export function HomeScreen() {
           </Pressable>
           <Pressable
             style={styles.tile}
-            onPress={() => tabNavigation.navigate('Projects')}
+            onPress={() => router.push('/(main)/(tabs)/projects' as any)}
             {...pressableRipple(colors.primaryTint12)}
           >
             <Ionicons name="folder-outline" size={28} color={colors.primary} />
@@ -71,7 +76,7 @@ export function HomeScreen() {
           </Pressable>
           <Pressable
             style={styles.tile}
-            onPress={() => navigateFromRoot(rootNav, 'DiscoverUsers')}
+            onPress={() => navigateFromRoot('DiscoverUsers')}
             {...pressableRipple(colors.primaryTint12)}
           >
             <Ionicons name="search" size={28} color={colors.aiPurple} />
@@ -79,7 +84,7 @@ export function HomeScreen() {
           </Pressable>
           <Pressable
             style={styles.tile}
-            onPress={() => tabNavigation.navigate('Chats')}
+            onPress={() => router.push('/(main)/(tabs)/chats' as any)}
             {...pressableRipple(colors.primaryTint12)}
           >
             <Ionicons name="chatbubbles-outline" size={28} color={colors.link} />
@@ -88,7 +93,7 @@ export function HomeScreen() {
           {isClient ? (
             <Pressable
               style={styles.tile}
-              onPress={() => navigateFromRoot(rootNav, 'PayContractor')}
+              onPress={() => navigateFromRoot('PayContractor')}
               {...pressableRipple(colors.primaryTint12)}
             >
               <Ionicons name="card-outline" size={28} color={colors.success} />
@@ -97,7 +102,7 @@ export function HomeScreen() {
           ) : (
             <Pressable
               style={styles.tile}
-              onPress={() => navigateFromRoot(rootNav, 'ContractorPaySupplier')}
+              onPress={() => navigateFromRoot('ContractorPaySupplier')}
               {...pressableRipple(colors.primaryTint12)}
             >
               <Ionicons name="construct-outline" size={28} color={colors.success} />
@@ -106,7 +111,7 @@ export function HomeScreen() {
           )}
           <Pressable
             style={styles.tile}
-            onPress={() => navigateFromRoot(rootNav, 'ConnectionRequests')}
+            onPress={() => navigateFromRoot('ConnectionRequests')}
             {...pressableRipple(colors.primaryTint12)}
           >
             <Ionicons name="people-outline" size={28} color={colors.reportValue} />
@@ -118,7 +123,7 @@ export function HomeScreen() {
         <View style={styles.card}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => tabNavigation.navigate('Account')}
+            onPress={() => router.push('/(main)/(tabs)/account' as any)}
             {...pressableRipple(colors.primaryTint12)}
             style={styles.rowBtn}
           >
@@ -129,7 +134,7 @@ export function HomeScreen() {
           <View style={styles.div} />
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigateFromRoot(rootNav, 'EditProfile')}
+            onPress={() => navigateFromRoot('EditProfile')}
             {...pressableRipple(colors.primaryTint12)}
             style={styles.rowBtn}
           >
@@ -142,7 +147,7 @@ export function HomeScreen() {
               <View style={styles.div} />
               <Pressable
                 accessibilityRole="button"
-                onPress={() => navigateFromRoot(rootNav, 'PortfolioManage')}
+                onPress={() => navigateFromRoot('PortfolioManage')}
                 {...pressableRipple(colors.primaryTint12)}
                 style={styles.rowBtn}
               >
@@ -158,9 +163,10 @@ export function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createHomeStyles(colors: AppPalette, surfaceLift: ViewStyle) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  root: { padding: space.lg, paddingBottom: space.xxl + 4 },
+  root: { padding: space.lg },
   header: { marginBottom: space.md },
   hi: { color: colors.textMuted, textAlign: 'right' },
   name: { color: colors.text, fontSize: 22, fontWeight: '900', textAlign: 'right', marginTop: space.xs },
@@ -168,6 +174,7 @@ const styles = StyleSheet.create({
   section: { color: colors.text, fontSize: 17, fontWeight: '900', textAlign: 'right', marginTop: space.lg, marginBottom: space.sm },
   grid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.sm },
   tile: {
+    ...surfaceLift,
     width: '48%',
     backgroundColor: colors.surfaceMid,
     borderRadius: radius.lg,
@@ -181,11 +188,11 @@ const styles = StyleSheet.create({
   },
   tileText: { color: colors.textSecondary, fontWeight: '800', textAlign: 'right', marginTop: space.sm },
   card: {
+    ...surfaceLift,
     backgroundColor: colors.surfaceMid,
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.borderMuted,
-    overflow: 'hidden',
   },
   rowBtn: {
     flexDirection: 'row-reverse',
@@ -197,3 +204,4 @@ const styles = StyleSheet.create({
   rowBtnText: { flex: 1, color: colors.text, fontWeight: '800', textAlign: 'right', fontSize: 15 },
   div: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: space.md },
 });
+}

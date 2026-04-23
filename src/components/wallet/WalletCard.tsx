@@ -1,21 +1,18 @@
 import { useCallback, useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { useStore } from '../../store/useStore';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, gradients, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList>;
+import { pushStackRoute } from '../../navigation/href';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppGradients, AppPalette } from '../../theme/palettes';
 
 type Props = {
   subtitle?: string;
 };
 
 export function WalletCard({ subtitle }: Props) {
-  const navigation = useNavigation<Nav>();
   const user = useStore((s) => s.user);
   const paymentCards = useStore((s) => s.paymentCards);
   const walletSummary = useStore((s) => s.walletSummary);
@@ -37,6 +34,12 @@ export function WalletCard({ subtitle }: Props) {
   const defaultCard = useMemo(
     () => paymentCards.find((c) => c.isDefault) ?? paymentCards[0],
     [paymentCards]
+  );
+
+  const { colors, gradients, walletCardHalo, resolved } = useAppTheme();
+  const styles = useMemo(
+    () => createWalletCardStyles(colors, gradients, walletCardHalo, resolved),
+    [colors, gradients, walletCardHalo, resolved]
   );
 
   const lastProjectPayment = useMemo(() => {
@@ -66,7 +69,7 @@ export function WalletCard({ subtitle }: Props) {
             <Text style={styles.hint}>أضف بطاقة بأمان عبر Stripe، ثم يظهر ملخص الرصيد والتحويلات من الخادم.</Text>
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigation.navigate('AddCard')}
+              onPress={() => pushStackRoute('AddCard')}
               {...pressableRipple(colors.primaryTint18)}
               style={styles.primary}
             >
@@ -93,7 +96,7 @@ export function WalletCard({ subtitle }: Props) {
             <View style={styles.row}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => navigation.navigate('AddCard')}
+                onPress={() => pushStackRoute('AddCard')}
                 {...pressableRipple(colors.primaryTint12)}
                 style={styles.secondary}
               >
@@ -101,7 +104,7 @@ export function WalletCard({ subtitle }: Props) {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => navigation.navigate('Transfers')}
+                onPress={() => pushStackRoute('Transfers')}
                 {...pressableRipple(colors.primaryTint12)}
                 style={styles.secondary}
               >
@@ -110,7 +113,7 @@ export function WalletCard({ subtitle }: Props) {
             </View>
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigation.navigate('ManageCards')}
+              onPress={() => pushStackRoute('ManageCards')}
               {...pressableRipple(colors.primaryTint12)}
               style={[styles.secondary, styles.fullRow]}
             >
@@ -123,13 +126,23 @@ export function WalletCard({ subtitle }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function createWalletCardStyles(
+  colors: AppPalette,
+  gradients: AppGradients,
+  walletCardHalo: ViewStyle,
+  resolved: 'light' | 'dark'
+) {
+  const primaryShadow =
+    resolved === 'light' ? '0 8px 22px rgba(234, 88, 12, 0.22)' : '0 8px 22px rgba(245, 158, 11, 0.3)';
+  return StyleSheet.create({
   wrap: {
+    ...walletCardHalo,
     borderRadius: radius.xl,
     padding: 1,
     marginBottom: space.md - 2,
   },
   inner: {
+    borderCurve: 'continuous',
     backgroundColor: colors.walletInner,
     borderRadius: radius.xl - 1,
     padding: space.md - 2,
@@ -142,14 +155,21 @@ const styles = StyleSheet.create({
   block: { marginTop: space.md },
   muted: { color: colors.textSubtle },
   hint: { color: colors.placeholder, marginTop: space.sm, lineHeight: 20, marginBottom: space.md },
-  cardLine: { color: colors.textSecondary, fontWeight: '700', marginBottom: space.sm + 2 },
+  cardLine: { color: colors.textSecondary, fontWeight: '700', marginBottom: space.sm + 2, fontVariant: ['tabular-nums'] },
   metrics: { gap: space.xs },
-  metric: { color: colors.textMuted },
-  metricStrong: { color: colors.text, fontWeight: '800', marginTop: space.xs },
-  lastPay: { color: colors.accentIndigo, marginTop: space.sm + 2, fontSize: 13, lineHeight: 18 },
+  metric: { color: colors.textMuted, fontVariant: ['tabular-nums'] },
+  metricStrong: {
+    color: colors.text,
+    fontWeight: '800',
+    marginTop: space.xs,
+    fontVariant: ['tabular-nums'],
+  },
+  lastPay: { color: colors.accentIndigo, marginTop: space.sm + 2, fontSize: 13, lineHeight: 18, fontVariant: ['tabular-nums'] },
   row: { flexDirection: 'row', gap: space.sm + 2, marginTop: space.md },
   fullRow: { marginTop: space.sm + 2, flex: 0 },
   primary: {
+    borderCurve: 'continuous',
+    boxShadow: primaryShadow,
     alignSelf: 'stretch',
     backgroundColor: colors.primary,
     borderRadius: radius.md,
@@ -159,6 +179,7 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
   secondary: {
+    borderCurve: 'continuous',
     flex: 1,
     borderRadius: radius.md,
     paddingVertical: space.md,
@@ -169,3 +190,4 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
 });
+}

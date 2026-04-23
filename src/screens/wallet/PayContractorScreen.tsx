@@ -3,7 +3,6 @@ import {
   Alert,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,9 +15,13 @@ import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-nati
 import { walletAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
+import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
 import { acceptedContractorsForClient } from '../../utils/connections';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { hapticSuccess } from '../../utils/haptics';
+import { isIOS } from '../../utils/platformEnv';
+import type { AppPalette } from '../../theme/palettes';
 
 export function PayContractorScreen() {
   const user = useStore((s) => s.user);
@@ -41,6 +44,9 @@ export function PayContractorScreen() {
   const [description, setDescription] = useState('');
   const [projectName, setProjectName] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createPayContractorStyles(colors), [colors]);
 
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
@@ -102,6 +108,7 @@ export function PayContractorScreen() {
         customerEphemeralKeySecret: intent.ephemeralKeySecret,
         paymentIntentClientSecret: intent.clientSecret,
         allowsDelayedPaymentMethods: true,
+        returnURL: getStripePaymentReturnURL(),
       });
       if (initError) throw new Error(initError.message);
 
@@ -117,6 +124,7 @@ export function PayContractorScreen() {
       const latest = await walletAPI.confirmTransfer(transferId);
       addTransferLocal(latest);
       await refreshTransfers();
+      hapticSuccess();
       Alert.alert('تم', 'تم إرسال الدفع للمعالجة/التأكيد من الخادم');
     } catch (e) {
       if (transferId) updateTransferLocal(transferId, { status: 'failed' });
@@ -129,14 +137,15 @@ export function PayContractorScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      behavior={isIOS ? 'padding' : undefined}
+      keyboardVerticalOffset={isIOS ? 64 : 0}
     >
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
+        contentInsetAdjustmentBehavior="automatic"
       >
         <Text style={styles.title}>دفع عميل → مقاول</Text>
         <Text style={styles.hint}>
@@ -158,11 +167,13 @@ export function PayContractorScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.chipsRow}
                   nestedScrollEnabled
+                  contentInsetAdjustmentBehavior="automatic"
                   renderItem={({ item }) => {
                     const on = selectedId === item.id;
                     return (
                       <Pressable
                         accessibilityRole="button"
+                        accessibilityLabel={`اختيار المقاول ${item.name}`}
                         accessibilityState={{ selected: on }}
                         onPress={() => setSelectedId(item.id)}
                         {...pressableRipple(colors.primaryTint12)}
@@ -236,7 +247,8 @@ export function PayContractorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createPayContractorStyles(colors: AppPalette) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
   title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm },
@@ -283,3 +295,4 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
 });
+}

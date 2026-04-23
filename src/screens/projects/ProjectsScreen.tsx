@@ -1,17 +1,17 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
-
 import { navigateFromRoot } from '../../navigation/rootNavigation';
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function ProjectsScreen() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const role = useStore((s) => s.user?.role);
   const isClient = role === 'client';
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createProjectsStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -28,7 +28,7 @@ export function ProjectsScreen() {
           {isClient ? (
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigateFromRoot(navigation, 'DiscoverUsers')}
+              onPress={() => navigateFromRoot('DiscoverUsers')}
               {...pressableRipple(colors.primaryTint12)}
               style={styles.cta}
             >
@@ -37,7 +37,7 @@ export function ProjectsScreen() {
           ) : (
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigateFromRoot(navigation, 'NewProject')}
+              onPress={() => navigateFromRoot('NewProject')}
               {...pressableRipple(colors.primaryTint12)}
               style={styles.cta}
             >
@@ -50,7 +50,8 @@ export function ProjectsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createProjectsStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   root: { flex: 1, paddingHorizontal: space.lg },
   pageTitle: {
@@ -75,3 +76,4 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: colors.onPrimary, fontWeight: '900', fontSize: 16 },
 });
+}

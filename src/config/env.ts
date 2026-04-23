@@ -11,7 +11,7 @@ const extra = (Constants.expoConfig?.extra ?? {}) as Extra;
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   extra.apiUrl ??
-  'https://construction-backend-2xi2.onrender.com/api';
+  'https://alnuimie.onrender.com/api';
 
 export const STRIPE_PUBLISHABLE_KEY =
   process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? extra.stripePublishableKey ?? '';

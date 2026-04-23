@@ -1,9 +1,9 @@
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
-
 import type { RootStackParamList } from './types';
+import { pushStackRoute } from './href';
 
-/** تنقّل من تبويبات إلى شاشة في الـ Stack الأب */
-export function navigateFromRoot(navigation: NavigationProp<ParamListBase>, name: keyof RootStackParamList) {
-  const parent = navigation.getParent<NavigationProp<RootStackParamList>>();
-  parent?.navigate(name as never);
+/**
+ * الانتقال من التبويبات (أو أي شاشة) إلى شاشة في الـ Stack (Expo Router).
+ */
+export function navigateFromRoot(name: keyof RootStackParamList) {
+  pushStackRoute(name);
 }

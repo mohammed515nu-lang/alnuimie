@@ -1,24 +1,22 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 import { TopBar } from '../../components/TopBar';
-import type { RootStackParamList } from '../../navigation/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Nav = NativeStackNavigationProp<RootStackParamList, 'Revenues'>;
+import { pushStackRoute } from '../../navigation/href';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function RevenuesScreen() {
-  const navigation = useNavigation<Nav>();
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createRevenuesStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <TopBar
         title="الإيرادات"
         leftAction={
-          <Pressable onPress={() => navigation.navigate('AddRevenue')} hitSlop={12}>
+          <Pressable onPress={() => pushStackRoute('AddRevenue')} hitSlop={12}>
             <Ionicons name="add" size={28} color={colors.text} />
           </Pressable>
         }
@@ -35,7 +33,7 @@ export function RevenuesScreen() {
         <Text style={styles.empty}>لا توجد إيرادات</Text>
         <Pressable
           accessibilityRole="button"
-          onPress={() => navigation.navigate('AddRevenue')}
+          onPress={() => pushStackRoute('AddRevenue')}
           {...pressableRipple(colors.primaryTint12)}
           style={styles.cta}
         >
@@ -46,7 +44,8 @@ export function RevenuesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createRevenuesStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   summary: {
     marginHorizontal: space.lg,
@@ -76,3 +75,4 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: colors.onPrimary, fontWeight: '900', fontSize: 16 },
 });
+}

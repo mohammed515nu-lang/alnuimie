@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,13 +14,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { PaymentCard } from '../../api/types';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 export function ManageCardsScreen() {
   const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
   const setDefaultPaymentCard = useStore((s) => s.setDefaultPaymentCard);
   const removePaymentCard = useStore((s) => s.removePaymentCard);
   const cards = useStore((s) => s.paymentCards);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createManageCardsStyles(colors), [colors]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,7 +62,8 @@ export function ManageCardsScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: PaymentCard }) => (
+  const renderItem = useCallback(
+    ({ item }: { item: PaymentCard }) => (
     <View style={styles.card}>
       <Text style={styles.title}>
         {item.brand.toUpperCase()} •••• {item.last4} {item.isDefault ? '(افتراضية)' : ''}
@@ -107,6 +111,8 @@ export function ManageCardsScreen() {
         </Pressable>
       </View>
     </View>
+    ),
+    [colors, styles, removePaymentCard, setDefaultPaymentCard]
   );
 
   if (loading) {
@@ -123,6 +129,7 @@ export function ManageCardsScreen() {
       keyExtractor={(x) => x.id}
       renderItem={renderItem}
       keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={<Text style={styles.empty}>لا بطاقات</Text>}
@@ -130,7 +137,8 @@ export function ManageCardsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createManageCardsStyles(colors: AppPalette) {
+  return StyleSheet.create({
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background },
   card: {
@@ -166,3 +174,4 @@ const styles = StyleSheet.create({
   dangerText: { color: colors.dangerText, textAlign: 'center', fontWeight: '900' },
   empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
 });
+}

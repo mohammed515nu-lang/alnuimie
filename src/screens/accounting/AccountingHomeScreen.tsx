@@ -2,14 +2,12 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
-
 import { WalletCard } from '../../components/wallet/WalletCard';
 import { navigateFromRoot } from '../../navigation/rootNavigation';
 import type { RootStackParamList } from '../../navigation/types';
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
 
 type AccRow = {
   title: string;
@@ -70,8 +68,9 @@ function rowsForRole(role: string | undefined): AccRow[] {
 }
 
 export function AccountingHomeScreen() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const role = useStore((s) => s.user?.role);
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createAccountingHomeStyles(colors), [colors]);
   const rows = useMemo(() => rowsForRole(role), [role]);
   const walletHint =
     role === 'client'
@@ -80,7 +79,11 @@ export function AccountingHomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <Text style={styles.pageTitle}>{role === 'client' ? 'محاسبة المشروع' : 'محاسبة المقاول'}</Text>
         <WalletCard subtitle={walletHint} />
 
@@ -88,7 +91,7 @@ export function AccountingHomeScreen() {
           <Pressable
             key={r.route + r.title}
             accessibilityRole="button"
-            onPress={() => navigateFromRoot(navigation, r.route)}
+            onPress={() => navigateFromRoot(r.route)}
             {...pressableRipple(colors.primaryTint12)}
             style={styles.row}
           >
@@ -107,7 +110,8 @@ export function AccountingHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createAccountingHomeStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
   pageTitle: { color: colors.text, fontSize: 22, fontWeight: '900', textAlign: 'right', marginBottom: space.md },
@@ -134,3 +138,4 @@ const styles = StyleSheet.create({
   rowTitle: { color: colors.text, fontWeight: '900', fontSize: 16, textAlign: 'right' },
   rowSub: { color: colors.textMuted, fontSize: 12, marginTop: 2, textAlign: 'right' },
 });
+}

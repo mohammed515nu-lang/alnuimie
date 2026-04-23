@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'بنيان',
   slug: 'bunyan-construction',
   scheme: 'bunyan-construction',
-  version: '1.0.0',
+  version: '1.0.1',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
   icon: './assets/icon.png',
@@ -24,6 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.bunyan.construction',
+    versionCode: 2,
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#0F172A',
@@ -33,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/favicon.png',
   },
   plugins: [
+    'expo-router',
     'expo-secure-store',
     'expo-image-picker',
     'expo-font',
@@ -45,7 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
   ],
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://construction-backend-2xi2.onrender.com/api',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://alnuimie.onrender.com/api',
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '',
     enableGoogleAuth: (process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH ?? 'false') === 'true',
   },

@@ -1,32 +1,40 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
-
+import { SyriaFlag } from '../../components/SyriaFlag';
 import { navigateFromRoot } from '../../navigation/rootNavigation';
 import { useStore } from '../../store/useStore';
-import { colors, pressableRipple, radius, space, touch } from '../../theme';
-
-type Appearance = 'light' | 'dark' | 'system';
+import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import type { AppPalette } from '../../theme/palettes';
+import { hapticLight } from '../../utils/haptics';
 
 export function AccountScreen() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const user = useStore((s) => s.user);
   const logout = useStore((s) => s.logout);
-  const [appearance, setAppearance] = useState<Appearance>('system');
+  const appearance = useStore((s) => s.appearance);
+  const setAppearance = useStore((s) => s.setAppearance);
+  const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createAccountStyles(colors), [colors]);
 
   const roleLabel = user?.role === 'contractor' ? 'مقاول' : user?.role === 'client' ? 'صاحب مشروع' : '';
   const isContractor = user?.role === 'contractor';
 
   const go = (route: keyof import('../../navigation/types').RootStackParamList) => {
-    navigateFromRoot(navigation, route);
+    navigateFromRoot(route);
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingBottom: space.xxl + 12 + Math.max(insets.bottom, space.md) },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <Text style={styles.pageTitle}>حسابي</Text>
 
         <View style={styles.profileCard}>
@@ -34,10 +42,13 @@ export function AccountScreen() {
             <Ionicons name="person" size={40} color={colors.onPrimary} />
           </View>
           <Text style={styles.name}>{user?.name ?? '—'}</Text>
-          <Text style={styles.email}>{user?.email ?? ''}</Text>
+          <Text style={styles.email} selectable>
+            {user?.email ?? ''}
+          </Text>
           <View style={styles.chipRow}>
-            <View style={styles.chipMuted}>
-              <Text style={styles.chipMutedText}>🇸🇾 سوريا</Text>
+            <View style={[styles.chipMuted, styles.chipWithFlag]}>
+              <SyriaFlag width={22} height={16} />
+              <Text style={styles.chipMutedText}>سوريا</Text>
             </View>
             <View style={styles.chipRole}>
               <Ionicons
@@ -64,7 +75,10 @@ export function AccountScreen() {
             return (
               <Pressable
                 key={t.k}
-                onPress={() => setAppearance(t.k)}
+                onPress={() => {
+                  hapticLight();
+                  setAppearance(t.k);
+                }}
                 style={[styles.themeBtn, on && styles.themeBtnOn]}
                 {...pressableRipple(colors.primaryTint12)}
               >
@@ -262,7 +276,8 @@ export function AccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createAccountStyles(colors: AppPalette) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, paddingBottom: space.xxl + 12 },
   pageTitle: { color: colors.text, fontSize: 22, fontWeight: '900', textAlign: 'right', marginBottom: space.md },
@@ -295,6 +310,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderMuted,
   },
+  chipWithFlag: { flexDirection: 'row-reverse', alignItems: 'center', gap: space.sm - 2 },
   chipMutedText: { color: colors.textSecondary, fontWeight: '700' },
   chipRole: {
     flexDirection: 'row-reverse',
@@ -333,7 +349,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   statIcon: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
-  statNum: { color: colors.text, fontWeight: '900', fontSize: 18 },
+  statNum: { color: colors.text, fontWeight: '900', fontSize: 18, fontVariant: ['tabular-nums'] },
   statLab: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
   budgetCard: {
     backgroundColor: colors.surfaceMid,
@@ -376,3 +392,4 @@ const styles = StyleSheet.create({
   },
   logoutText: { color: colors.danger, fontWeight: '900', fontSize: 16 },
 });
+}

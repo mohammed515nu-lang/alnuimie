@@ -41,7 +41,16 @@ export function getApiErrorMessage(err: unknown): string {
       return 'تعذر الوصول للخادم. إذا كنت على هاتف، لا يعمل عنوان localhost — استخدم IP جهازك أو رابط الاستضافة في EXPO_PUBLIC_API_URL.';
     }
     const data = err.response?.data as { message?: string; error?: string } | undefined;
-    return data?.message || data?.error || err.message || 'حدث خطأ غير متوقع';
+    const raw = (data?.message || data?.error || err.message || 'حدث خطأ غير متوقع').trim();
+    const lower = raw.toLowerCase();
+    if (lower.includes('invalid credentials')) return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+    if (lower.includes('this account was created with google')) {
+      return 'هذا الحساب مُسجّل عبر Google. استخدم تسجيل الدخول بـ Google أو أعد تعيين كلمة المرور.';
+    }
+    if (lower.includes('not authenticated') || lower.includes('authentication required')) {
+      return 'انتهت الجلسة. يرجى تسجيل الدخول من جديد.';
+    }
+    return raw;
   }
   if (err instanceof Error) return err.message;
   return 'حدث خطأ غير متوقع';

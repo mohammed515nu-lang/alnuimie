@@ -89,6 +89,7 @@ const connectionRoutes = require('./routes/connections');
 const ratingRoutes = require('./routes/ratings');
 const chatRoutes = require('./routes/chats');
 const walletRoutes = require('./routes/wallet');
+const aiRoutes = require('./routes/ai');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -107,6 +108,7 @@ app.use('/api/connections', connectionRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/ai', aiRoutes);
 
 // 404 handler - يجب أن يكون بعد جميع routes
 app.use((req, res) => {

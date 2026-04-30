@@ -15,15 +15,59 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { authAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
-import {
-  DEMO_CLIENT_EMAIL,
-  DEMO_CONTRACTOR_EMAIL,
-  DEMO_PASSWORD,
-} from '../../auth/demoAccounts';
+import { ENABLE_GOOGLE_AUTH, GOOGLE_WEB_CLIENT_ID } from '../../config/env';
+import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
 import { useStore } from '../../store/useStore';
 import { useAppTheme, font, space, touch } from '../../theme';
 import { hapticSuccess } from '../../utils/haptics';
 import { isAndroid, isIOS } from '../../utils/platformEnv';
+
+// Logo Component matching image "A" shape
+function LogoA({ color = '#D4A574', size = 64 }: { color?: string; size?: number }) {
+  return (
+    <View style={[styles.logoContainer, { width: size, height: size }]}>
+      <Text style={[styles.logoText, { color, fontSize: size * 0.6 }]}>A</Text>
+      <View style={[styles.logoDot, { backgroundColor: color, width: size * 0.12, height: size * 0.12 }]} />
+    </View>
+  );
+}
+
+// Social Button Component
+function SocialButton({
+  icon,
+  onPress,
+  disabled = false,
+}: {
+  icon: 'logo-google' | 'logo-apple' | 'logo-facebook';
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  const { authUi } = useAppTheme();
+  const iconColor = icon === 'logo-apple' ? authUi.text : undefined;
+  const iconSize = 24;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.socialBtn, { borderColor: authUi.border }]}
+    >
+      <Ionicons name={icon} size={iconSize} color={iconColor || authUi.text} />
+    </Pressable>
+  );
+}
+
+// Feature Badge Component
+function FeatureBadge({ icon, text }: { icon: string; text: string }) {
+  const { authUi } = useAppTheme();
+  return (
+    <View style={styles.badge}>
+      <Ionicons name={icon as any} size={16} color={authUi.muted} />
+      <Text style={[styles.badgeText, { color: authUi.muted }]}>{text}</Text>
+    </View>
+  );
+}
 
 export function LoginScreen() {
   const setUser = useStore((s) => s.setUser);
@@ -38,11 +82,14 @@ export function LoginScreen() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [role, setRole] = useState<'client' | 'contractor'>('contractor');
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
 
   const { authUi, authCardLift, resolved } = useAppTheme();
+  const isDark = resolved === 'dark';
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -58,95 +105,42 @@ export function LoginScreen() {
         card: {
           ...authCardLift,
           backgroundColor: authUi.card,
-          borderRadius: 20,
-          padding: space.lg + 4,
+          borderRadius: 24,
+          padding: space.lg + 8,
           borderWidth: 1,
           borderColor: authUi.border,
-          borderTopWidth: 3,
-          borderTopColor: authUi.orange,
         },
         logoWrap: { alignItems: 'center', marginBottom: space.md },
-        logoCircle: {
-          borderCurve: 'continuous',
-          boxShadow:
-            resolved === 'light'
-              ? '0 0 22px rgba(234, 88, 12, 0.28)'
-              : '0 0 28px rgba(245, 158, 11, 0.35)',
-          width: 76,
-          height: 76,
-          borderRadius: 38,
-          backgroundColor: authUi.logoRing,
-          borderWidth: 1,
-          borderColor: authUi.border,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        screenTitle: {
+        headerTitle: {
           color: authUi.text,
-          fontSize: font.title,
-          fontWeight: '800',
-          textAlign: 'center',
-        },
-        lead: {
-          color: authUi.muted,
-          fontSize: font.caption,
-          textAlign: 'center',
-          marginTop: space.sm,
-          marginBottom: space.lg,
-          lineHeight: 18,
-          paddingHorizontal: space.sm,
-        },
-        roleRow: {
-          flexDirection: 'row-reverse',
-          gap: space.sm + 2,
-          marginBottom: space.md + 2,
-        },
-        roleBtn: {
-          borderCurve: 'continuous',
-          flex: 1,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: authUi.border,
-          backgroundColor: authUi.inputBg,
-          paddingVertical: space.sm + 4,
-          minHeight: 46,
-          justifyContent: 'center',
-        },
-        roleBtnOn: {
-          backgroundColor: authUi.orange,
-          borderColor: authUi.orange,
-        },
-        roleTxt: {
-          textAlign: 'center',
-          fontSize: font.body,
+          fontSize: 24,
           fontWeight: '700',
-          color: authUi.label,
+          textAlign: 'center',
+          marginBottom: space.xs,
         },
-        roleTxtOn: {
-          color: authUi.onOrange,
+        headerSubtitle: {
+          color: authUi.muted,
+          fontSize: 14,
+          textAlign: 'center',
+          marginBottom: space.lg + 4,
+        },
+        labelRow: {
+          flexDirection: 'row-reverse',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: space.xs + 2,
         },
         label: {
           color: authUi.label,
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: '600',
-          marginBottom: space.xs + 2,
-          textAlign: 'right',
         },
-        input: {
-          borderCurve: 'continuous',
-          backgroundColor: authUi.inputBg,
-          borderWidth: 1,
-          borderColor: authUi.border,
-          borderRadius: 12,
-          paddingHorizontal: space.md,
-          paddingVertical: space.sm + 4,
-          fontSize: font.body,
-          color: authUi.text,
-          marginBottom: space.md,
-          minHeight: touch.minHeight - 2,
-          textAlign: 'right',
+        forgotLink: {
+          color: authUi.gold,
+          fontSize: 13,
+          fontWeight: '600',
         },
-        passRow: {
+        inputRow: {
           borderCurve: 'continuous',
           flexDirection: 'row-reverse',
           alignItems: 'center',
@@ -155,106 +149,99 @@ export function LoginScreen() {
           borderRadius: 12,
           backgroundColor: authUi.inputBg,
           marginBottom: space.md,
-          minHeight: touch.minHeight - 2,
-        },
-        inputPass: {
-          flex: 1,
+          minHeight: 52,
           paddingHorizontal: space.md,
-          paddingVertical: space.sm + 4,
-          fontSize: font.body,
+          gap: space.sm,
+        },
+        inputRowError: {
+          borderColor: authUi.errorText || '#dc2626',
+        },
+        input: {
+          flex: 1,
+          fontSize: 15,
           color: authUi.text,
           textAlign: 'right',
+          paddingVertical: 12,
+        },
+        inputIcon: {
+          opacity: 0.6,
         },
         eyeBtn: {
-          paddingHorizontal: space.sm + 2,
-          paddingVertical: space.sm,
-          justifyContent: 'center',
+          padding: space.xs,
+        },
+        errorRow: {
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          gap: space.xs,
+          marginTop: -space.sm,
+          marginBottom: space.sm,
+          marginRight: space.xs,
+        },
+        errorText: {
+          color: authUi.errorText || '#dc2626',
+          fontSize: 12,
         },
         cta: {
           borderCurve: 'continuous',
-          boxShadow:
-            resolved === 'light'
-              ? '0 10px 24px rgba(234, 88, 12, 0.25)'
-              : '0 12px 28px rgba(217, 119, 6, 0.45)',
-          backgroundColor: authUi.orangePressed,
-          borderRadius: 14,
-          paddingVertical: space.sm + 6,
-          minHeight: touch.minHeight - 2,
+          backgroundColor: authUi.gold,
+          borderRadius: 12,
+          paddingVertical: 14,
+          minHeight: 52,
           justifyContent: 'center',
+          alignItems: 'center',
           marginTop: space.sm,
         },
         ctaTxt: {
-          color: authUi.onOrange,
-          fontSize: font.button,
-          fontWeight: '800',
-          textAlign: 'center',
+          color: authUi.onGold,
+          fontSize: 16,
+          fontWeight: '700',
         },
-        demoBox: {
-          borderCurve: 'continuous',
-          boxShadow:
-            resolved === 'light' ? '0 8px 24px rgba(15, 23, 42, 0.06)' : '0 8px 24px rgba(0, 0, 0, 0.35)',
-          marginTop: space.lg + 2,
-          padding: space.md,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: resolved === 'light' ? 'rgba(234, 88, 12, 0.28)' : 'rgba(245, 158, 11, 0.35)',
-          backgroundColor: authUi.inputBg,
-        },
-        demoTitle: {
-          color: authUi.text,
-          fontWeight: '800',
-          fontSize: font.body,
-          textAlign: 'right',
-          marginBottom: space.sm,
-        },
-        demoHint: {
-          color: authUi.muted,
-          fontSize: 12,
-          lineHeight: 18,
-          textAlign: 'right',
-          marginBottom: space.md,
-        },
-        demoBtns: {
-          flexDirection: 'row-reverse',
-          gap: space.sm + 2,
-        },
-        demoBtn: {
-          flex: 1,
+        dividerRow: {
           flexDirection: 'row-reverse',
           alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: authUi.orange,
-          paddingVertical: space.sm + 4,
-          minHeight: 46,
+          gap: space.md,
+          marginTop: space.lg,
+          marginBottom: space.md,
         },
-        demoBtnTxt: {
-          color: authUi.orange,
-          fontWeight: '800',
-          fontSize: font.caption,
+        dividerLine: {
+          flex: 1,
+          height: 1,
+          backgroundColor: authUi.border,
+        },
+        dividerTxt: {
+          color: authUi.muted,
+          fontSize: 13,
+        },
+        socialRow: {
+          flexDirection: 'row-reverse',
+          justifyContent: 'center',
+          gap: space.md,
+          marginBottom: space.lg,
         },
         footerRow: {
           flexDirection: 'row-reverse',
-          justifyContent: 'space-between',
-          marginTop: space.lg,
-          paddingHorizontal: space.xs,
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: space.xs,
         },
-        link: {
-          color: authUi.orange,
-          fontSize: font.link,
+        footerText: {
+          color: authUi.muted,
+          fontSize: 14,
+        },
+        footerLink: {
+          color: authUi.gold,
+          fontSize: 14,
           fontWeight: '700',
         },
-        footerBlock: {
-          marginTop: space.lg,
-          textAlign: 'center',
-          fontSize: font.link,
-          lineHeight: 22,
+        badgesRow: {
+          flexDirection: 'row-reverse',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          gap: space.sm,
+          marginTop: space.xl + 4,
+          paddingHorizontal: space.md,
         },
-        footerMuted: {
-          color: authUi.muted,
-          fontSize: font.link,
-        },
+        // Modal styles
         modalRoot: { flex: 1 },
         modalBackdrop: {
           ...StyleSheet.absoluteFillObject,
@@ -268,11 +255,9 @@ export function LoginScreen() {
         },
         modalCard: {
           borderCurve: 'continuous',
-          boxShadow:
-            resolved === 'light' ? '0 18px 48px rgba(15, 23, 42, 0.12)' : '0 24px 60px rgba(0, 0, 0, 0.55)',
           backgroundColor: authUi.card,
-          borderRadius: 18,
-          padding: space.lg + 2,
+          borderRadius: 20,
+          padding: space.lg + 4,
           borderWidth: 1,
           borderColor: authUi.border,
         },
@@ -280,45 +265,60 @@ export function LoginScreen() {
           flexDirection: 'row-reverse',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: space.sm,
-        },
-        modalClose: {
-          padding: space.sm,
-          marginLeft: -space.sm,
+          marginBottom: space.md,
         },
         modalTitle: {
           flex: 1,
           textAlign: 'right',
           color: authUi.text,
-          fontSize: font.title,
-          fontWeight: '800',
+          fontSize: 18,
+          fontWeight: '700',
+        },
+        modalClose: {
+          padding: space.xs,
         },
         modalLead: {
           color: authUi.muted,
-          fontSize: font.caption,
-          lineHeight: 18,
+          fontSize: 14,
           textAlign: 'right',
           marginBottom: space.md,
         },
-        modalCancelWrap: {
-          marginTop: space.md,
-          alignItems: 'center',
-          paddingVertical: space.sm,
+        // Role selection styles
+        roleRow: {
+          flexDirection: 'row-reverse',
+          gap: space.sm + 2,
+          marginBottom: space.md + 2,
         },
-        modalCancel: {
-          color: authUi.orange,
-          fontSize: font.body,
-          fontWeight: '700',
+        roleBtn: {
+          borderCurve: 'continuous',
+          flex: 1,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: authUi.border,
+          backgroundColor: authUi.inputBg,
+          paddingVertical: 12,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        roleBtnOn: {
+          backgroundColor: authUi.gold,
+          borderColor: authUi.gold,
+        },
+        roleTxt: {
+          fontSize: 14,
+          fontWeight: '600',
+          color: authUi.text,
+        },
+        roleTxtOn: {
+          color: authUi.onGold,
         },
       }),
     [authUi, authCardLift, resolved]
   );
 
-  const FieldLabel = ({ text }: { text: string }) => <Text style={styles.label}>{text}</Text>;
-
   const androidRippleAuth = () => {
     if (!isAndroid) return {};
-    return { android_ripple: { color: 'rgba(245,158,11,0.22)', borderless: false } };
+    return { android_ripple: { color: 'rgba(212,165,116,0.2)', borderless: false } };
   };
 
   const openForgot = () => {
@@ -326,49 +326,43 @@ export function LoginScreen() {
     setForgotOpen(true);
   };
 
-  const sendForgot = () => {
+  const sendForgot = async () => {
     if (!forgotEmail.trim()) {
       Alert.alert('تنبيه', 'أدخل البريد الإلكتروني');
       return;
     }
-    Alert.alert(
-      'قريباً',
-      'إرسال رابط إعادة التعيين يتطلب إعداداً على الخادم. راجع فريق الباكند لتفعيل المسار.'
-    );
-    setForgotOpen(false);
-  };
-
-  const loginAsDemo = async (kind: 'contractor' | 'client') => {
-    setLoading(true);
     try {
-      const res = await authAPI.login(
-        kind === 'contractor' ? DEMO_CONTRACTOR_EMAIL : DEMO_CLIENT_EMAIL,
-        DEMO_PASSWORD
-      );
-      hapticSuccess();
-      setUser(res.user);
+      const res = await authAPI.forgotPassword(forgotEmail.trim());
+      Alert.alert('تم', res.message || 'تم إرسال رابط إعادة التعيين إذا كان البريد مسجلاً.');
+      setForgotOpen(false);
     } catch (e) {
-      Alert.alert('تعذر الدخول', getApiErrorMessage(e));
-    } finally {
-      setLoading(false);
+      Alert.alert('تعذر الإرسال', getApiErrorMessage(e));
     }
   };
 
   const onSubmit = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    setPasswordError(null);
+
+    if (!cleanEmail || !password) {
+      return Alert.alert('تنبيه', 'أدخل البريد الإلكتروني وكلمة المرور.');
+    }
+
     if (mode === 'register' && password !== confirmPassword) {
       return Alert.alert('تنبيه', 'كلمة المرور وتأكيدها غير متطابقتين');
     }
+
     setLoading(true);
     try {
       if (mode === 'login') {
-        const res = await authAPI.login(email.trim(), password);
+        const res = await authAPI.login(cleanEmail, password);
         hapticSuccess();
         setUser(res.user);
       } else {
         if (!name.trim()) throw new Error('الاسم مطلوب');
         const res = await authAPI.register({
           name: name.trim(),
-          email: email.trim(),
+          email: cleanEmail,
           password,
           role,
           phone: phone.trim() || undefined,
@@ -377,10 +371,22 @@ export function LoginScreen() {
         setUser(res.user);
       }
     } catch (e) {
-      Alert.alert('تعذر الدخول', getApiErrorMessage(e));
+      const errorMsg = getApiErrorMessage(e);
+      if (errorMsg.includes('كلمة المرور') || errorMsg.toLowerCase().includes('password')) {
+        setPasswordError('كلمة المرور غير صحيحة');
+      }
+      Alert.alert('تعذر الدخول', errorMsg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const onSocialPress = (provider: 'google' | 'apple' | 'facebook') => {
+    if (provider === 'google') {
+      // Handled by GoogleSignInButton
+      return;
+    }
+    Alert.alert(provider, 'قريباً');
   };
 
   const isLogin = mode === 'login';
@@ -400,251 +406,219 @@ export function LoginScreen() {
             contentInsetAdjustmentBehavior="automatic"
           >
             <View style={styles.card}>
+              {/* Logo */}
               <View style={styles.logoWrap}>
-                {isLogin ? (
-                  <View style={styles.logoCircle}>
-                    <Ionicons name="business" size={30} color={authUi.orange} />
-                  </View>
-                ) : (
-                  <View style={styles.logoCircle}>
-                    <Ionicons name="person-add" size={28} color={authUi.orange} />
-                  </View>
-                )}
+                <LogoA color={authUi.gold} size={72} />
               </View>
 
-              <Text style={styles.screenTitle} accessibilityRole="header">
-                {isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
-              </Text>
-              <Text style={styles.lead}>
-                {isLogin
-                  ? 'سجل دخولك للوصول إلى لوحة التحكم ومتابعة مشروعاتك.'
-                  : 'سجل حسابك للوصول إلى لوحة التحكم ومتابعة المشروعات.'}
-              </Text>
+              {/* Header */}
+              <Text style={styles.headerTitle}>مرحباً بك مجدداً</Text>
+              <Text style={styles.headerSubtitle}>سجل الدخول للمتابعة</Text>
 
+              {/* Role Selection */}
               <View style={styles.roleRow}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="اختيار دور مقاول"
-                  accessibilityState={{ selected: role === 'contractor' }}
                   onPress={() => setRole('contractor')}
-                  {...androidRippleAuth()}
                   style={[styles.roleBtn, role === 'contractor' && styles.roleBtnOn]}
                 >
                   <Text style={[styles.roleTxt, role === 'contractor' && styles.roleTxtOn]}>مقاول</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="اختيار دور صاحب مشروع"
-                  accessibilityState={{ selected: role === 'client' }}
                   onPress={() => setRole('client')}
-                  {...androidRippleAuth()}
                   style={[styles.roleBtn, role === 'client' && styles.roleBtnOn]}
                 >
                   <Text style={[styles.roleTxt, role === 'client' && styles.roleTxtOn]}>صاحب مشروع</Text>
                 </Pressable>
               </View>
 
-              {!isLogin ? (
+              {/* Name (Register only) */}
+              {!isLogin && (
                 <>
-                  <FieldLabel text="الاسم الكامل" />
-                  <TextInput
-                    placeholder="الاسم الكامل"
-                    placeholderTextColor={authUi.placeholder}
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                  />
-                  <FieldLabel text="البريد الإلكتروني" />
-                  <TextInput
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholder="البريد الإلكتروني"
-                    placeholderTextColor={authUi.placeholder}
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                  <FieldLabel text="رقم الهاتف (اختياري)" />
-                  <TextInput
-                    placeholder="رقم الهاتف"
-                    placeholderTextColor={authUi.placeholder}
-                    style={styles.input}
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                  />
-                </>
-              ) : (
-                <>
-                  <FieldLabel text="البريد الإلكتروني" />
-                  <TextInput
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholder="أدخل بريدك الإلكتروني"
-                    placeholderTextColor={authUi.placeholder}
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                  />
+                  <View style={styles.inputRow}>
+                    <Ionicons name="person-outline" size={20} color={authUi.label} style={styles.inputIcon} />
+                    <TextInput
+                      placeholder="الاسم الكامل"
+                      placeholderTextColor={authUi.placeholder}
+                      style={styles.input}
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </View>
                 </>
               )}
 
-              {isLogin ? (
+              {/* Email */}
+              <View style={styles.inputRow}>
+                <Ionicons name="mail-outline" size={20} color={authUi.label} style={styles.inputIcon} />
+                <TextInput
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="ahmed@example.com"
+                  placeholderTextColor={authUi.placeholder}
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
+
+              {/* Password Label Row */}
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>كلمة المرور</Text>
+                {isLogin && (
+                  <Pressable onPress={openForgot}>
+                    <Text style={styles.forgotLink}>نسيت كلمة المرور؟</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Password Input */}
+              <View style={[styles.inputRow, passwordError && styles.inputRowError]}>
+                <Ionicons name="lock-closed-outline" size={20} color={authUi.label} style={styles.inputIcon} />
+                <TextInput
+                  secureTextEntry={!showPassword}
+                  placeholder="••••••••••••"
+                  placeholderTextColor={authUi.placeholder}
+                  style={styles.input}
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setPasswordError(null);
+                  }}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setShowPassword((v) => !v)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={authUi.label}
+                  />
+                </Pressable>
+              </View>
+
+              {/* Password Error */}
+              {passwordError && (
+                <View style={styles.errorRow}>
+                  <Ionicons name="alert-circle" size={14} color={authUi.errorText || '#dc2626'} />
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                </View>
+              )}
+
+              {/* Confirm Password (Register only) */}
+              {!isLogin && (
                 <>
-                  <FieldLabel text="كلمة المرور" />
-                  <View style={styles.passRow}>
-                    <TextInput
-                      secureTextEntry={!showPassword}
-                      placeholder="أدخل كلمة المرور"
-                      placeholderTextColor={authUi.placeholder}
-                      style={styles.inputPass}
-                      value={password}
-                      onChangeText={setPassword}
-                    />
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                      onPress={() => setShowPassword((v) => !v)}
-                      style={styles.eyeBtn}
-                      {...androidRippleAuth()}
-                    >
-                      <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={authUi.label} />
-                    </Pressable>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <FieldLabel text="كلمة المرور" />
-                  <View style={styles.passRow}>
-                    <TextInput
-                      secureTextEntry={!showPassword}
-                      placeholder="كلمة المرور"
-                      placeholderTextColor={authUi.placeholder}
-                      style={styles.inputPass}
-                      value={password}
-                      onChangeText={setPassword}
-                    />
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                      onPress={() => setShowPassword((v) => !v)}
-                      style={styles.eyeBtn}
-                      {...androidRippleAuth()}
-                    >
-                      <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={authUi.label} />
-                    </Pressable>
-                  </View>
-                  <FieldLabel text="تأكيد كلمة المرور" />
-                  <View style={styles.passRow}>
+                  <Text style={[styles.label, { marginBottom: space.xs + 2, textAlign: 'right' }]}>
+                    تأكيد كلمة المرور
+                  </Text>
+                  <View style={styles.inputRow}>
+                    <Ionicons name="lock-closed-outline" size={20} color={authUi.label} style={styles.inputIcon} />
                     <TextInput
                       secureTextEntry={!showConfirm}
-                      placeholder="تأكيد كلمة المرور"
+                      placeholder="••••••••••••"
                       placeholderTextColor={authUi.placeholder}
-                      style={styles.inputPass}
+                      style={styles.input}
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                     />
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityLabel={showConfirm ? 'إخفاء تأكيد كلمة المرور' : 'إظهار تأكيد كلمة المرور'}
                       onPress={() => setShowConfirm((v) => !v)}
                       style={styles.eyeBtn}
-                      {...androidRippleAuth()}
                     >
-                      <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={22} color={authUi.label} />
+                      <Ionicons
+                        name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
+                        size={20}
+                        color={authUi.label}
+                      />
                     </Pressable>
                   </View>
                 </>
               )}
 
+              {/* Phone (Register only) */}
+              {!isLogin && (
+                <>
+                  <Text style={[styles.label, { marginBottom: space.xs + 2, textAlign: 'right' }]}>
+                    رقم الهاتف (اختياري)
+                  </Text>
+                  <View style={styles.inputRow}>
+                    <Ionicons name="call-outline" size={20} color={authUi.label} style={styles.inputIcon} />
+                    <TextInput
+                      placeholder="رقم الهاتف"
+                      placeholderTextColor={authUi.placeholder}
+                      style={styles.input}
+                      value={phone}
+                      onChangeText={setPhone}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                </>
+              )}
+
+              {/* Submit Button */}
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={isLogin ? 'تسجيل الدخول' : 'إنشاء الحساب'}
                 disabled={loading}
                 onPress={onSubmit}
                 {...androidRippleAuth()}
                 style={[styles.cta, loading && { opacity: 0.65 }]}
               >
-                <Text style={styles.ctaTxt}>{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}</Text>
+                <Text style={styles.ctaTxt}>
+                  {isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}
+                </Text>
               </Pressable>
 
-              {isLogin ? (
-                <View style={styles.demoBox}>
-                  <Text style={styles.demoTitle}>دخول تجريبي (بدون خادم)</Text>
-                  <Text style={styles.demoHint}>
-                    مقاول: {DEMO_CONTRACTOR_EMAIL}
-                    {'\n'}
-                    عميل: {DEMO_CLIENT_EMAIL}
-                    {'\n'}
-                    كلمة المرور للاثنين: {DEMO_PASSWORD}
-                  </Text>
-                  <View style={styles.demoBtns}>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="دخول تجريبي كمقاول"
-                      disabled={loading}
-                      onPress={() => void loginAsDemo('contractor')}
-                      {...androidRippleAuth()}
-                      style={[styles.demoBtn, loading && { opacity: 0.65 }]}
-                    >
-                      <Ionicons name="hammer-outline" size={18} color={authUi.orange} style={{ marginLeft: 6 }} />
-                      <Text style={styles.demoBtnTxt}>دخول كمقاول</Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="دخول تجريبي كعميل"
-                      disabled={loading}
-                      onPress={() => void loginAsDemo('client')}
-                      {...androidRippleAuth()}
-                      style={[styles.demoBtn, loading && { opacity: 0.65 }]}
-                    >
-                      <Ionicons name="person-outline" size={18} color={authUi.orange} style={{ marginLeft: 6 }} />
-                      <Text style={styles.demoBtnTxt}>دخول كعميل</Text>
-                    </Pressable>
-                  </View>
+              {/* Divider */}
+              {isLogin && ENABLE_GOOGLE_AUTH && GOOGLE_WEB_CLIENT_ID.trim() && (
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerTxt}>أو سجل الدخول باستخدام</Text>
+                  <View style={styles.dividerLine} />
                 </View>
-              ) : null}
-
-              {isLogin ? (
-                <View style={styles.footerRow}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="الانتقال إلى إنشاء حساب جديد"
-                    onPress={() => setMode('register')}
-                    {...androidRippleAuth()}
-                  >
-                    <Text style={styles.link}>إنشاء حساب جديد</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="نسيت كلمة المرور"
-                    onPress={openForgot}
-                    {...androidRippleAuth()}
-                  >
-                    <Text style={styles.link}>هل نسيت كلمة المرور؟</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Text style={styles.footerBlock}>
-                  <Text style={styles.link} onPress={openForgot}>
-                    نسيت كلمة المرور؟
-                  </Text>
-                  <Text style={styles.footerMuted}> لديك حساب بالفعل؟ </Text>
-                  <Text style={styles.link} onPress={() => setMode('login')}>
-                    تسجيل الدخول
-                  </Text>
-                </Text>
               )}
+
+              {/* Social Buttons */}
+              {isLogin && (
+                <View style={styles.socialRow}>
+                  <SocialButton icon="logo-google" onPress={() => onSocialPress('google')} />
+                  <SocialButton icon="logo-apple" onPress={() => onSocialPress('apple')} />
+                  <SocialButton icon="logo-facebook" onPress={() => onSocialPress('facebook')} />
+                </View>
+              )}
+
+              {/* Footer */}
+              <View style={styles.footerRow}>
+                <Text style={styles.footerText}>
+                  {isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}
+                </Text>
+                <Pressable onPress={() => setMode(isLogin ? 'register' : 'login')}>
+                  <Text style={styles.footerLink}>
+                    {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Feature Badges */}
+            <View style={styles.badgesRow}>
+              <FeatureBadge icon="shield-checkmark-outline" text="أمن وموثوق" />
+              <FeatureBadge icon="color-palette-outline" text="تصميم عصري" />
+              <FeatureBadge icon="phone-portrait-outline" text="تجربة سلسلة" />
+              <FeatureBadge icon="lock-closed-outline" text="خصوصيات تهمنا" />
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
 
+      {/* Forgot Password Modal */}
       <Modal visible={forgotOpen} transparent animationType="fade" onRequestClose={() => setForgotOpen(false)}>
         <View style={styles.modalRoot}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="إغلاق"
             style={styles.modalBackdrop}
             onPress={() => setForgotOpen(false)}
           />
@@ -654,42 +628,33 @@ export function LoginScreen() {
                 <Text style={styles.modalTitle}>نسيت كلمة المرور</Text>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="إغلاق"
                   onPress={() => setForgotOpen(false)}
                   style={styles.modalClose}
-                  {...androidRippleAuth()}
                 >
                   <Ionicons name="close" size={24} color={authUi.muted} />
                 </Pressable>
               </View>
               <Text style={styles.modalLead}>أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين</Text>
-              <FieldLabel text="البريد الإلكتروني" />
-              <TextInput
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholder="البريد الإلكتروني"
-                placeholderTextColor={authUi.placeholder}
-                style={styles.input}
-                value={forgotEmail}
-                onChangeText={setForgotEmail}
-              />
+              <Text style={[styles.label, { marginBottom: space.xs + 2, textAlign: 'right' }]}>البريد الإلكتروني</Text>
+              <View style={styles.inputRow}>
+                <Ionicons name="mail-outline" size={20} color={authUi.label} style={styles.inputIcon} />
+                <TextInput
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="البريد الإلكتروني"
+                  placeholderTextColor={authUi.placeholder}
+                  style={styles.input}
+                  value={forgotEmail}
+                  onChangeText={setForgotEmail}
+                />
+              </View>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="إرسال رابط إعادة التعيين"
                 onPress={sendForgot}
                 style={styles.cta}
                 {...androidRippleAuth()}
               >
                 <Text style={styles.ctaTxt}>إرسال الرابط</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="إلغاء"
-                onPress={() => setForgotOpen(false)}
-                style={styles.modalCancelWrap}
-                {...androidRippleAuth()}
-              >
-                <Text style={styles.modalCancel}>إلغاء</Text>
               </Pressable>
             </View>
           </View>
@@ -698,3 +663,41 @@ export function LoginScreen() {
     </View>
   );
 }
+
+// Static styles (don't depend on theme)
+const styles = StyleSheet.create({
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  logoText: {
+    fontWeight: '700',
+    lineHeight: undefined,
+  },
+  logoDot: {
+    position: 'absolute',
+    bottom: '15%',
+    borderRadius: 999,
+  },
+  socialBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  badge: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+});

@@ -1,0 +1,51 @@
+# Keep EAS upload minimal and avoid local symlinks
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Local env files
+.env
+.env*.local
+
+# Native generated folders
+ios/
+android/
+
+# Agent/tooling folders (symlinks / huge trees — Windows EPERM during EAS tarball)
+.agents
+.agents/
+**/.agents/**
+.agents/**
+skills/
+index.android.bundle
+.claude/
+.cursor/
+.vibe/
+.zencoder/
+.trae/
+.windsurf/
+.openhands/
+.roo/
+.neovate/
+.mux/
+.qwen/
+.continue/
+.bob/
+.mcpjam/
+.crush/
+.pochi/
+.qoder/
+.kode/
+.commandcode/
+.augment/
+.pi/
+.adal/
+.cortex/
+.kiro/
+.codebuddy/
+.iflow/
+.kilocode/
+.goose/
+.factory/
+.junie/

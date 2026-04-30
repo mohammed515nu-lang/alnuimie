@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
 
 import { walletAPI } from '../../api/services';
@@ -18,19 +19,21 @@ import { useStore } from '../../store/useStore';
 import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
 import { acceptedContractorsForClient } from '../../utils/connections';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { TopBar } from '../../components/TopBar';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
 import { isIOS } from '../../utils/platformEnv';
-import type { AppPalette } from '../../theme/palettes';
 
 export function PayContractorScreen() {
   const user = useStore((s) => s.user);
   const connections = useStore((s) => s.connections);
-  const refreshTransfers = useStore((s) => s.refreshTransfers);
   const addTransferLocal = useStore((s) => s.addTransferLocal);
   const updateTransferLocal = useStore((s) => s.updateTransferLocal);
-  const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
-  const refreshConnections = useStore((s) => s.refreshConnections);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
 
   const contractors = useMemo(
     () => (user ? acceptedContractorsForClient(user, connections) : []),
@@ -45,15 +48,12 @@ export function PayContractorScreen() {
   const [projectName, setProjectName] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createPayContractorStyles(colors), [colors]);
-
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
   useEffect(() => {
-    void refreshPaymentCards();
-    void refreshConnections();
-  }, [refreshConnections, refreshPaymentCards]);
+    void useStore.getState().refreshPaymentCards();
+    void useStore.getState().refreshConnections();
+  }, []);
 
   useEffect(() => {
     if (manualMode) return;
@@ -123,7 +123,7 @@ export function PayContractorScreen() {
 
       const latest = await walletAPI.confirmTransfer(transferId);
       addTransferLocal(latest);
-      await refreshTransfers();
+      await useStore.getState().refreshTransfers();
       hapticSuccess();
       Alert.alert('تم', 'تم إرسال الدفع للمعالجة/التأكيد من الخادم');
     } catch (e) {
@@ -135,164 +135,172 @@ export function PayContractorScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={isIOS ? 'padding' : undefined}
-      keyboardVerticalOffset={isIOS ? 64 : 0}
-    >
-      <ScrollView
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="دفع لمقاول" />
+      <KeyboardAvoidingView
         style={styles.flex}
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        contentInsetAdjustmentBehavior="automatic"
+        behavior={isIOS ? 'padding' : undefined}
+        keyboardVerticalOffset={isIOS ? 64 : 0}
       >
-        <Text style={styles.title}>دفع عميل → مقاول</Text>
-        <Text style={styles.hint}>
-          بعد قبول طلب التواصل مع مقاول، يظهر هنا لاختياره مباشرة (بدون نسخ ObjectId).
-        </Text>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom }]}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.hint}>
+            بعد قبول طلب التواصل مع مقاول، يظهر هنا لاختياره مباشرة (بدون نسخ ObjectId).
+          </Text>
 
-        {!manualMode ? (
-          <>
-            {contractors.length === 0 ? (
-              <Text style={styles.warn}>
-                لا يوجد مقاولون في قائمة «اتصال مقبول». ابحث عن مقاول، أرسل طلب تواصل، وبعد قبوله عد إلى هذه الشاشة.
-              </Text>
-            ) : (
-              <View style={styles.chipsWrap}>
-                <FlatList
-                  data={contractors}
-                  keyExtractor={(item) => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.chipsRow}
-                  nestedScrollEnabled
-                  contentInsetAdjustmentBehavior="automatic"
-                  renderItem={({ item }) => {
-                    const on = selectedId === item.id;
-                    return (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={`اختيار المقاول ${item.name}`}
-                        accessibilityState={{ selected: on }}
-                        onPress={() => setSelectedId(item.id)}
-                        {...pressableRipple(colors.primaryTint12)}
-                        style={[styles.chip, on && styles.chipOn]}
-                      >
-                        <Text style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                        <Text style={[styles.chipSub, on && styles.chipSubOn]}>مقاول</Text>
-                      </Pressable>
-                    );
-                  }}
-                />
-              </View>
-            )}
-          </>
-        ) : (
+          {!manualMode ? (
+            <>
+              {contractors.length === 0 ? (
+                <Text style={styles.warn}>
+                  لا يوجد مقاولون في قائمة «اتصال مقبول». ابحث عن مقاول، أرسل طلب تواصل، وبعد قبوله عد إلى هذه الشاشة.
+                </Text>
+              ) : (
+                <View style={styles.chipsWrap}>
+                  <FlatList
+                    data={contractors}
+                    keyExtractor={(item) => item.id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.chipsRow}
+                    nestedScrollEnabled
+                    contentInsetAdjustmentBehavior="automatic"
+                    renderItem={({ item }) => {
+                      const on = selectedId === item.id;
+                      return (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`اختيار المقاول ${item.name}`}
+                          accessibilityState={{ selected: on }}
+                          onPress={() => setSelectedId(item.id)}
+                          {...pressableRipple(dash.goldTint)}
+                          style={[styles.chip, on && styles.chipOn]}
+                        >
+                          <Text style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={2}>
+                            {item.name}
+                          </Text>
+                          <Text style={[styles.chipSub, on && styles.chipSubOn]}>مقاول</Text>
+                        </Pressable>
+                      );
+                    }}
+                  />
+                </View>
+              )}
+            </>
+          ) : (
+            <TextInput
+              placeholder="معرف المقاول (ObjectId)"
+              placeholderTextColor={dash.muted}
+              style={styles.input}
+              value={manualToUserId}
+              onChangeText={setManualToUserId}
+              autoCapitalize="none"
+              textAlign="right"
+            />
+          )}
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={toggleManual}
+            {...pressableRipple(dash.navyTint, true)}
+            style={styles.linkBtn}
+          >
+            <Text style={styles.linkText}>{manualMode ? 'العودة لقائمة المقاولين' : 'إدخال معرف يدويًا'}</Text>
+          </Pressable>
+
           <TextInput
-            placeholder="معرف المقاول (ObjectId)"
-            placeholderTextColor={colors.placeholder}
+            placeholder="اسم المشروع (اختياري)"
+            placeholderTextColor={dash.muted}
             style={styles.input}
-            value={manualToUserId}
-            onChangeText={setManualToUserId}
-            autoCapitalize="none"
+            value={projectName}
+            onChangeText={setProjectName}
+            textAlign="right"
           />
-        )}
+          <TextInput
+            placeholder="المبلغ (USD)"
+            placeholderTextColor={dash.muted}
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="decimal-pad"
+            textAlign="right"
+          />
+          <TextInput
+            placeholder="وصف (اختياري)"
+            placeholderTextColor={dash.muted}
+            style={styles.input}
+            value={description}
+            onChangeText={setDescription}
+            textAlign="right"
+          />
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={toggleManual}
-          {...pressableRipple(colors.primaryTint12, true)}
-          style={styles.linkBtn}
-        >
-          <Text style={styles.linkText}>{manualMode ? 'العودة لقائمة المقاولين' : 'إدخال معرف يدويًا'}</Text>
-        </Pressable>
-
-        <TextInput
-          placeholder="اسم المشروع (اختياري)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={projectName}
-          onChangeText={setProjectName}
-        />
-        <TextInput
-          placeholder="المبلغ (USD)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="decimal-pad"
-        />
-        <TextInput
-          placeholder="وصف (اختياري)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={busy}
-          onPress={onPay}
-          {...pressableRipple(colors.primaryTint18)}
-          style={[styles.primary, busy && { opacity: 0.6 }]}
-        >
-          <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy}
+            onPress={onPay}
+            {...pressableRipple(dash.goldTint)}
+            style={[styles.primary, busy && { opacity: 0.6 }]}
+          >
+            <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-function createPayContractorStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
-  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm },
-  hint: { color: colors.textMuted, marginBottom: space.md, lineHeight: 20 },
-  warn: { color: colors.warning, marginBottom: space.md, lineHeight: 20 },
-  chipsWrap: { maxHeight: 132, marginBottom: space.sm },
-  chipsRow: { gap: space.sm + 2, paddingVertical: space.xs, marginBottom: space.sm },
-  chip: {
-    maxWidth: 168,
-    paddingVertical: space.md,
-    paddingHorizontal: space.md + 2,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    backgroundColor: colors.chipBg,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  chipOn: { borderColor: colors.primary, backgroundColor: colors.primaryTint12 },
-  chipText: { color: colors.textSecondary, fontWeight: '800' },
-  chipTextOn: { color: colors.text },
-  chipSub: { color: colors.placeholder, marginTop: space.xs, fontSize: 12 },
-  chipSubOn: { color: colors.primary },
-  linkBtn: { marginBottom: space.md, minHeight: touch.minHeight, justifyContent: 'center' },
-  linkText: { color: colors.primary, fontWeight: '800' },
-  input: {
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    color: colors.textSecondary,
-    marginBottom: space.sm + 2,
-    minHeight: touch.minHeight,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    marginTop: space.sm,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    flex: { flex: 1 },
+    scroll: { paddingHorizontal: 16, paddingTop: 8 },
+    hint: { color: dash.muted, marginBottom: 14, lineHeight: 22, textAlign: 'right', fontSize: 14 },
+    warn: { color: dash.gold, marginBottom: 14, lineHeight: 22, textAlign: 'right', fontWeight: '700' },
+    chipsWrap: { maxHeight: 132, marginBottom: 8 },
+    chipsRow: { gap: 10, paddingVertical: 4, marginBottom: 8, paddingLeft: 4 },
+    chip: {
+      maxWidth: 168,
+      paddingVertical: space.md,
+      paddingHorizontal: space.md + 2,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      backgroundColor: dash.white,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+    },
+    chipOn: { borderColor: dash.gold, backgroundColor: dash.goldTint },
+    chipText: { color: dash.darkText, fontWeight: '800', textAlign: 'center' },
+    chipTextOn: { color: dash.navy },
+    chipSub: { color: dash.muted, marginTop: 4, fontSize: 12, textAlign: 'center' },
+    chipSubOn: { color: dash.gold, fontWeight: '700' },
+    linkBtn: { marginBottom: 14, minHeight: touch.minHeight, justifyContent: 'center' },
+    linkText: { color: dash.gold, fontWeight: '800', textAlign: 'right', fontSize: 15 },
+    input: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: space.md,
+      paddingVertical: space.md,
+      color: dash.darkText,
+      marginBottom: 10,
+      minHeight: touch.minHeight,
+      fontSize: 16,
+    },
+    primary: {
+      backgroundColor: dash.gold,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      marginTop: 8,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+    },
+    primaryText: { color: dash.onGold, textAlign: 'center', fontWeight: '900', fontSize: 16 },
+  });
 }

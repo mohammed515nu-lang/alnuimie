@@ -9,19 +9,23 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 
+import { TopBar } from '../../components/TopBar';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
 import { isIOS } from '../../utils/platformEnv';
-import type { AppPalette } from '../../theme/palettes';
 
 export function EditProfileScreen() {
-  const refreshMyProfile = useStore((s) => s.refreshMyProfile);
   const updateMyProfile = useStore((s) => s.updateMyProfile);
   const profile = useStore((s) => s.myPublicProfile);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,18 +38,17 @@ export function EditProfileScreen() {
   const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
 
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createEditProfileStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
 
   useEffect(() => {
     void (async () => {
       try {
-        await refreshMyProfile();
+        await useStore.getState().refreshMyProfile();
       } catch {
         // ignore
       }
     })();
-  }, [refreshMyProfile]);
+  }, []);
 
   useEffect(() => {
     if (!profile) return;
@@ -113,95 +116,112 @@ export function EditProfileScreen() {
         <TextInput
           value={props.value}
           onChangeText={props.onChangeText}
-          placeholderTextColor={colors.placeholder}
+          placeholderTextColor={dash.muted}
           style={[styles.input, props.multiline && { minHeight: 90, textAlignVertical: 'top' }]}
           multiline={props.multiline}
           keyboardType={props.keyboardType}
           autoCapitalize={props.autoCapitalize}
+          textAlign="right"
         />
       </View>
     );
   }
 
+  const bottomPad = space.xxl + 8 + insets.bottom;
+
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={isIOS ? 'padding' : undefined}
-      keyboardVerticalOffset={isIOS ? 64 : 0}
-    >
-      <ScrollView
-        contentContainerStyle={styles.root}
-        keyboardShouldPersistTaps="handled"
-        contentInsetAdjustmentBehavior="automatic"
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="تعديل الملف" />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={isIOS ? 'padding' : undefined}
+        keyboardVerticalOffset={isIOS ? 64 : 0}
       >
-        <Text style={styles.title}>تعديل ملفي العام</Text>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={pickAvatar}
-          {...pressableRipple(colors.primaryTint12)}
-          style={styles.secondary}
+        <ScrollView
+          contentContainerStyle={[styles.root, { paddingBottom: bottomPad }]}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.secondaryText}>اختيار صورة شخصية</Text>
-        </Pressable>
+          <Text style={styles.lead}>حدّث بياناتك كما تظهر للآخرين في التطبيق.</Text>
 
-        <Field label="الاسم" value={name} onChangeText={setName} />
-        <Field label="الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-        <Field label="المدينة" value={city} onChangeText={setCity} />
-        <Field label="التخصص" value={specialty} onChangeText={setSpecialty} />
-        <Field label="نبذة" value={bio} onChangeText={setBio} multiline />
-        <Field label="سنوات الخبرة" value={years} onChangeText={setYears} keyboardType="number-pad" />
-        <Field label="اسم الشركة" value={companyName} onChangeText={setCompanyName} />
-        <Field label="الموقع" value={website} onChangeText={setWebsite} autoCapitalize="none" />
+          <Pressable
+            accessibilityRole="button"
+            onPress={pickAvatar}
+            {...pressableRipple(dash.navyTint)}
+            style={styles.secondary}
+          >
+            <Text style={styles.secondaryText}>اختيار صورة شخصية</Text>
+          </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          disabled={saving}
-          onPress={onSave}
-          {...pressableRipple(colors.primaryTint18)}
-          style={[styles.primary, saving && { opacity: 0.6 }]}
-        >
-          <Text style={styles.primaryText}>حفظ</Text>
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Field label="الاسم" value={name} onChangeText={setName} />
+          <Field label="الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <Field label="المدينة" value={city} onChangeText={setCity} />
+          <Field label="التخصص" value={specialty} onChangeText={setSpecialty} />
+          <Field label="نبذة" value={bio} onChangeText={setBio} multiline />
+          <Field label="سنوات الخبرة" value={years} onChangeText={setYears} keyboardType="number-pad" />
+          <Field label="اسم الشركة" value={companyName} onChangeText={setCompanyName} />
+          <Field label="الموقع" value={website} onChangeText={setWebsite} autoCapitalize="none" />
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={saving}
+            onPress={onSave}
+            {...pressableRipple(dash.goldTint)}
+            style={[styles.primary, saving && { opacity: 0.6 }]}
+          >
+            <Text style={styles.primaryText}>حفظ</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-function createEditProfileStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  root: { padding: space.lg, paddingBottom: space.xxl + 8 },
-  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.md },
-  label: { color: colors.textMuted, marginBottom: space.sm - 2, fontWeight: '700' },
-  input: {
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    color: colors.textSecondary,
-    minHeight: touch.minHeight,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    marginTop: space.sm,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-  secondary: {
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    marginBottom: space.md,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    flex: { flex: 1, backgroundColor: dash.pageBg },
+    root: { paddingHorizontal: 16, paddingTop: 4 },
+    lead: {
+      color: dash.muted,
+      fontSize: 14,
+      lineHeight: 22,
+      textAlign: 'right',
+      marginBottom: space.md,
+    },
+    label: { color: dash.muted, marginBottom: space.sm - 2, fontWeight: '700', textAlign: 'right' },
+    input: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingHorizontal: space.md,
+      paddingVertical: space.md,
+      color: dash.darkText,
+      minHeight: touch.minHeight,
+    },
+    primary: {
+      backgroundColor: dash.gold,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      marginTop: space.sm,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: dash.gold,
+    },
+    primaryText: { color: dash.onGold, textAlign: 'center', fontWeight: '900' },
+    secondary: {
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      borderWidth: 1,
+      borderColor: dash.border,
+      marginBottom: space.md,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+      backgroundColor: dash.white,
+    },
+    secondaryText: { color: dash.darkText, textAlign: 'center', fontWeight: '800' },
+  });
 }

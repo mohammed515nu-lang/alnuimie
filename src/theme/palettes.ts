@@ -112,7 +112,7 @@ export const authUiDark = {
   bg: '#0f172a',
   card: '#1e293b',
   border: '#334155',
-  inputBg: '#0f172a',
+  inputBg: '#1e293b',
   label: '#94a3b8',
   text: '#f8fafc',
   muted: '#cbd5e1',
@@ -120,6 +120,11 @@ export const authUiDark = {
   orange: '#f59e0b',
   orangePressed: '#d97706',
   onOrange: '#0f172a',
+  // Gold/Beige colors from image
+  gold: '#D4A574',
+  goldPressed: '#B8935F',
+  onGold: '#0f172a',
+  errorText: '#fb7185',
   logoRing: '#1e293b',
   dim: 'rgba(15, 23, 42, 0.82)',
 } as const;
@@ -128,7 +133,7 @@ export const authUiLight = {
   bg: '#f8fafc',
   card: '#ffffff',
   border: '#e2e8f0',
-  inputBg: '#ffffff',
+  inputBg: '#f1f5f9',
   label: '#475569',
   text: '#0f172a',
   muted: '#64748b',
@@ -136,7 +141,12 @@ export const authUiLight = {
   orange: '#ea580c',
   orangePressed: '#c2410c',
   onOrange: '#ffffff',
-  logoRing: '#fff7ed',
+  // Gold/Beige colors from image
+  gold: '#C9A86C',
+  goldPressed: '#B08F56',
+  onGold: '#0f172a',
+  errorText: '#dc2626',
+  logoRing: '#fef3e2',
   dim: 'rgba(15, 23, 42, 0.35)',
 } as const;
 

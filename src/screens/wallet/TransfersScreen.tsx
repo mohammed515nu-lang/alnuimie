@@ -7,13 +7,15 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Transfer } from '../../api/types';
-import { useAppTheme, radius, space } from '../../theme';
-import type { AppPalette } from '../../theme/palettes';
+import { TopBar } from '../../components/TopBar';
+import { space, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 
 function transferTypeAr(t: string) {
   switch (t) {
@@ -48,10 +50,11 @@ function statusLabel(s: string) {
 }
 
 export function TransfersScreen() {
-  const refreshTransfers = useStore((s) => s.refreshTransfers);
   const transfers = useStore((s) => s.transfers);
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createTransfersStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,8 +62,8 @@ export function TransfersScreen() {
 
   const load = useCallback(async () => {
     setError(null);
-    await refreshTransfers();
-  }, [refreshTransfers]);
+    await useStore.getState().refreshTransfers();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -107,54 +110,75 @@ export function TransfersScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title="التحويلات" />
+        <View style={styles.center}>
+          <ActivityIndicator color={dash.gold} size="large" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <FlatList
-      data={transfers}
-      keyExtractor={(x) => x.id}
-      renderItem={renderItem}
-      contentInsetAdjustmentBehavior="automatic"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={styles.listContent}
-      ListHeaderComponent={
-        error ? (
-          <Text style={styles.bannerError} selectable>
-            {error}
-          </Text>
-        ) : null
-      }
-      ListEmptyComponent={<Text style={styles.empty}>لا تحويلات</Text>}
-    />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="التحويلات" />
+      <FlatList
+        data={transfers}
+        keyExtractor={(x) => x.id}
+        renderItem={renderItem}
+        contentInsetAdjustmentBehavior="automatic"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dash.gold} />}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 24 + insets.bottom }]}
+        ListHeaderComponent={
+          error ? (
+            <View style={styles.banner}>
+              <Text style={styles.bannerError} selectable>
+                {error}
+              </Text>
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={<Text style={styles.empty}>لا تحويلات مسجّلة بعد.</Text>}
+      />
+    </SafeAreaView>
   );
 }
 
-function createTransfersStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
-  bannerError: {
-    color: colors.error,
-    marginBottom: space.sm + 2,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: space.sm,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.xl,
-    padding: space.md,
-    marginBottom: space.sm + 2,
-  },
-  title: { color: colors.text, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  meta: { color: colors.textSubtle, marginTop: space.sm - 2 },
-  small: { color: colors.placeholder, marginTop: space.sm, fontSize: 12, fontVariant: ['tabular-nums'] },
-  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    listContent: { paddingHorizontal: 16, paddingTop: 4, flexGrow: 1 },
+    banner: {
+      backgroundColor: 'rgba(185, 28, 28, 0.08)',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: 'rgba(185, 28, 28, 0.25)',
+      padding: 12,
+      marginBottom: 12,
+    },
+    bannerError: {
+      color: dash.danger,
+      textAlign: 'center',
+      lineHeight: 20,
+      fontWeight: '600',
+    },
+    card: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      padding: space.md,
+      marginBottom: 10,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    title: { color: dash.darkText, fontWeight: '900', fontVariant: ['tabular-nums'], textAlign: 'right' },
+    meta: { color: dash.muted, marginTop: 6, textAlign: 'right' },
+    small: { color: dash.muted, marginTop: 8, fontSize: 12, fontVariant: ['tabular-nums'], textAlign: 'right' },
+    empty: { color: dash.muted, textAlign: 'center', marginTop: 32, paddingHorizontal: 24 },
+  });
 }

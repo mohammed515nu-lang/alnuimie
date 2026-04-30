@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { authAPI, chatsAPI, socialAPI, walletAPI } from '../api/services';
+import { accountingAPI, authAPI, chatsAPI, projectsAPI, socialAPI, walletAPI } from '../api/services';
 import type {
   AuthUser,
   ChatMessage,
@@ -11,11 +11,26 @@ import type {
   PortfolioItem,
   PublicProfile,
   PublicProfileAggregate,
+  Project,
+  ProjectStatus,
+  ReportItem,
   Rating,
   Transfer,
 } from '../api/types';
 
 export type AppearanceMode = 'light' | 'dark' | 'system';
+
+type CreateProjectInput = {
+  name: string;
+  location: string;
+  description?: string;
+  budget?: number;
+  startDate?: string;
+  expectedEndDate?: string;
+  status?: ProjectStatus;
+  /** ربط المشروع بمقاول (لحساب العميل) */
+  contractorId?: string;
+};
 
 /** بيانات تُحمّل من الخادم لكل مستخدم — تُصفّر عند تغيّر الحساب أو الخروج */
 function emptySessionCaches() {
@@ -30,6 +45,9 @@ function emptySessionCaches() {
     paymentCards: [] as PaymentCard[],
     transfers: [] as Transfer[],
     walletSummary: null as { incoming: number; outgoing: number; net: number } | null,
+    projects: [] as Project[],
+    invoiceReports: [] as ReportItem[],
+    revenueReports: [] as ReportItem[],
   };
 }
 
@@ -50,6 +68,9 @@ type AppState = {
   paymentCards: PaymentCard[];
   transfers: Transfer[];
   walletSummary: { incoming: number; outgoing: number; net: number } | null;
+  projects: Project[];
+  invoiceReports: ReportItem[];
+  revenueReports: ReportItem[];
 
   setUser: (user: AuthUser | null) => void;
   setAppearance: (mode: AppearanceMode) => void;
@@ -58,7 +79,7 @@ type AppState = {
   refreshMyProfile: () => Promise<void>;
   updateMyProfile: (payload: Partial<PublicProfile>) => Promise<void>;
 
-  searchUsers: (q: string) => Promise<void>;
+  searchUsers: (q: string, role?: 'contractor' | 'client') => Promise<void>;
   refreshConnections: () => Promise<void>;
   sendConnectionRequest: (toUserId: string, message?: string) => Promise<Connection>;
   acceptConnection: (id: string) => Promise<Connection>;
@@ -79,6 +100,7 @@ type AppState = {
   refreshChatMessages: (conversationId: string) => Promise<void>;
   sendChatMessage: (conversationId: string, text: string) => Promise<void>;
   markChatThreadRead: (conversationId: string) => Promise<void>;
+  pingPresence: () => Promise<void>;
 
   refreshPaymentCards: () => Promise<void>;
   setDefaultPaymentCard: (id: string) => Promise<void>;
@@ -86,6 +108,31 @@ type AppState = {
 
   refreshTransfers: () => Promise<void>;
   refreshWalletSummary: () => Promise<void>;
+  refreshProjects: () => Promise<void>;
+  createProject: (payload: CreateProjectInput) => Promise<Project>;
+  updateProject: (id: string, payload: Partial<CreateProjectInput> & { status?: ProjectStatus }) => Promise<Project>;
+  deleteProject: (id: string) => Promise<void>;
+  refreshInvoiceReports: () => Promise<void>;
+  refreshRevenueReports: () => Promise<void>;
+  createInvoiceReport: (payload: {
+    title: string;
+    amount: number;
+    clientName: string;
+    issueDate?: string;
+    dueDate?: string;
+    statusLabel?: string;
+    projectId?: string;
+  }) => Promise<ReportItem>;
+  createRevenueReport: (payload: {
+    title: string;
+    amount: number;
+    description?: string;
+    date?: string;
+    projectName?: string;
+    clientName?: string;
+    received?: boolean;
+  }) => Promise<ReportItem>;
+  deleteAccountingReport: (id: string) => Promise<void>;
 
   addTransferLocal: (t: Transfer) => void;
   updateTransferLocal: (id: string, patch: Partial<Transfer>) => void;
@@ -110,6 +157,9 @@ export const useStore = create<AppState>()(
       paymentCards: [],
       transfers: [],
       walletSummary: null,
+      projects: [],
+      invoiceReports: [],
+      revenueReports: [],
 
       setUser: (user) =>
         set((s) => {
@@ -140,13 +190,13 @@ export const useStore = create<AppState>()(
         set({ myPublicProfile: profile });
       },
 
-      searchUsers: async (q) => {
+      searchUsers: async (q, role) => {
         const trimmed = q.trim();
-        if (!trimmed) {
+        if (!trimmed && !role) {
           set({ searchResults: [] });
           return;
         }
-        const results = await socialAPI.searchUsers(trimmed);
+        const results = await socialAPI.searchUsers(trimmed, role);
         set({ searchResults: results });
       },
 
@@ -246,6 +296,14 @@ export const useStore = create<AppState>()(
         await get().refreshChatThreads();
       },
 
+      pingPresence: async () => {
+        try {
+          await socialAPI.pingPresence();
+        } catch {
+          /* تجاهل — الشبكة أو الجلسة */
+        }
+      },
+
       refreshPaymentCards: async () => {
         const paymentCards = await walletAPI.listCards();
         set({ paymentCards });
@@ -269,6 +327,75 @@ export const useStore = create<AppState>()(
       refreshWalletSummary: async () => {
         const walletSummary = await walletAPI.summary();
         set({ walletSummary });
+      },
+
+      refreshProjects: async () => {
+        const projects = await projectsAPI.listMine();
+        set({ projects });
+      },
+
+      createProject: async (payload) => {
+        const project = await projectsAPI.create({
+          name: payload.name,
+          location: payload.location,
+          description: payload.description,
+          budget: payload.budget,
+          startDate: payload.startDate,
+          expectedEndDate: payload.expectedEndDate,
+          ...(payload.contractorId?.trim() ? { contractor: payload.contractorId.trim() } : {}),
+        });
+        set((s) => ({ projects: [project, ...s.projects.filter((x) => x.id !== project.id)] }));
+        return project;
+      },
+
+      updateProject: async (id, payload) => {
+        const project = await projectsAPI.update(id, {
+          name: payload.name,
+          location: payload.location,
+          description: payload.description,
+          budget: payload.budget,
+          startDate: payload.startDate,
+          expectedEndDate: payload.expectedEndDate,
+          status: payload.status,
+        });
+        set((s) => ({ projects: s.projects.map((x) => (x.id === id ? project : x)) }));
+        return project;
+      },
+
+      deleteProject: async (id) => {
+        await projectsAPI.remove(id);
+        set((s) => ({ projects: s.projects.filter((x) => x.id !== id) }));
+      },
+
+      refreshInvoiceReports: async () => {
+        const invoiceReports = await accountingAPI.listReports('invoice');
+        set({ invoiceReports });
+      },
+
+      refreshRevenueReports: async () => {
+        const allCustom = await accountingAPI.listReports('custom');
+        const revenueReports = allCustom.filter((r) => (r.data as any)?.kind === 'revenue');
+        set({ revenueReports });
+      },
+
+      createInvoiceReport: async (payload) => {
+        const report = await accountingAPI.createInvoice(payload);
+        set((s) => ({ invoiceReports: [report, ...s.invoiceReports] }));
+        return report;
+      },
+
+      createRevenueReport: async (payload) => {
+        const report = await accountingAPI.createRevenue(payload);
+        set((s) => ({ revenueReports: [report, ...s.revenueReports] }));
+        return report;
+      },
+
+      deleteAccountingReport: async (id) => {
+        await accountingAPI.deleteReport(id);
+        set((s) => ({
+          invoiceReports: s.invoiceReports.filter((x) => x.id !== id),
+          revenueReports: s.revenueReports.filter((x) => x.id !== id),
+        }));
       },
 
       addTransferLocal: (t) =>

@@ -15,6 +15,7 @@ export type RootStackParamList = {
   PublicProfile: { userId: string };
   ChatRoom: { conversationId: string; title: string };
   EditProfile: undefined;
+  AccountSecurity: undefined;
   PortfolioManage: undefined;
   ConnectionRequests: undefined;
   AddCard: undefined;
@@ -30,4 +31,6 @@ export type RootStackParamList = {
   ExpenseCategories: undefined;
   ReportsAccounting: undefined;
   NewProject: undefined;
+  EditProject: { id: string };
+  NotificationSettings: undefined;
 };

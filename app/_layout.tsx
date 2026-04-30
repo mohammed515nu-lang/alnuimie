@@ -1,8 +1,10 @@
 import 'react-native-gesture-handler';
+import * as WebBrowser from 'expo-web-browser';
 import { useEffect, type ReactNode } from 'react';
+
+WebBrowser.maybeCompleteAuthSession();
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StripeProvider } from '@stripe/stripe-react-native';
 import * as SecureStore from 'expo-secure-store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,7 +12,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { setAuthToken } from '../src/api/http';
 import { authAPI } from '../src/api/services/auth';
 import { getStripeUrlScheme } from '../src/config/stripeDeepLink';
+import { AppStripeProvider } from '../src/wallet/AppStripeProvider';
 import { getStripePublishableKey } from '../src/wallet/stripeEnv';
+import { NotificationBootstrap } from '../src/notifications/NotificationBootstrap';
 import { useStore } from '../src/store/useStore';
 import { ThemeProvider, useAppTheme } from '../src/theme';
 
@@ -20,7 +24,6 @@ function ThemedStatusBar() {
 }
 
 function SessionAndAuthShell({ children }: { children: ReactNode }) {
-  const hydrate = useStore((s) => s.setUser);
   const user = useStore((s) => s.user);
   const router = useRouter();
   const segments = useSegments();
@@ -30,6 +33,7 @@ function SessionAndAuthShell({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const restoreSession = async () => {
+      const hydrate = useStore.getState().setUser;
       const token = await SecureStore.getItemAsync('auth_token');
       if (!token) {
         if (useStore.getState().user) hydrate(null);
@@ -55,7 +59,7 @@ function SessionAndAuthShell({ children }: { children: ReactNode }) {
       cancelled = true;
       unsub();
     };
-  }, [hydrate]);
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -68,6 +72,14 @@ function SessionAndAuthShell({ children }: { children: ReactNode }) {
     }
   }, [user, segments, router, hydrated]);
 
+  useEffect(() => {
+    if (!user) return;
+    const ping = () => void useStore.getState().pingPresence();
+    ping();
+    const id = setInterval(ping, 45_000);
+    return () => clearInterval(id);
+  }, [user?._id]);
+
   return <>{children}</>;
 }
 
@@ -79,16 +91,17 @@ function RootWithProviders() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <StripeProvider
-            publishableKey={pk || 'pk_test_placeholder'}
+          <AppStripeProvider
+            publishableKey={pk}
             urlScheme={stripeScheme}
             setReturnUrlSchemeOnAndroid
           >
             <SessionAndAuthShell>
+              <NotificationBootstrap />
               <Stack screenOptions={{ headerShown: false }} />
               <ThemedStatusBar />
             </SessionAndAuthShell>
-          </StripeProvider>
+          </AppStripeProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

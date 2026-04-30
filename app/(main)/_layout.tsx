@@ -1,20 +1,16 @@
 import { Stack } from 'expo-router';
 
-import { useAppTheme } from '../../src/theme';
+const MAIN_BEIGE = '#F4EFE6';
 
 export default function MainGroupLayout() {
-  const { colors } = useAppTheme();
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: '800' as const },
-        headerShadowVisible: false,
-        contentStyle: { backgroundColor: colors.background },
+        headerShown: false,
+        contentStyle: { backgroundColor: MAIN_BEIGE },
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" />
     </Stack>
   );
 }

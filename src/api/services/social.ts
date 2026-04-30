@@ -14,8 +14,8 @@ function normalizePublicProfile<T extends PublicProfile>(p: T): T {
 }
 
 export const socialAPI = {
-  async searchUsers(q: string): Promise<PublicProfile[]> {
-    const { data } = await api.get<PublicProfile[]>('/users/search', { params: { q } });
+  async searchUsers(q: string, role?: 'contractor' | 'client'): Promise<PublicProfile[]> {
+    const { data } = await api.get<PublicProfile[]>('/users/search', { params: { q, role } });
     return data.map(normalizePublicProfile);
   },
 
@@ -32,6 +32,11 @@ export const socialAPI = {
   async updateMyProfile(payload: Partial<PublicProfile>): Promise<PublicProfile> {
     const { data } = await api.put<PublicProfile>('/users/me/profile', payload);
     return normalizePublicProfile(data);
+  },
+
+  /** يحدّث «آخر ظهور» للمستخدم الحالي على الخادم */
+  async pingPresence(): Promise<void> {
+    await api.post('/users/me/presence');
   },
 
   async listMyPortfolio(): Promise<PortfolioItem[]> {

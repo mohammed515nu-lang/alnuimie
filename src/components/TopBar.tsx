@@ -6,18 +6,24 @@ import { useRouter } from 'expo-router';
 
 import { useAppTheme, hitSlop, space } from '../theme';
 import type { AppPalette } from '../theme/palettes';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../theme/dashboardLight';
 
 type Props = {
   title: string;
   /** يُعرض يسار العنوان (مثلاً +) في واجهة RTL */
   leftAction?: ReactNode;
   showBack?: boolean;
+  /** مطابقة شاشات الرئيسية / المحاسبة الفاتحة */
+  tone?: 'default' | 'beige';
 };
 
-export function TopBar({ title, leftAction, showBack = true }: Props) {
+export function TopBar({ title, leftAction, showBack = true, tone = 'default' }: Props) {
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createTopBarStyles(colors), [colors]);
+  const { colors, resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  /** `resolved` + `tone` يكفيان: `colors` و`dash` يُشتقان من `resolved` في ThemeProvider — إدراج `colors`/`dash` في التبعيات سبب حلقة تحديث مع persist */
+  const styles = useMemo(() => createTopBarStyles(colors, tone, dash), [resolved, tone]);
+  const chevronColor = tone === 'beige' ? dash.navy : colors.text;
 
   return (
     <View style={styles.wrap}>
@@ -30,7 +36,7 @@ export function TopBar({ title, leftAction, showBack = true }: Props) {
             onPress={() => router.back()}
             style={styles.iconCircle}
           >
-            <Ionicons name="chevron-forward" size={22} color={colors.text} />
+            <Ionicons name="chevron-forward" size={22} color={chevronColor} />
           </Pressable>
         ) : (
           <View style={styles.iconCircleHidden} />
@@ -44,11 +50,12 @@ export function TopBar({ title, leftAction, showBack = true }: Props) {
   );
 }
 
-function createTopBarStyles(colors: AppPalette) {
+function createTopBarStyles(colors: AppPalette, tone: 'default' | 'beige', dash: DashboardPalette) {
+  const beige = tone === 'beige';
   return StyleSheet.create({
     wrap: {
       borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.borderMuted,
+      borderBottomColor: beige ? dash.border : colors.borderMuted,
       paddingBottom: space.sm + 2,
       marginBottom: space.md,
     },
@@ -61,7 +68,7 @@ function createTopBarStyles(colors: AppPalette) {
     title: {
       flex: 1,
       textAlign: 'center',
-      color: colors.text,
+      color: beige ? dash.navy : colors.text,
       fontSize: 17,
       fontWeight: '800',
     },
@@ -69,10 +76,10 @@ function createTopBarStyles(colors: AppPalette) {
     iconCircle: {
       width: 40,
       height: 40,
-      borderRadius: 12,
-      backgroundColor: colors.surfaceMid,
+      borderRadius: DASHBOARD_RADIUS,
+      backgroundColor: beige ? dash.white : colors.surfaceMid,
       borderWidth: 1,
-      borderColor: colors.borderMuted,
+      borderColor: beige ? dash.border : colors.borderMuted,
       alignItems: 'center',
       justifyContent: 'center',
     },

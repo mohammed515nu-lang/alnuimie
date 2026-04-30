@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
 
 import { walletAPI } from '../../api/services';
@@ -7,21 +8,36 @@ import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
 import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { TopBar } from '../../components/TopBar';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
-import type { AppPalette } from '../../theme/palettes';
 
 export function AddCardScreen() {
   const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
   const [busy, setBusy] = useState(false);
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createAddCardStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
 
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
+  const resolveStripeErrorMessage = (error: unknown) => {
+    const msg = getApiErrorMessage(error);
+    const lower = msg.toLowerCase();
+    if (lower.includes('stripe_secret_key') || lower.includes('stripe is not configured')) {
+      return 'خادم الدفع غير مهيأ بعد. أضف STRIPE_SECRET_KEY في بيئة الخادم (Render) ثم أعد تشغيل الخدمة.';
+    }
+    return msg;
+  };
+
   const onAdd = async () => {
     if (!stripeOk) {
-      return Alert.alert('Stripe غير مهيأ', 'أضف EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY في إعدادات البناء (.env أو EAS env).');
+      return Alert.alert(
+        'Stripe غير مهيأ',
+        'مفتاح التطبيق غير موجود. أضف EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY في EAS production ثم اعمل build جديد.'
+      );
     }
     setBusy(true);
     try {
@@ -36,58 +52,59 @@ export function AddCardScreen() {
       });
       if (initError) throw new Error(initError.message);
 
-      const { error: presentError, paymentOption } = await presentPaymentSheet();
+      const { error: presentError } = await presentPaymentSheet();
       if (presentError) {
         if (presentError.code === 'Canceled') return;
         throw new Error(presentError.message);
       }
 
-      const pmId = (paymentOption as unknown as { id?: string } | null)?.id;
-      if (!pmId) throw new Error('لم يتم استلام paymentMethodId');
-
-      await walletAPI.saveCard(pmId, true);
+      await walletAPI.syncCards();
       await refreshPaymentCards();
       hapticSuccess();
-      Alert.alert('تم', 'تم حفظ البطاقة');
+      Alert.alert('تم', 'تم حفظ البطاقة بنجاح');
     } catch (e) {
-      Alert.alert('تعذر إضافة البطاقة', getApiErrorMessage(e));
+      Alert.alert('تعذر إضافة البطاقة', resolveStripeErrorMessage(e));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>إضافة بطاقة عبر Stripe</Text>
-      <Text style={styles.body}>
-        سيتم فتح واجهة Stripe الآمنة لإدخال بيانات البطاقة. بعد النجاح، يتم حفظ PaymentMethod على الخادم.
-      </Text>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="إضافة بطاقة" />
+      <View style={[styles.root, { paddingBottom: 24 + insets.bottom }]}>
+        <Text style={styles.title}>إضافة بطاقة عبر Stripe</Text>
+        <Text style={styles.body}>
+          سيتم فتح واجهة Stripe الآمنة لإدخال بيانات البطاقة. بعد النجاح، يتم حفظ PaymentMethod على الخادم.
+        </Text>
 
-      <Pressable
-        accessibilityRole="button"
-        disabled={busy}
-        onPress={onAdd}
-        {...pressableRipple(colors.primaryTint18)}
-        style={[styles.primary, busy && { opacity: 0.6 }]}
-      >
-        <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'بدء إضافة البطاقة'}</Text>
-      </Pressable>
-    </View>
+        <Pressable
+          accessibilityRole="button"
+          disabled={busy}
+          onPress={onAdd}
+          {...pressableRipple(dash.goldTint)}
+          style={[styles.primary, busy && { opacity: 0.6 }]}
+        >
+          <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'بدء إضافة البطاقة'}</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
   );
 }
 
-function createAddCardStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background, padding: space.lg },
-  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm + 2 },
-  body: { color: colors.textMuted, lineHeight: 22, marginBottom: space.md - 2 },
-  primary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    root: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
+    title: { color: dash.navy, fontSize: 18, fontWeight: '900', marginBottom: 10, textAlign: 'right' },
+    body: { color: dash.muted, lineHeight: 22, marginBottom: 20, textAlign: 'right', fontSize: 14 },
+    primary: {
+      backgroundColor: dash.gold,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+    },
+    primaryText: { color: dash.onGold, textAlign: 'center', fontWeight: '900', fontSize: 16 },
+  });
 }

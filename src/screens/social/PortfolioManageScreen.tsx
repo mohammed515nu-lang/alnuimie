@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
@@ -10,32 +9,39 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ApiStateView } from '../../components/ApiStateView';
+import { TopBar } from '../../components/TopBar';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { PortfolioItem } from '../../api/types';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
-import type { AppPalette } from '../../theme/palettes';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 
 export function PortfolioManageScreen() {
-  const refreshPortfolio = useStore((s) => s.refreshPortfolio);
   const addPortfolioItem = useStore((s) => s.addPortfolioItem);
   const updatePortfolioItem = useStore((s) => s.updatePortfolioItem);
   const deletePortfolioItem = useStore((s) => s.deletePortfolioItem);
   const items = useStore((s) => s.portfolio);
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createPortfolioManageStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
+  const apiTone = resolved === 'light' ? 'beige' : 'default';
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    await refreshPortfolio();
-  }, [refreshPortfolio]);
+    setError(null);
+    await useStore.getState().refreshPortfolio();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -43,7 +49,7 @@ export function PortfolioManageScreen() {
       try {
         await load();
       } catch (e) {
-        Alert.alert('تعذر التحميل', getApiErrorMessage(e));
+        setError(getApiErrorMessage(e));
       } finally {
         setLoading(false);
       }
@@ -55,7 +61,7 @@ export function PortfolioManageScreen() {
     try {
       await load();
     } catch (e) {
-      Alert.alert('تعذر التحديث', getApiErrorMessage(e));
+      setError(getApiErrorMessage(e));
     } finally {
       setRefreshing(false);
     }
@@ -72,10 +78,18 @@ export function PortfolioManageScreen() {
     try {
       if (!title.trim()) return Alert.alert('تنبيه', 'العنوان مطلوب');
       if (editingId) {
-        await updatePortfolioItem(editingId, { title: title.trim(), description: description.trim() || undefined, imageUris: parseImages() });
+        await updatePortfolioItem(editingId, {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          imageUris: parseImages(),
+        });
         setEditingId(null);
       } else {
-        await addPortfolioItem({ title: title.trim(), description: description.trim() || undefined, imageUris: parseImages() });
+        await addPortfolioItem({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          imageUris: parseImages(),
+        });
       }
       setTitle('');
       setDescription('');
@@ -117,27 +131,35 @@ export function PortfolioManageScreen() {
 
   const header = useMemo(
     () => (
-      <View style={{ marginBottom: space.md }}>
-        <Text style={styles.title}>معرض الأعمال</Text>
-        <Text style={styles.hint}>الصور: ضع رابط/روابط مفصولة بفاصلة، أو data URL واحد (base64).</Text>
-        <TextInput placeholder="العنوان" placeholderTextColor={colors.placeholder} style={styles.input} value={title} onChangeText={setTitle} />
+      <View style={styles.headerBlock}>
+        <Text style={styles.lead}>الصور: ضع رابط/روابط مفصولة بفاصلة، أو data URL واحد (base64).</Text>
+        <TextInput
+          placeholder="العنوان"
+          placeholderTextColor={dash.muted}
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          textAlign="right"
+        />
         <TextInput
           placeholder="الوصف"
-          placeholderTextColor={colors.placeholder}
+          placeholderTextColor={dash.muted}
           style={[styles.input, { minHeight: 88 }]}
           value={description}
           onChangeText={setDescription}
           multiline
+          textAlign="right"
         />
         <TextInput
           placeholder="صور"
-          placeholderTextColor={colors.placeholder}
+          placeholderTextColor={dash.muted}
           style={[styles.input, { minHeight: 76 }]}
           value={images}
           onChangeText={setImages}
           multiline
+          textAlign="right"
         />
-        <Pressable accessibilityRole="button" onPress={onSubmit} {...pressableRipple(colors.primaryTint18)} style={styles.primary}>
+        <Pressable accessibilityRole="button" onPress={onSubmit} {...pressableRipple(dash.goldTint)} style={styles.primary}>
           <Text style={styles.primaryText}>{editingId ? 'تحديث' : 'إضافة'}</Text>
         </Pressable>
         {editingId ? (
@@ -149,7 +171,7 @@ export function PortfolioManageScreen() {
               setDescription('');
               setImages('');
             }}
-            {...pressableRipple(colors.primaryTint12)}
+            {...pressableRipple(dash.navyTint)}
             style={styles.secondary}
           >
             <Text style={styles.secondaryText}>إلغاء التعديل</Text>
@@ -157,122 +179,180 @@ export function PortfolioManageScreen() {
         ) : null}
       </View>
     ),
-    [title, description, images, editingId, colors, styles]
+    [title, description, images, editingId, styles, dash]
   );
+
+  const bottomPad = space.xxl + 6 + insets.bottom;
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title="أعمالي المنجزة" />
+        <View style={styles.center}>
+          <ApiStateView tone={apiTone} mode="loading" title="جاري تحميل معرض الأعمال..." />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title="أعمالي المنجزة" />
+        <View style={styles.center}>
+          <ApiStateView
+            tone={apiTone}
+            mode="error"
+            title="تعذر تحميل معرض الأعمال"
+            subtitle={error}
+            onRetry={() => void onRefresh()}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <FlatList
-      data={items}
-      keyExtractor={(x) => x.id}
-      ListHeaderComponent={header}
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={styles.listContent}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-          <Text style={styles.itemTitle}>{item.title}</Text>
-          {item.description ? <Text style={styles.itemDesc}>{item.description}</Text> : null}
-          <View style={{ flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2 }}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => onEdit(item)}
-              {...pressableRipple(colors.primaryTint12)}
-              style={styles.smallBtn}
-            >
-              <Text style={styles.smallBtnText}>تعديل</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => void onDelete(item)}
-              {...pressableRipple('rgba(248,113,113,0.2)')}
-              style={styles.smallDanger}
-            >
-              <Text style={styles.smallDangerText}>حذف</Text>
-            </Pressable>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="أعمالي المنجزة" />
+      <FlatList
+        style={styles.list}
+        data={items}
+        keyExtractor={(x) => x.id}
+        ListHeaderComponent={header}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dash.gold} />}
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottomPad }]}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.itemTitle}>{item.title}</Text>
+            {item.description ? <Text style={styles.itemDesc}>{item.description}</Text> : null}
+            <View style={styles.itemActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => onEdit(item)}
+                {...pressableRipple(dash.navyTint)}
+                style={styles.smallBtn}
+              >
+                <Text style={styles.smallBtnText}>تعديل</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void onDelete(item)}
+                {...pressableRipple('rgba(185, 28, 28, 0.1)')}
+                style={styles.smallDanger}
+              >
+                <Text style={styles.smallDangerText}>حذف</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      )}
-      ListEmptyComponent={<Text style={styles.empty}>لا عناصر بعد</Text>}
-    />
+        )}
+        ListFooterComponent={
+          error ? (
+            <View style={styles.footerErr}>
+              <ApiStateView
+                tone={apiTone}
+                mode="error"
+                title="حدث خطأ أثناء التحديث"
+                subtitle={error}
+                onRetry={() => void onRefresh()}
+              />
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={<ApiStateView tone={apiTone} mode="empty" title="لا عناصر بعد" />}
+      />
+    </SafeAreaView>
   );
 }
 
-function createPortfolioManageStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background },
-  title: { color: colors.text, fontSize: 18, fontWeight: '900' },
-  hint: { color: colors.textMuted, marginTop: space.sm, marginBottom: space.sm + 2, lineHeight: 20 },
-  input: {
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    color: colors.textSecondary,
-    marginBottom: space.sm + 2,
-    textAlignVertical: 'top',
-    minHeight: touch.minHeight,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-  secondary: {
-    marginTop: space.sm + 2,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  secondaryText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
-  card: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.xl,
-    padding: space.md,
-    marginBottom: space.sm + 2,
-  },
-  itemTitle: { color: colors.text, fontWeight: '900' },
-  itemDesc: { color: colors.textSubtle, marginTop: space.sm - 2, lineHeight: 20 },
-  smallBtn: {
-    flex: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    paddingVertical: space.sm + 2,
-    minHeight: touch.minHeight - 4,
-    justifyContent: 'center',
-  },
-  smallBtnText: { color: colors.textSecondary, textAlign: 'center', fontWeight: '800' },
-  smallDanger: {
-    flex: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.dangerBorder,
-    paddingVertical: space.sm + 2,
-    backgroundColor: colors.dangerBg,
-    minHeight: touch.minHeight - 4,
-    justifyContent: 'center',
-  },
-  smallDangerText: { color: colors.dangerText, textAlign: 'center', fontWeight: '900' },
-  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.sm + 2 },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    list: { flex: 1 },
+    center: { flex: 1, paddingHorizontal: 16, paddingTop: 24, alignItems: 'stretch', justifyContent: 'center' },
+    listContent: { paddingHorizontal: 16, paddingTop: 4 },
+    headerBlock: { marginBottom: space.md },
+    lead: {
+      color: dash.muted,
+      fontSize: 13,
+      lineHeight: 20,
+      textAlign: 'right',
+      marginBottom: space.sm + 2,
+    },
+    input: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingHorizontal: space.md,
+      paddingVertical: space.md,
+      color: dash.darkText,
+      marginBottom: space.sm + 2,
+      textAlignVertical: 'top',
+      minHeight: touch.minHeight,
+    },
+    primary: {
+      backgroundColor: dash.gold,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: dash.gold,
+    },
+    primaryText: { color: dash.onGold, textAlign: 'center', fontWeight: '900' },
+    secondary: {
+      marginTop: space.sm + 2,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      borderWidth: 1,
+      borderColor: dash.border,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+      backgroundColor: dash.white,
+    },
+    secondaryText: { color: dash.darkText, textAlign: 'center', fontWeight: '800' },
+    card: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      padding: space.md,
+      marginBottom: space.sm + 2,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    itemTitle: { color: dash.navy, fontWeight: '900', textAlign: 'right' },
+    itemDesc: { color: dash.muted, marginTop: space.sm - 2, lineHeight: 20, textAlign: 'right' },
+    itemActions: { flexDirection: 'row-reverse', gap: space.sm + 2, marginTop: space.sm + 2 },
+    smallBtn: {
+      flex: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      paddingVertical: space.sm + 2,
+      minHeight: touch.minHeight - 4,
+      justifyContent: 'center',
+      backgroundColor: dash.white,
+    },
+    smallBtnText: { color: dash.darkText, textAlign: 'center', fontWeight: '800' },
+    smallDanger: {
+      flex: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.danger,
+      paddingVertical: space.sm + 2,
+      backgroundColor: 'rgba(185, 28, 28, 0.08)',
+      minHeight: touch.minHeight - 4,
+      justifyContent: 'center',
+    },
+    smallDangerText: { color: dash.danger, textAlign: 'center', fontWeight: '900' },
+    footerErr: { marginTop: space.sm },
+  });
 }

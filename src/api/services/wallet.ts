@@ -89,4 +89,10 @@ export const walletAPI = {
     const { data } = await api.post<Transfer>(`/wallet/transfers/${id}/confirm`);
     return data;
   },
+
+  /** مزامنة البطاقات من Stripe بعد نجاح PaymentSheet — يحفظ البطاقات الجديدة في قاعدة البيانات */
+  async syncCards(): Promise<PaymentCard[]> {
+    const { data } = await api.post<{ synced: number; cards: PaymentCard[] }>('/wallet/sync-cards');
+    return data.cards;
+  },
 };

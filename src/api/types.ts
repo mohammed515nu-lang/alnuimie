@@ -21,6 +21,8 @@ export type PublicProfile = {
   avatarUri?: string;
   companyName?: string;
   website?: string;
+  /** من الخادم: آخر نشاط مسجّل في التطبيق */
+  lastSeenAt?: string;
 };
 
 export type PublicProfileAggregate = PublicProfile & {
@@ -73,6 +75,8 @@ export type ChatThread = {
   otherUserId: string;
   otherUserName: string;
   otherUserRole: UserRole;
+  /** آخر نشاط للطرف الآخر (من الخادم) */
+  otherUserLastSeenAt?: string;
   lastMessage?: string;
   lastTime?: string;
   lastSenderId?: string;
@@ -120,4 +124,58 @@ export type Transfer = {
   stripeClientSecret?: string;
   cardLast4?: string;
   cardBrand?: string;
+};
+
+export type ProjectStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled';
+
+export type Project = {
+  id: string;
+  name: string;
+  description?: string;
+  location?: string;
+  clientName?: string;
+  /** اسم المقاول عند جلب المشروع مع populate */
+  contractorName?: string;
+  budget?: number;
+  progress?: number;
+  startDate?: string;
+  expectedEndDate?: string;
+  actualEndDate?: string;
+  createdBy?: string;
+  status: ProjectStatus;
+  createdAt: string;
+};
+
+export type ReportType = 'financial' | 'inventory' | 'project' | 'supplier' | 'custom' | 'invoice';
+
+export type RevenueData = {
+  kind?: 'revenue';
+  amount?: number;
+  clientName?: string;
+  received?: boolean;
+  date?: string;
+  description?: string;
+  projectName?: string;
+};
+
+export type InvoiceData = {
+  kind?: 'invoice';
+  amount?: number;
+  clientName?: string;
+  dueDate?: string;
+  issueDate?: string;
+  statusLabel?: string;
+};
+
+export type ReportItem = {
+  id: string;
+  reportNumber?: string;
+  reportType: ReportType;
+  title: string;
+  status?: 'pending' | 'completed' | 'failed';
+  project?: string | { _id?: string; name?: string };
+  data?: RevenueData | InvoiceData | Record<string, unknown>;
+  notes?: string;
+  generatedAt?: string;
+  createdAt?: string;
 };

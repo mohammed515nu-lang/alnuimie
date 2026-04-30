@@ -6,7 +6,7 @@ const TOKEN_KEY = 'auth_token';
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000,
+  timeout: 60000, // 60 ثانية — يستوعب cold start على Render Free tier
 });
 
 api.interceptors.request.use(async (config) => {
@@ -37,8 +37,8 @@ export async function getAuthToken(): Promise<string | null> {
 export function getApiErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     if (!err.response) {
-      if (err.code === 'ECONNABORTED') return 'انتهت مهلة الاتصال بالخادم.';
-      return 'تعذر الوصول للخادم. إذا كنت على هاتف، لا يعمل عنوان localhost — استخدم IP جهازك أو رابط الاستضافة في EXPO_PUBLIC_API_URL.';
+      if (err.code === 'ECONNABORTED') return 'انتهت مهلة الاتصال. الخادم قد يكون في وضع السبات — انتظر 30 ثانية ثم حاول مجدداً.';
+      return `تعذر الوصول للخادم. الرابط الحالي: ${API_URL}`;
     }
     const data = err.response?.data as { message?: string; error?: string } | undefined;
     const raw = (data?.message || data?.error || err.message || 'حدث خطأ غير متوقع').trim();

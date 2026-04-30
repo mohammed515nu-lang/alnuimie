@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
@@ -9,12 +8,16 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { ApiStateView } from '../../components/ApiStateView';
+import { TopBar } from '../../components/TopBar';
 import { pushStackRoute } from '../../navigation/href';
 import { useStore } from '../../store/useStore';
 import { getApiErrorMessage } from '../../api/http';
 import type { Connection } from '../../api/types';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
-import type { AppPalette } from '../../theme/palettes';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 
 function statusAr(s: string) {
   switch (s) {
@@ -31,21 +34,25 @@ function statusAr(s: string) {
 
 export function ConnectionRequestsScreen() {
   const me = useStore((s) => s.user);
-  const refreshConnections = useStore((s) => s.refreshConnections);
   const acceptConnection = useStore((s) => s.acceptConnection);
   const rejectConnection = useStore((s) => s.rejectConnection);
   const cancelConnection = useStore((s) => s.cancelConnection);
   const ensureChatThread = useStore((s) => s.ensureChatThread);
   const connections = useStore((s) => s.connections);
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createConnectionRequestsStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
+  const apiTone = resolved === 'light' ? 'beige' : 'default';
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    await refreshConnections();
-  }, [refreshConnections]);
+    setError(null);
+    await useStore.getState().refreshConnections();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -53,7 +60,7 @@ export function ConnectionRequestsScreen() {
       try {
         await load();
       } catch (e) {
-        Alert.alert('تعذر التحميل', getApiErrorMessage(e));
+        setError(getApiErrorMessage(e));
       } finally {
         setLoading(false);
       }
@@ -65,7 +72,7 @@ export function ConnectionRequestsScreen() {
     try {
       await load();
     } catch (e) {
-      Alert.alert('تعذر التحديث', getApiErrorMessage(e));
+      setError(getApiErrorMessage(e));
     } finally {
       setRefreshing(false);
     }
@@ -81,152 +88,218 @@ export function ConnectionRequestsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Connection }) => (
-    <View style={styles.card}>
-      <Text style={styles.title}>{otherName(item)}</Text>
-      <Text style={styles.meta}>الحالة: {statusAr(String(item.status))}</Text>
-      {item.message ? <Text style={styles.msg}>الرسالة: {item.message}</Text> : null}
+      <View style={styles.card}>
+        <Text style={styles.title}>{otherName(item)}</Text>
+        <Text style={styles.meta}>الحالة: {statusAr(String(item.status))}</Text>
+        {item.message ? <Text style={styles.msg}>الرسالة: {item.message}</Text> : null}
 
-      <View style={{ flexDirection: 'row', gap: space.sm + 2, marginTop: space.sm + 2, flexWrap: 'wrap' }}>
-        {isIncomingPending(item) ? (
-          <>
+        <View style={styles.actionsRow}>
+          {isIncomingPending(item) ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                onPress={async () => {
+                  try {
+                    await acceptConnection(item.id);
+                  } catch (e) {
+                    Alert.alert('تعذر القبول', getApiErrorMessage(e));
+                  }
+                }}
+                {...pressableRipple(dash.goldTint)}
+                style={styles.primary}
+              >
+                <Text style={styles.primaryText}>قبول</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={async () => {
+                  try {
+                    await rejectConnection(item.id);
+                  } catch (e) {
+                    Alert.alert('تعذر الرفض', getApiErrorMessage(e));
+                  }
+                }}
+                {...pressableRipple('rgba(185, 28, 28, 0.1)')}
+                style={styles.danger}
+              >
+                <Text style={styles.dangerText}>رفض</Text>
+              </Pressable>
+            </>
+          ) : null}
+
+          {item.status === 'pending' && item.fromUserId === me?._id ? (
             <Pressable
               accessibilityRole="button"
               onPress={async () => {
                 try {
-                  await acceptConnection(item.id);
+                  await cancelConnection(item.id);
                 } catch (e) {
-                  Alert.alert('تعذر القبول', getApiErrorMessage(e));
+                  Alert.alert('تعذر الإلغاء', getApiErrorMessage(e));
                 }
               }}
-              {...pressableRipple(colors.primaryTint18)}
+              {...pressableRipple(dash.navyTint)}
+              style={styles.secondary}
+            >
+              <Text style={styles.secondaryText}>إلغاء الطلب</Text>
+            </Pressable>
+          ) : null}
+
+          {item.status === 'accepted' ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={async () => {
+                try {
+                  const targetUserId = String(otherId(item) ?? '').trim();
+                  if (!targetUserId) {
+                    Alert.alert('تعذر فتح المحادثة', 'معرّف المستخدم غير صالح');
+                    return;
+                  }
+                  const thread = await ensureChatThread(targetUserId);
+                  const cid = String(thread.id ?? '').trim();
+                  if (!cid) {
+                    Alert.alert('تعذر فتح المحادثة', 'لم يُرجع الخادم معرف محادثة صالحاً.');
+                    return;
+                  }
+                  pushStackRoute('ChatRoom', { conversationId: cid, title: otherName(item) });
+                } catch (e) {
+                  Alert.alert('تعذر فتح المحادثة', getApiErrorMessage(e));
+                }
+              }}
+              {...pressableRipple(dash.goldTint)}
               style={styles.primary}
             >
-              <Text style={styles.primaryText}>قبول</Text>
+              <Text style={styles.primaryText}>فتح محادثة</Text>
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={async () => {
-                try {
-                  await rejectConnection(item.id);
-                } catch (e) {
-                  Alert.alert('تعذر الرفض', getApiErrorMessage(e));
-                }
-              }}
-              {...pressableRipple('rgba(248,113,113,0.2)')}
-              style={styles.danger}
-            >
-              <Text style={styles.dangerText}>رفض</Text>
-            </Pressable>
-          </>
-        ) : null}
-
-        {item.status === 'pending' && item.fromUserId === me?._id ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={async () => {
-              try {
-                await cancelConnection(item.id);
-              } catch (e) {
-                Alert.alert('تعذر الإلغاء', getApiErrorMessage(e));
-              }
-            }}
-            {...pressableRipple(colors.primaryTint12)}
-            style={styles.secondary}
-          >
-            <Text style={styles.secondaryText}>إلغاء الطلب</Text>
-          </Pressable>
-        ) : null}
-
-        {item.status === 'accepted' ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={async () => {
-              try {
-                const thread = await ensureChatThread(otherId(item));
-                pushStackRoute('ChatRoom', { conversationId: thread.id, title: otherName(item) });
-              } catch (e) {
-                Alert.alert('تعذر فتح المحادثة', getApiErrorMessage(e));
-              }
-            }}
-            {...pressableRipple(colors.primaryTint18)}
-            style={styles.primary}
-          >
-            <Text style={styles.primaryText}>فتح محادثة</Text>
-          </Pressable>
-        ) : null}
+          ) : null}
+        </View>
       </View>
-    </View>
     ),
-    [colors, styles, me?._id, acceptConnection, rejectConnection, cancelConnection, ensureChatThread]
+    [styles, dash, me?._id, acceptConnection, rejectConnection, cancelConnection, ensureChatThread]
   );
+
+  const bottomPad = space.xxl + 6 + insets.bottom;
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title="طلبات التواصل" />
+        <View style={styles.center}>
+          <ApiStateView tone={apiTone} mode="loading" title="جاري تحميل طلبات التواصل..." />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && sorted.length === 0) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title="طلبات التواصل" />
+        <View style={styles.center}>
+          <ApiStateView
+            tone={apiTone}
+            mode="error"
+            title="تعذر تحميل طلبات التواصل"
+            subtitle={error}
+            onRetry={() => void onRefresh()}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <FlatList
-      data={sorted}
-      keyExtractor={(x) => x.id}
-      renderItem={renderItem}
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={styles.listContent}
-      ListEmptyComponent={<Text style={styles.empty}>لا طلبات</Text>}
-    />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="طلبات التواصل" />
+      <FlatList
+        style={styles.list}
+        data={sorted}
+        keyExtractor={(x) => x.id}
+        renderItem={renderItem}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dash.gold} />}
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottomPad }]}
+        ListHeaderComponent={
+          error ? (
+            <View style={styles.bannerErr}>
+              <ApiStateView
+                tone={apiTone}
+                mode="error"
+                title="حدث خطأ أثناء التحديث"
+                subtitle={error}
+                onRetry={() => void onRefresh()}
+              />
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={<ApiStateView tone={apiTone} mode="empty" title="لا طلبات" />}
+      />
+    </SafeAreaView>
   );
 }
 
-function createConnectionRequestsStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  listContent: { padding: space.lg, paddingBottom: space.xxl + 6, backgroundColor: colors.background, flexGrow: 1 },
-  card: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.xl,
-    padding: space.md,
-    marginBottom: space.sm + 2,
-  },
-  title: { color: colors.text, fontWeight: '900', fontSize: 16 },
-  meta: { color: colors.textMuted, marginTop: space.sm - 2, fontWeight: '700' },
-  msg: { color: colors.textSecondary, marginTop: space.sm },
-  primary: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-    minHeight: touch.minHeight - 4,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, fontWeight: '900' },
-  secondary: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    minHeight: touch.minHeight - 4,
-    justifyContent: 'center',
-  },
-  secondaryText: { color: colors.textSecondary, fontWeight: '800' },
-  danger: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.dangerBorder,
-    backgroundColor: colors.dangerBg,
-    minHeight: touch.minHeight - 4,
-    justifyContent: 'center',
-  },
-  dangerText: { color: colors.dangerText, fontWeight: '900' },
-  empty: { color: colors.placeholder, textAlign: 'center', marginTop: space.lg + 2 },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    list: { flex: 1 },
+    center: { flex: 1, paddingHorizontal: 16, paddingTop: 24, alignItems: 'stretch', justifyContent: 'center' },
+    listContent: { paddingHorizontal: 16, paddingTop: 4, flexGrow: 1 },
+    bannerErr: { marginBottom: space.sm },
+    card: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      padding: space.md,
+      marginBottom: space.sm + 2,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    title: { color: dash.navy, fontWeight: '900', fontSize: 16, textAlign: 'right' },
+    meta: { color: dash.muted, marginTop: space.sm - 2, fontWeight: '700', textAlign: 'right' },
+    msg: { color: dash.darkText, marginTop: space.sm, textAlign: 'right', lineHeight: 20 },
+    actionsRow: {
+      flexDirection: 'row-reverse',
+      gap: space.sm + 2,
+      marginTop: space.sm + 2,
+      flexWrap: 'wrap',
+    },
+    primary: {
+      paddingHorizontal: space.md,
+      paddingVertical: space.sm + 2,
+      borderRadius: DASHBOARD_RADIUS,
+      backgroundColor: dash.gold,
+      minHeight: touch.minHeight - 4,
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: dash.gold,
+    },
+    primaryText: { color: dash.onGold, fontWeight: '900', textAlign: 'center' },
+    secondary: {
+      paddingHorizontal: space.md,
+      paddingVertical: space.sm + 2,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      minHeight: touch.minHeight - 4,
+      justifyContent: 'center',
+      backgroundColor: dash.white,
+    },
+    secondaryText: { color: dash.darkText, fontWeight: '800', textAlign: 'center' },
+    danger: {
+      paddingHorizontal: space.md,
+      paddingVertical: space.sm + 2,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.danger,
+      backgroundColor: 'rgba(185, 28, 28, 0.08)',
+      minHeight: touch.minHeight - 4,
+      justifyContent: 'center',
+    },
+    dangerText: { color: dash.danger, fontWeight: '900', textAlign: 'center' },
+  });
 }

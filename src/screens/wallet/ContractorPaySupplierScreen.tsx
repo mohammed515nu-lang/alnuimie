@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
 
 import { walletAPI } from '../../api/services';
@@ -15,30 +16,30 @@ import { getApiErrorMessage } from '../../api/http';
 import { useStore } from '../../store/useStore';
 import { getStripePaymentReturnURL } from '../../config/stripeDeepLink';
 import { getStripePublishableKey } from '../../wallet/stripeEnv';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { TopBar } from '../../components/TopBar';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
 import { isIOS } from '../../utils/platformEnv';
-import type { AppPalette } from '../../theme/palettes';
 
 export function ContractorPaySupplierScreen() {
-  const refreshTransfers = useStore((s) => s.refreshTransfers);
   const addTransferLocal = useStore((s) => s.addTransferLocal);
   const updateTransferLocal = useStore((s) => s.updateTransferLocal);
-  const refreshPaymentCards = useStore((s) => s.refreshPaymentCards);
+  const insets = useSafeAreaInsets();
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
 
   const [amount, setAmount] = useState('');
   const [supplierName, setSupplierName] = useState('');
   const [description, setDescription] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createContractorPaySupplierStyles(colors), [colors]);
-
   const stripeOk = useMemo(() => !!getStripePublishableKey(), []);
 
   useEffect(() => {
-    void refreshPaymentCards();
-  }, [refreshPaymentCards]);
+    void useStore.getState().refreshPaymentCards();
+  }, []);
 
   const onPay = async () => {
     if (!stripeOk) {
@@ -80,7 +81,7 @@ export function ContractorPaySupplierScreen() {
 
       const latest = await walletAPI.confirmTransfer(transferId);
       addTransferLocal(latest);
-      await refreshTransfers();
+      await useStore.getState().refreshTransfers();
       hapticSuccess();
       Alert.alert('تم', 'تم إرسال الدفع للمعالجة/التأكيد من الخادم');
     } catch (e) {
@@ -92,82 +93,102 @@ export function ContractorPaySupplierScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={isIOS ? 'padding' : undefined}
-      keyboardVerticalOffset={isIOS ? 64 : 0}
-    >
-      <ScrollView
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <TopBar tone="beige" title="دفع الموردين" />
+      <KeyboardAvoidingView
         style={styles.flex}
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        contentInsetAdjustmentBehavior="automatic"
+        behavior={isIOS ? 'padding' : undefined}
+        keyboardVerticalOffset={isIOS ? 64 : 0}
       >
-        <Text style={styles.title}>دفع مقاول → مورد</Text>
-        <Text style={styles.lead}>أدخل المبلغ واختياريًا اسم المورد والوصف.</Text>
-
-        <TextInput
-          placeholder="المبلغ (USD)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="decimal-pad"
-        />
-        <TextInput
-          placeholder="اسم المورد (اختياري)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={supplierName}
-          onChangeText={setSupplierName}
-        />
-        <TextInput
-          placeholder="وصف (اختياري)"
-          placeholderTextColor={colors.placeholder}
-          style={styles.input}
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={busy}
-          onPress={onPay}
-          {...pressableRipple(colors.primaryTint18)}
-          style={[styles.primary, busy && { opacity: 0.6 }]}
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom }]}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Text style={styles.lead}>أدخل المبلغ واختياريًا اسم المورد والوصف، ثم أكمل الدفع عبر Stripe.</Text>
+
+          <Text style={styles.fieldLabel}>المبلغ (USD)</Text>
+          <TextInput
+            placeholder="المبلغ"
+            placeholderTextColor={dash.muted}
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="decimal-pad"
+            textAlign="right"
+          />
+          <Text style={styles.fieldLabel}>اسم المورد (اختياري)</Text>
+          <TextInput
+            placeholder="اسم المورد"
+            placeholderTextColor={dash.muted}
+            style={styles.input}
+            value={supplierName}
+            onChangeText={setSupplierName}
+            textAlign="right"
+          />
+          <Text style={styles.fieldLabel}>وصف (اختياري)</Text>
+          <TextInput
+            placeholder="وصف الدفع"
+            placeholderTextColor={dash.muted}
+            style={[styles.input, styles.inputMultiline]}
+            value={description}
+            onChangeText={setDescription}
+            textAlign="right"
+            multiline
+          />
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy}
+            onPress={onPay}
+            {...pressableRipple(dash.goldTint)}
+            style={[styles.primary, busy && { opacity: 0.6 }]}
+          >
+            <Text style={styles.primaryText}>{busy ? 'جارٍ التنفيذ...' : 'دفع عبر Stripe'}</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-function createContractorPaySupplierStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  scroll: { padding: space.lg, paddingBottom: space.xxl + 8 },
-  title: { color: colors.text, fontSize: 18, fontWeight: '900', marginBottom: space.sm },
-  lead: { color: colors.textMuted, marginBottom: space.md, lineHeight: 20 },
-  input: {
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    color: colors.textSecondary,
-    marginBottom: space.sm + 2,
-    minHeight: touch.minHeight,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    marginTop: space.sm,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  primaryText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    flex: { flex: 1 },
+    scroll: { paddingHorizontal: 16, paddingTop: 4 },
+    lead: { color: dash.muted, marginBottom: space.md, lineHeight: 22, textAlign: 'right', fontSize: 14 },
+    fieldLabel: {
+      color: dash.muted,
+      fontSize: 13,
+      fontWeight: '700',
+      textAlign: 'right',
+      marginBottom: 8,
+      marginTop: 4,
+    },
+    input: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: space.md,
+      paddingVertical: space.md,
+      color: dash.darkText,
+      marginBottom: space.sm,
+      minHeight: touch.minHeight,
+      fontSize: 16,
+    },
+    inputMultiline: { minHeight: 100, textAlignVertical: 'top' },
+    primary: {
+      backgroundColor: dash.gold,
+      borderRadius: DASHBOARD_RADIUS,
+      paddingVertical: space.md,
+      marginTop: space.md,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+    },
+    primaryText: { color: dash.onGold, textAlign: 'center', fontWeight: '900', fontSize: 16 },
+  });
 }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -12,19 +11,20 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 
+import { ApiStateView } from '../../components/ApiStateView';
 import { TopBar } from '../../components/TopBar';
 import { socialAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
 import { pushStackRoute } from '../../navigation/href';
 import type { PortfolioItem, PublicProfileAggregate, Rating } from '../../api/types';
 import { useStore } from '../../store/useStore';
-import { useAppTheme, pressableRipple, radius, space, touch } from '../../theme';
+import { pressableRipple, space, touch, useAppTheme } from '../../theme';
+import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
-import type { AppPalette } from '../../theme/palettes';
 import { isConnectedWith } from '../../utils/connections';
 
 const MAX_CONNECT = 300;
@@ -37,6 +37,7 @@ function readParam(s: string | string[] | undefined) {
 export function PublicProfileScreen() {
   const { userId: userIdParam } = useLocalSearchParams<{ userId: string }>();
   const userId = readParam(userIdParam);
+  const insets = useSafeAreaInsets();
 
   const me = useStore((s) => s.user);
   const connections = useStore((s) => s.connections);
@@ -49,6 +50,7 @@ export function PublicProfileScreen() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const [connectModal, setConnectModal] = useState(false);
@@ -58,16 +60,20 @@ export function PublicProfileScreen() {
   const [comment, setComment] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 
-  const { colors } = useAppTheme();
-  const styles = useMemo(() => createPublicProfileStyles(colors), [colors]);
+  const { resolved } = useAppTheme();
+  const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
+  const styles = useMemo(() => createStyles(dash), [dash]);
+  const apiTone = resolved === 'light' ? 'beige' : 'default';
 
   const isSelf = useMemo(() => !!me && me._id === userId, [me, userId]);
+  const barTitle = isSelf ? 'ملفي العام' : 'الملف الشخصي';
   const connected = useMemo(
     () => (me ? isConnectedWith(connections, me._id, userId) : false),
     [connections, me, userId]
   );
 
   const load = useCallback(async () => {
+    setLoadError(null);
     const [p, port, r] = await Promise.all([
       socialAPI.getPublicProfile(userId),
       socialAPI.listPublicPortfolio(userId),
@@ -79,8 +85,8 @@ export function PublicProfileScreen() {
   }, [userId]);
 
   useEffect(() => {
-    void refreshConnections();
-  }, [refreshConnections]);
+    void useStore.getState().refreshConnections();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -88,7 +94,7 @@ export function PublicProfileScreen() {
       try {
         await load();
       } catch (e) {
-        Alert.alert('تعذر التحميل', getApiErrorMessage(e));
+        setLoadError(getApiErrorMessage(e));
       } finally {
         setLoading(false);
       }
@@ -101,15 +107,20 @@ export function PublicProfileScreen() {
       await load();
       await refreshConnections();
     } catch (e) {
-      Alert.alert('تعذر التحديث', getApiErrorMessage(e));
+      setLoadError(getApiErrorMessage(e));
     } finally {
       setRefreshing(false);
     }
   };
 
   const onConnect = async () => {
+    const toId = String(userId ?? '').trim();
+    if (!toId) {
+      Alert.alert('تنبيه', 'معرّف المستخدم غير صالح.');
+      return;
+    }
     try {
-      await sendConnectionRequest(userId, connectMsg.trim() || undefined);
+      await sendConnectionRequest(toId, connectMsg.trim() || undefined);
       setConnectModal(false);
       setConnectMsg('');
       hapticSuccess();
@@ -121,14 +132,24 @@ export function PublicProfileScreen() {
 
   const onMessage = async () => {
     if (!me || isSelf) return;
+    const otherId = String(userId ?? '').trim();
+    if (!otherId) {
+      Alert.alert('تنبيه', 'معرّف المستخدم غير صالح.');
+      return;
+    }
     if (!connected) {
       setBlockModal(true);
       return;
     }
     try {
-      const thread = await ensureChatThread(userId);
+      const thread = await ensureChatThread(otherId);
+      const cid = String(thread.id ?? '').trim();
+      if (!cid) {
+        Alert.alert('تعذر فتح المحادثة', 'لم يُرجع الخادم معرف محادثة صالحاً.');
+        return;
+      }
       pushStackRoute('ChatRoom', {
-        conversationId: thread.id,
+        conversationId: cid,
         title: thread.otherUserName || 'محادثة',
       });
     } catch (e) {
@@ -154,11 +175,44 @@ export function PublicProfileScreen() {
     else setConnectMsg(t.slice(0, MAX_CONNECT));
   };
 
-  if (loading || !profile) {
+  const bottomPad = 24 + insets.bottom;
+
+  if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title={barTitle} />
+        <View style={styles.center}>
+          <ApiStateView tone={apiTone} mode="loading" title="جاري تحميل الملف..." />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if ((!profile || loadError) && !refreshing) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title={barTitle} />
+        <View style={styles.center}>
+          <ApiStateView
+            tone={apiTone}
+            mode="error"
+            title="تعذر تحميل الملف"
+            subtitle={loadError ?? 'حدث خطأ غير متوقع'}
+            onRetry={() => void onRefresh()}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <TopBar tone="beige" title={barTitle} />
+        <View style={styles.center}>
+          <ApiStateView tone={apiTone} mode="loading" title="جاري تحميل الملف..." />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -167,41 +221,48 @@ export function PublicProfileScreen() {
     typeof profile.yearsExperience === 'number' && profile.yearsExperience >= 0
       ? String(profile.yearsExperience)
       : '—';
+  const roleIcon: keyof typeof Ionicons.glyphMap =
+    profile.role === 'contractor' ? 'construct-outline' : 'person-outline';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <TopBar title="الملف الشخصي" />
+      <TopBar tone="beige" title={barTitle} />
       <ScrollView
         ref={scrollRef}
         style={styles.flex}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: bottomPad }]}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dash.gold} />}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
-          {profile.avatarUri ? (
-            <Image source={{ uri: profile.avatarUri }} style={styles.avatarImg} />
-          ) : (
-            <View style={styles.avatarRole}>
-              <Ionicons name={profile.role === 'contractor' ? 'hammer' : 'person'} size={36} color={colors.onPrimary} />
-            </View>
-          )}
-          <Text style={styles.name}>{profile.name}</Text>
-          <Text style={styles.role}>{roleLabel}</Text>
-          <View style={styles.starsRow}>
-            {profile.ratingCount === 0 ? (
-              <>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Ionicons key={i} name="star-outline" size={18} color={colors.textMuted} style={{ marginHorizontal: 2 }} />
-                ))}
-                <Text style={styles.noRate}>لا تقييمات بعد</Text>
-              </>
+        <View style={styles.heroCard}>
+          <View style={styles.hero}>
+            {profile.avatarUri ? (
+              <Image source={{ uri: profile.avatarUri }} style={styles.avatarImg} />
             ) : (
-              <Text style={styles.rateText}>
-                ⭐ {profile.ratingAvg.toFixed(1)} ({profile.ratingCount})
-              </Text>
+              <View style={styles.avatarRole}>
+                <Ionicons name={roleIcon} size={36} color={dash.navy} />
+              </View>
             )}
+            <Text style={styles.name}>{profile.name}</Text>
+            <View style={styles.rolePill}>
+              <Text style={styles.role}>{roleLabel}</Text>
+            </View>
+            <View style={styles.starsRow}>
+              {profile.ratingCount === 0 ? (
+                <>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Ionicons key={i} name="star-outline" size={18} color={dash.muted} style={{ marginHorizontal: 2 }} />
+                  ))}
+                  <Text style={styles.noRate}>لا تقييمات بعد</Text>
+                </>
+              ) : (
+                <Text style={styles.rateText}>
+                  ⭐ {profile.ratingAvg.toFixed(1)} ({profile.ratingCount})
+                </Text>
+              )}
+            </View>
           </View>
         </View>
 
@@ -225,7 +286,7 @@ export function PublicProfileScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={() => setConnectModal(true)}
-              {...pressableRipple(colors.primaryTint18)}
+              {...pressableRipple(dash.goldTint)}
               style={styles.btn}
             >
               <Text style={styles.btnText}>طلب تواصل</Text>
@@ -233,7 +294,7 @@ export function PublicProfileScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={onMessage}
-              {...pressableRipple(colors.primaryTint12)}
+              {...pressableRipple(dash.navyTint)}
               style={styles.btnSecondary}
             >
               <Text style={styles.btnSecondaryText}>مراسلة</Text>
@@ -241,8 +302,18 @@ export function PublicProfileScreen() {
           </View>
         ) : null}
 
-        {profile.specialty ? <Text style={styles.block}>التخصص: {profile.specialty}</Text> : null}
-        {profile.bio ? <Text style={styles.block}>{profile.bio}</Text> : null}
+        {profile.specialty ? (
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>التخصص</Text>
+            <Text style={styles.block}>{profile.specialty}</Text>
+          </View>
+        ) : null}
+        {profile.bio ? (
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>نبذة</Text>
+            <Text style={styles.block}>{profile.bio}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>الأعمال المنجزة ({portfolio.length})</Text>
@@ -263,7 +334,7 @@ export function PublicProfileScreen() {
               accessibilityLabel="الانتقال إلى نموذج التقييم"
               onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
               style={styles.addRate}
-              {...pressableRipple(colors.primaryTint12)}
+              {...pressableRipple(dash.goldTint)}
             >
               <Text style={styles.addRateText}>+ أضف تقييمك</Text>
             </Pressable>
@@ -284,7 +355,7 @@ export function PublicProfileScreen() {
             <Text style={styles.cardTitle}>تقييم المقاول</Text>
             <TextInput
               placeholder="1-5"
-              placeholderTextColor={colors.placeholder}
+              placeholderTextColor={dash.muted}
               style={styles.input}
               value={stars}
               onChangeText={setStars}
@@ -293,13 +364,18 @@ export function PublicProfileScreen() {
             />
             <TextInput
               placeholder="تعليق (اختياري)"
-              placeholderTextColor={colors.placeholder}
+              placeholderTextColor={dash.muted}
               style={styles.input}
               value={comment}
               onChangeText={setComment}
               textAlign="right"
             />
-            <Pressable accessibilityRole="button" onPress={onRating} {...pressableRipple(colors.primaryTint18)} style={styles.btn}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onRating}
+              {...pressableRipple(dash.goldTint)}
+              style={styles.btn}
+            >
               <Text style={styles.btnText}>حفظ التقييم</Text>
             </Pressable>
           </View>
@@ -314,7 +390,7 @@ export function PublicProfileScreen() {
             <Text style={styles.sheetSub}>إلى {profile.name}</Text>
             <TextInput
               placeholder="...اكتب رسالة تعريفية (اختياري)"
-              placeholderTextColor={colors.placeholder}
+              placeholderTextColor={dash.muted}
               style={styles.sheetInput}
               value={connectMsg}
               onChangeText={setMsg}
@@ -326,10 +402,14 @@ export function PublicProfileScreen() {
               {connectMsg.length}/{MAX_CONNECT}
             </Text>
             <View style={styles.sheetActions}>
-              <Pressable onPress={() => setConnectModal(false)} style={styles.sheetCancel} {...pressableRipple(colors.primaryTint12)}>
+              <Pressable
+                onPress={() => setConnectModal(false)}
+                style={styles.sheetCancel}
+                {...pressableRipple(dash.navyTint)}
+              >
                 <Text style={styles.sheetCancelText}>إلغاء</Text>
               </Pressable>
-              <Pressable onPress={onConnect} style={styles.sheetOk} {...pressableRipple(colors.primaryTint18)}>
+              <Pressable onPress={onConnect} style={styles.sheetOk} {...pressableRipple(dash.goldTint)}>
                 <Text style={styles.sheetOkText}>إرسال الطلب</Text>
               </Pressable>
             </View>
@@ -345,7 +425,7 @@ export function PublicProfileScreen() {
               <Text style={styles.alertTitle}>غير متصل</Text>
               <Text style={styles.alertBody}>يجب قبول طلب التواصل أولاً قبل إرسال الرسائل</Text>
               <View style={styles.alertBtns}>
-                <Pressable onPress={() => setBlockModal(false)}>
+                <Pressable onPress={() => setBlockModal(false)} {...pressableRipple(dash.navyTint)}>
                   <Text style={styles.alertLink}>حسناً</Text>
                 </Pressable>
                 <Pressable
@@ -353,8 +433,9 @@ export function PublicProfileScreen() {
                     setBlockModal(false);
                     setConnectModal(true);
                   }}
+                  {...pressableRipple(dash.goldTint)}
                 >
-                  <Text style={styles.alertLink}>إرسال طلب</Text>
+                  <Text style={styles.alertLinkStrong}>إرسال طلب</Text>
                 </Pressable>
               </View>
             </View>
@@ -365,156 +446,219 @@ export function PublicProfileScreen() {
   );
 }
 
-function createPublicProfileStyles(colors: AppPalette) {
+function createStyles(dash: DashboardPalette) {
   return StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  content: { padding: space.lg, paddingBottom: space.xxl + 8 },
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  hero: { alignItems: 'center', marginBottom: space.lg },
-  avatarImg: { width: 96, height: 96, borderRadius: 22, borderWidth: 1, borderColor: colors.borderMuted },
-  avatarRole: {
-    width: 96,
-    height: 96,
-    borderRadius: 22,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  name: { color: colors.text, fontSize: 22, fontWeight: '900', marginTop: space.md, textAlign: 'center' },
-  role: { color: colors.textMuted, marginTop: space.xs, fontWeight: '700' },
-  starsRow: { flexDirection: 'row-reverse', alignItems: 'center', marginTop: space.sm, flexWrap: 'wrap', justifyContent: 'center' },
-  noRate: { color: colors.textMuted, marginRight: space.sm, fontSize: 13 },
-  rateText: { color: colors.textMuted, fontWeight: '700' },
-  statsRow: { flexDirection: 'row-reverse', gap: space.sm, marginBottom: space.lg },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.surfaceMid,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    padding: space.md,
-    alignItems: 'center',
-  },
-  statNum: { color: colors.text, fontSize: 20, fontWeight: '900' },
-  statLab: { color: colors.textMuted, marginTop: 4, fontSize: 12 },
-  actions: { flexDirection: 'row-reverse', gap: space.sm + 2, marginBottom: space.md },
-  btn: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-  },
-  btnText: { color: colors.onPrimary, textAlign: 'center', fontWeight: '900' },
-  btnSecondary: {
-    flex: 1,
-    borderRadius: radius.md,
-    paddingVertical: space.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    minHeight: touch.minHeight,
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceMid,
-  },
-  btnSecondaryText: { color: colors.link, textAlign: 'center', fontWeight: '900' },
-  block: { color: colors.textSecondary, marginTop: space.sm, textAlign: 'right', lineHeight: 22 },
-  sectionHead: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: space.lg,
-    marginBottom: space.sm,
-  },
-  sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '900', textAlign: 'right' },
-  addRate: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceMid,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  addRateText: { color: colors.primary, fontWeight: '800', fontSize: 12 },
-  card: {
-    backgroundColor: colors.surfaceMid,
-    borderColor: colors.borderMuted,
-    borderWidth: 1,
-    borderRadius: radius.xl,
-    padding: space.md,
-    marginTop: space.sm + 2,
-  },
-  cardTitle: { color: colors.text, fontWeight: '900', marginBottom: space.sm, textAlign: 'right' },
-  input: {
-    backgroundColor: colors.background,
-    borderColor: colors.borderMuted,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
-    color: colors.textSecondary,
-    marginBottom: space.sm + 2,
-    minHeight: touch.minHeight - 4,
-  },
-  itemTitle: { color: colors.text, fontWeight: '900', textAlign: 'right' },
-  empty: { color: colors.placeholder, textAlign: 'center', marginVertical: space.md },
-  modalRoot: { flex: 1, justifyContent: 'flex-end' },
-  modalDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet: {
-    backgroundColor: colors.surfaceMid,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: space.lg,
-    paddingBottom: space.xxl,
-    borderTopWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  sheetTitle: { color: colors.text, fontWeight: '900', fontSize: 18, textAlign: 'right' },
-  sheetSub: { color: colors.textMuted, textAlign: 'right', marginTop: space.xs },
-  sheetInput: {
-    marginTop: space.md,
-    minHeight: 120,
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    padding: space.md,
-    color: colors.text,
-    textAlign: 'right',
-  },
-  counter: { color: colors.textMuted, textAlign: 'right', marginTop: space.xs, fontSize: 12 },
-  sheetActions: { flexDirection: 'row-reverse', gap: space.md, marginTop: space.lg },
-  sheetCancel: {
-    flex: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    paddingVertical: space.md,
-    alignItems: 'center',
-  },
-  sheetCancelText: { color: colors.link, fontWeight: '900' },
-  sheetOk: { flex: 1, backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: space.md, alignItems: 'center' },
-  sheetOkText: { color: colors.onPrimary, fontWeight: '900' },
-  blockModalRoot: { flex: 1 },
-  alertDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
-  blockModalCenter: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    paddingHorizontal: space.lg,
-  },
-  alertBox: {
-    backgroundColor: colors.surfaceMid,
-    borderRadius: radius.md,
-    padding: space.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  alertTitle: { color: colors.text, fontWeight: '900', fontSize: 18, textAlign: 'right' },
-  alertBody: { color: colors.textSecondary, marginTop: space.md, textAlign: 'right', lineHeight: 22 },
-  alertBtns: { flexDirection: 'row-reverse', justifyContent: 'flex-end', gap: space.lg, marginTop: space.lg },
-  alertLink: { color: '#2dd4bf', fontWeight: '800', fontSize: 16 },
-});
+    safe: { flex: 1, backgroundColor: dash.pageBg },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: 16, paddingTop: 8 },
+    center: { flex: 1, paddingHorizontal: 16, paddingTop: 24, alignItems: 'stretch' },
+    heroCard: {
+      backgroundColor: dash.white,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      padding: 20,
+      marginBottom: 14,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    hero: { alignItems: 'center' },
+    avatarImg: { width: 96, height: 96, borderRadius: 22, borderWidth: 1, borderColor: dash.border },
+    avatarRole: {
+      width: 96,
+      height: 96,
+      borderRadius: 22,
+      backgroundColor: dash.goldTint,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: dash.gold,
+    },
+    name: { color: dash.navy, fontSize: 22, fontWeight: '900', marginTop: 14, textAlign: 'center' },
+    rolePill: {
+      marginTop: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: dash.goldTint,
+      borderWidth: 1,
+      borderColor: dash.border,
+    },
+    role: { color: dash.navy, fontWeight: '800', fontSize: 13 },
+    starsRow: {
+      flexDirection: 'row-reverse',
+      alignItems: 'center',
+      marginTop: 10,
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
+    noRate: { color: dash.muted, marginRight: 8, fontSize: 13 },
+    rateText: { color: dash.darkText, fontWeight: '800' },
+    statsRow: { flexDirection: 'row-reverse', gap: 10, marginBottom: 14 },
+    statCard: {
+      flex: 1,
+      backgroundColor: dash.white,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      padding: 12,
+      alignItems: 'center',
+      elevation: 1,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+    },
+    statNum: { color: dash.gold, fontSize: 20, fontWeight: '900' },
+    statLab: { color: dash.muted, marginTop: 4, fontSize: 11, fontWeight: '700' },
+    actions: { flexDirection: 'row-reverse', gap: 10, marginBottom: 14 },
+    btn: {
+      flex: 1,
+      backgroundColor: dash.gold,
+      borderRadius: 14,
+      paddingVertical: space.md,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+    },
+    btnText: { color: dash.onGold, textAlign: 'center', fontWeight: '900' },
+    btnSecondary: {
+      flex: 1,
+      borderRadius: 14,
+      paddingVertical: space.md,
+      borderWidth: 1.5,
+      borderColor: dash.gold,
+      minHeight: touch.minHeight,
+      justifyContent: 'center',
+      backgroundColor: dash.white,
+    },
+    btnSecondaryText: { color: dash.navy, textAlign: 'center', fontWeight: '900' },
+    infoCard: {
+      backgroundColor: dash.white,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      padding: 14,
+      marginBottom: 10,
+    },
+    infoLabel: {
+      color: dash.navy,
+      fontWeight: '900',
+      fontSize: 13,
+      textAlign: 'right',
+      marginBottom: 6,
+    },
+    block: { color: dash.darkText, textAlign: 'right', lineHeight: 22, fontSize: 15 },
+    sectionHead: {
+      flexDirection: 'row-reverse',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 18,
+      marginBottom: 8,
+    },
+    sectionTitle: { color: dash.navy, fontSize: 16, fontWeight: '900', textAlign: 'right' },
+    addRate: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 12,
+      backgroundColor: dash.white,
+      borderWidth: 1,
+      borderColor: dash.gold,
+    },
+    addRateText: { color: dash.navy, fontWeight: '800', fontSize: 12 },
+    card: {
+      backgroundColor: dash.white,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: DASHBOARD_RADIUS,
+      padding: 14,
+      marginTop: 8,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    cardTitle: { color: dash.navy, fontWeight: '900', marginBottom: 10, textAlign: 'right' },
+    input: {
+      backgroundColor: dash.inputBg,
+      borderColor: dash.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: space.md,
+      paddingVertical: space.sm + 2,
+      color: dash.darkText,
+      marginBottom: 10,
+      minHeight: touch.minHeight - 4,
+      fontSize: 16,
+    },
+    itemTitle: { color: dash.darkText, fontWeight: '900', textAlign: 'right', fontSize: 16 },
+    empty: { color: dash.muted, textAlign: 'center', marginVertical: 12, fontSize: 14 },
+    modalRoot: { flex: 1, justifyContent: 'flex-end' },
+    modalDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
+    sheet: {
+      backgroundColor: dash.white,
+      borderTopLeftRadius: DASHBOARD_RADIUS,
+      borderTopRightRadius: DASHBOARD_RADIUS,
+      padding: 20,
+      paddingBottom: 28,
+      borderTopWidth: 1,
+      borderColor: dash.border,
+    },
+    sheetTitle: { color: dash.navy, fontWeight: '900', fontSize: 18, textAlign: 'right' },
+    sheetSub: { color: dash.muted, textAlign: 'right', marginTop: 4, fontSize: 14 },
+    sheetInput: {
+      marginTop: 14,
+      minHeight: 120,
+      backgroundColor: dash.inputBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: dash.border,
+      padding: 14,
+      color: dash.darkText,
+      textAlign: 'right',
+      fontSize: 15,
+    },
+    counter: { color: dash.muted, textAlign: 'right', marginTop: 6, fontSize: 12 },
+    sheetActions: { flexDirection: 'row-reverse', gap: 12, marginTop: 18 },
+    sheetCancel: {
+      flex: 1,
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: dash.gold,
+      paddingVertical: space.md,
+      alignItems: 'center',
+      backgroundColor: dash.white,
+    },
+    sheetCancelText: { color: dash.navy, fontWeight: '900' },
+    sheetOk: {
+      flex: 1,
+      backgroundColor: dash.gold,
+      borderRadius: 14,
+      paddingVertical: space.md,
+      alignItems: 'center',
+    },
+    sheetOkText: { color: dash.onGold, fontWeight: '900' },
+    blockModalRoot: { flex: 1 },
+    alertDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+    blockModalCenter: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+    },
+    alertBox: {
+      backgroundColor: dash.white,
+      borderRadius: DASHBOARD_RADIUS,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: dash.border,
+    },
+    alertTitle: { color: dash.navy, fontWeight: '900', fontSize: 18, textAlign: 'right' },
+    alertBody: { color: dash.muted, marginTop: 12, textAlign: 'right', lineHeight: 22, fontSize: 15 },
+    alertBtns: { flexDirection: 'row-reverse', justifyContent: 'flex-end', gap: 20, marginTop: 18 },
+    alertLink: { color: dash.navy, fontWeight: '800', fontSize: 16 },
+    alertLinkStrong: { color: dash.gold, fontWeight: '900', fontSize: 16 },
+  });
 }

@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#E8A838',
   },
   ios: {
     supportsTablet: false,
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     permissions: ['RECORD_AUDIO'],
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#0F172A',
+      backgroundColor: '#E8A838',
     },
   },
   web: {
@@ -52,6 +52,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-notifications',
       {
+        icon: './assets/notification-icon.png',
+        color: '#E8A838',
         sounds: [],
         enableBackgroundRemoteNotifications: true,
       },

@@ -25,6 +25,9 @@ import { socialAPI } from '../../api/services/social';
 import { isIOS } from '../../utils/platformEnv';
 import { touch, useAppTheme, type ResolvedScheme, hitSlop } from '../../theme';
 
+/** مرجع ثابت لمحدد Zustand — `?? []` داخل المحدد يُنشئ مصفوفة جديدة كل مرة ويسبب حلقة تصيير لا نهائية. */
+const EMPTY_CHAT_MESSAGES: ChatMessage[] = [];
+
 function readString(p: string | string[] | undefined): string {
   if (p === undefined) return '';
   const val = Array.isArray(p) ? (p[0] ?? '') : p;
@@ -378,7 +381,10 @@ export function ChatRoomScreen() {
   const wa = useMemo(() => waColors(resolved), [resolved]);
   const styles = useMemo(() => createStyles(wa), [wa]);
 
-  const messages = useStore((s) => s.chatMessagesByThread[conversationId] ?? []);
+  const messages = useStore((s) => {
+    const list = s.chatMessagesByThread[conversationId];
+    return list ?? EMPTY_CHAT_MESSAGES;
+  });
   const me = useStore((s) => s.user);
   const chatThreads = useStore((s) => s.chatThreads);
 

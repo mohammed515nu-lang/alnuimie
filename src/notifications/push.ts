@@ -15,11 +15,13 @@ export async function ensureAndroidNotificationChannel(): Promise<void> {
   const Notifications = await loadExpoNotifications();
   if (!Notifications) return;
   await Notifications.setNotificationChannelAsync(ANDROID_DEFAULT_CHANNEL_ID, {
-    name: 'عام',
+    name: 'بنيان',
+    description: 'محادثات، مشاريع، دفعات، وتنبيهات عامة من التطبيق.',
     importance: Notifications.AndroidImportance.DEFAULT,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#a67c52',
+    lightColor: '#E8A838',
     sound: 'default',
+    showBadge: true,
   });
 }
 

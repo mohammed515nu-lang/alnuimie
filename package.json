@@ -1,6 +1,6 @@
 {
   "name": "expo_app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -16,6 +16,7 @@
     "eas:android:apk": "eas build --platform android --profile production-apk",
     "eas:android:standalone": "eas build --platform android --profile production",
     "eas:android:dev": "eas build --platform android --profile development",
+    "eas:submit:android": "eas submit --platform android --latest --profile production",
     "prebuild:android": "expo prebuild --platform android",
     "assets:png": "node scripts/materialize-png-assets.mjs"
   },

@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'بنيان',
   slug: 'bunyan-construction',
   scheme: 'bunyan-construction',
-  version: '1.0.1',
+  version: '1.0.2',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
   icon: './assets-png/icon.png',
@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.bunyan.construction',
-    versionCode: 2,
+    versionCode: 3,
     permissions: ['RECORD_AUDIO'],
     adaptiveIcon: {
       foregroundImage: './assets-png/adaptive-icon.png',

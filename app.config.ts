@@ -8,9 +8,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: '1.0.1',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
-  icon: './assets/icon.png',
+  icon: './assets-png/icon.png',
   splash: {
-    image: './assets/splash-icon.png',
+    image: './assets-png/splash-icon.png',
     resizeMode: 'contain',
     backgroundColor: '#E8A838',
   },
@@ -29,14 +29,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     versionCode: 2,
     permissions: ['RECORD_AUDIO'],
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
+      foregroundImage: './assets-png/adaptive-icon.png',
       backgroundColor: '#E8A838',
     },
   },
   web: {
-    favicon: './assets/favicon.png',
+    favicon: './assets-png/favicon.png',
   },
   plugins: [
+    [
+      'expo-build-properties',
+      {
+        android: {
+          // ABI split: smaller artifact; excludes 32-bit-only devices
+          buildArchs: ['arm64-v8a'],
+        },
+      },
+    ],
     'expo-router',
     'expo-secure-store',
     'expo-web-browser',
@@ -52,7 +61,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-notifications',
       {
-        icon: './assets/notification-icon.png',
+        icon: './assets-png/notification-icon.png',
         color: '#E8A838',
         sounds: [],
         enableBackgroundRemoteNotifications: true,

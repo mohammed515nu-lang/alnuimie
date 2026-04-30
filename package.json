@@ -4,17 +4,20 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "npx expo export -p web",
     "typecheck": "tsc --noEmit",
     "figma:connect:parse": "figma connect parse",
     "figma:connect:publish": "figma connect publish",
-    "eas:android:apk": "eas build --platform android --profile production",
+    "eas:android": "eas build --platform android --profile production",
+    "eas:android:aab": "eas build --platform android --profile production",
+    "eas:android:apk": "eas build --platform android --profile production-apk",
     "eas:android:standalone": "eas build --platform android --profile production",
     "eas:android:dev": "eas build --platform android --profile development",
-    "prebuild:android": "expo prebuild --platform android"
+    "prebuild:android": "expo prebuild --platform android",
+    "assets:png": "node scripts/materialize-png-assets.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
@@ -28,6 +31,7 @@
     "babel-preset-expo": "~54.0.10",
     "expo": "~54.0.34",
     "expo-auth-session": "~7.0.11",
+    "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.21",
     "expo-device": "~8.0.10",
@@ -59,6 +63,7 @@
   "devDependencies": {
     "@figma/code-connect": "^1.4.3",
     "@types/react": "~19.1.0",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.2"
   },
   "private": true

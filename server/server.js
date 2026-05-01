@@ -17,6 +17,15 @@ console.log('FRONTEND_URL:', process.env.FRONTEND_URL || 'NOT SET');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// خلف Render / nginx يصل X-Forwarded-For — مطلوب لـ express-rate-limit و req.ip الصحيح
+// راجع: https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/
+const trust = process.env.TRUST_PROXY;
+if (trust === 'false' || trust === '0') {
+  app.set('trust proxy', false);
+} else {
+  app.set('trust proxy', Number(trust) || 1);
+}
+
 // CORS Configuration - أمان محسّن
 // Production: يجب تحديد origins المسموح بها صراحةً
 const allowedOrigins = process.env.ALLOWED_ORIGINS 

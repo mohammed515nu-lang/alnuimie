@@ -22,9 +22,45 @@ function systemPromptForRole(role) {
  *   NVIDIA_CHAT_MODEL_FAST — اختياري؛ إن وُجد يُستخدم كأول نموذج (عادةً أخف وأسرع).
  *   NVIDIA_CHAT_MODEL — إلزامي إذا لم يُضبط FAST؛ وإن وُجد FAST مع MODEL مختلف، يُستخدم MODEL كنموذج ثانٍ احتياطي.
  *   NVIDIA_CHAT_MODEL_FALLBACK — اختياري؛ نموذج ثانٍ إذا عُيّن ويختلف عن الأول (يتقدّم على استخدام MODEL كاحتياطي عند تعيينه).
- *   NVIDIA_API_BASE_URL (اختياري)
+ *   NVIDIA_API_BASE_URL — اختياري؛ يُقبل فقط مضيف integrate.api.nvidia.com (Build Chat Completions).
+ *     أي عنوان NVCF أو «دالة» آخر يُتجاهل ويُستخدم الافتراضي لتجنّب 404 برسالة Function id.
  *   NVIDIA_CHAT_TIMEOUT_MS (افتراضي 120000، حتى 480000)
  */
+const DEFAULT_NVIDIA_CHAT_BASE = 'https://integrate.api.nvidia.com/v1';
+
+/** يقتصر على واجهة NVIDIA Build (OpenAI-style). عناوين NVCF تسبب 404 «Function id … not found». */
+function resolveNvidiaChatBaseUrl() {
+  const raw = (process.env.NVIDIA_API_BASE_URL || '').trim();
+  if (!raw) return DEFAULT_NVIDIA_CHAT_BASE;
+  try {
+    const u = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    if (u.hostname.toLowerCase() !== 'integrate.api.nvidia.com') {
+      console.warn(
+        `[ai] NVIDIA_API_BASE_URL ignored (host "${u.hostname}"); use Build integrate only or unset. Using ${DEFAULT_NVIDIA_CHAT_BASE}.`
+      );
+      return DEFAULT_NVIDIA_CHAT_BASE;
+    }
+    return DEFAULT_NVIDIA_CHAT_BASE;
+  } catch {
+    console.warn('[ai] Invalid NVIDIA_API_BASE_URL; using default integrate chat URL.');
+    return DEFAULT_NVIDIA_CHAT_BASE;
+  }
+}
+
+function nvidiaHttpErrorBody(data, rawText, status) {
+  if (!data || typeof data !== 'object') return rawText.slice(0, 400);
+  const d = data;
+  const nested = typeof d.error === 'object' && d.error !== null ? d.error.message : null;
+  const flat =
+    nested ||
+    (typeof d.error === 'string' ? d.error : null) ||
+    d.message ||
+    (typeof d.detail === 'string' ? d.detail : d.detail != null ? JSON.stringify(d.detail) : null) ||
+    (typeof d.title === 'string' && d.detail ? `${d.title}: ${typeof d.detail === 'string' ? d.detail : JSON.stringify(d.detail)}` : null);
+  if (flat) return `NVIDIA ${status}: ${flat}`;
+  return rawText.slice(0, 400);
+}
+
 function isAbortError(e) {
   return (
     (e && typeof e === 'object' && 'name' in e && e.name === 'AbortError') ||
@@ -98,8 +134,7 @@ async function fetchNvidiaForModel(apiKey, url, body, timeoutMs) {
       }
 
       if (!res.ok) {
-        const msg = data?.error?.message || data?.message || rawText.slice(0, 300);
-        throw new Error(`NVIDIA ${res.status}: ${msg}`);
+        throw new Error(nvidiaHttpErrorBody(data, rawText, res.status));
       }
 
       const answer = data?.choices?.[0]?.message?.content?.trim();
@@ -131,7 +166,7 @@ async function answerWithNvidia(question, role) {
   const chain = resolveModelChain();
   if (chain.length === 0) return null;
 
-  const base = (process.env.NVIDIA_API_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/$/, '');
+  const base = resolveNvidiaChatBaseUrl();
   const url = `${base}/chat/completions`;
 
   const rawTimeout = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 120000);
@@ -195,9 +230,12 @@ router.post('/ask', authenticate, async (req, res) => {
       const rateHint = /429|too many requests/i.test(detail)
         ? ' تجاوزت حد الطلبات لدى NVIDIA (429)؛ انتظر دقيقتين أو راجع خطة الاستخدام.'
         : '';
+      const functionIdHint = /Function id|function in account/i.test(detail)
+        ? ' احذف NVIDIA_API_BASE_URL من Render أو اتركه لـ https://integrate.api.nvidia.com/v1 فقط (روابط NVCF تسبب هذا الخطأ).'
+        : '';
       return res.status(502).json({
         error: 'AI provider error',
-        message: `تعذر الحصول على إجابة من NVIDIA.${timeoutHint}${rateHint} تحقق من المفتاح والنماذج في Render، أو راجع سجلات الخادم.`,
+        message: `تعذر الحصول على إجابة من NVIDIA.${timeoutHint}${rateHint}${functionIdHint} تحقق من المفتاح وNVIDIA_CHAT_MODEL من صفحة النموذج على build.nvidia.com، أو راجع سجلات الخادم.`,
         source: 'nvidia-error',
       });
     }

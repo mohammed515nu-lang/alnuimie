@@ -9,6 +9,7 @@ function systemPromptForRole(role) {
     'أنت "مساعد بنيان" لتطبيق إدارة المقاولات والمشاريع في سوريا.',
     `المستخدم ${who}.`,
     'أجب بالعربية باختصار ووضوح، ركّز على: العقود، الدفعات، المحاسبة، التواصل، المشاريع، والسلامة المهنية.',
+    'كن مختصراً: فقرة أو فقرتان كحد أقصى ما لم يُطلب منك التفصيل صراحةً.',
     'إذا لم تكن متأكداً من رقم أو قانون محدد، نصح بعدم الاعتماد على أرقام دقيقة دون مراجعة جهة مختصة.',
   ].join(' ');
 }
@@ -48,7 +49,7 @@ async function answerWithNvidia(question, role) {
             { role: 'system', content: systemPromptForRole(role) },
             { role: 'user', content: question },
           ],
-          max_tokens: Math.min(Number(process.env.NVIDIA_MAX_TOKENS || 900), 4096),
+          max_tokens: Math.min(Math.max(Number(process.env.NVIDIA_MAX_TOKENS || 480), 64), 2048),
           temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
         }),
       });

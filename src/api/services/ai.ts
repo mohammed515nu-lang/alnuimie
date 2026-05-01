@@ -7,7 +7,7 @@ export type AskBunyanAIResponse = {
   matchedQuestion?: string;
   category?: string;
   role?: string;
-  /** مصدر الإجابة من الخادم: nvidia | knowledge | fallback */
+  /** مصدر الإجابة من الخادم: nvidia | nvidia-fallback | knowledge | unconfigured | nvidia-error */
   source?: string;
 };
 

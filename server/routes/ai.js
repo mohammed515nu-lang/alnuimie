@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
-// قاعدة المعرفة المحلية معطّلة — الإجابات فقط عبر NVIDIA (NVIDIA_API_KEY / NVIDIA_CHAT_MODEL على الخادم).
+// قاعدة المعرفة المحلية معطّلة — الإجابات فقط عبر NVIDIA (NVIDIA_API_KEY + نموذج/نماذج على الخادم).
 
 function systemPromptForRole(role) {
   const who = role === 'contractor' ? 'مقاولاً' : 'صاحب مشروع (عميلاً)';
@@ -16,10 +16,13 @@ function systemPromptForRole(role) {
 
 /**
  * NVIDIA NIM / Build — واجهة متوافقة مع OpenAI Chat Completions.
- * المتغيرات (على الخادم فقط، مثلاً Render → Environment):
+ *
+ * النماذج (Render → Environment):
  *   NVIDIA_API_KEY
- *   NVIDIA_CHAT_MODEL  (مثال شكل المعرف: meta/llama-3.1-8b-instruct — انسخ المعرف من كتالوج نماذج NVIDIA)
- *   NVIDIA_API_BASE_URL (اختياري، الافتراضي https://integrate.api.nvidia.com/v1)
+ *   NVIDIA_CHAT_MODEL_FAST — اختياري؛ إن وُجد يُستخدم كأول نموذج (عادةً أخف وأسرع).
+ *   NVIDIA_CHAT_MODEL — إلزامي إذا لم يُضبط FAST؛ وإن وُجد FAST مع MODEL مختلف، يُستخدم MODEL كنموذج ثانٍ احتياطي.
+ *   NVIDIA_CHAT_MODEL_FALLBACK — اختياري؛ نموذج ثانٍ إذا عُيّن ويختلف عن الأول (يتقدّم على استخدام MODEL كاحتياطي عند تعيينه).
+ *   NVIDIA_API_BASE_URL (اختياري)
  *   NVIDIA_CHAT_TIMEOUT_MS (افتراضي 120000، حتى 480000)
  */
 function isAbortError(e) {
@@ -29,18 +32,33 @@ function isAbortError(e) {
   );
 }
 
-async function answerWithNvidia(question, role) {
-  const apiKey = process.env.NVIDIA_API_KEY?.trim();
-  const model = process.env.NVIDIA_CHAT_MODEL?.trim();
-  if (!apiKey || !model) return null;
+/** يحدد ترتيب النماذج: رئيسي ثم واحد احتياطي كحد أقصى. */
+function resolveModelChain() {
+  const fast = process.env.NVIDIA_CHAT_MODEL_FAST?.trim();
+  const main = process.env.NVIDIA_CHAT_MODEL?.trim();
+  const explicitFb = process.env.NVIDIA_CHAT_MODEL_FALLBACK?.trim();
 
-  const base = (process.env.NVIDIA_API_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/$/, '');
-  const url = `${base}/chat/completions`;
+  const primary = fast || main || '';
+  if (!primary) return [];
 
-  const rawTimeout = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 120000);
-  const timeoutMs = Math.min(Math.max(Number.isFinite(rawTimeout) ? rawTimeout : 120000, 20000), 480000);
+  const chain = [{ model: primary, source: 'nvidia' }];
 
-  const body = JSON.stringify({
+  let secondary = null;
+  if (explicitFb && explicitFb !== primary) {
+    secondary = explicitFb;
+  } else if (fast && main && main !== fast) {
+    secondary = main;
+  }
+
+  if (secondary) {
+    chain.push({ model: secondary, source: 'nvidia-fallback' });
+  }
+
+  return chain;
+}
+
+function buildRequestBody(model, role, question) {
+  return JSON.stringify({
     model,
     messages: [
       { role: 'system', content: systemPromptForRole(role) },
@@ -49,7 +67,12 @@ async function answerWithNvidia(question, role) {
     max_tokens: Math.min(Math.max(Number(process.env.NVIDIA_MAX_TOKENS || 480), 64), 2048),
     temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
   });
+}
 
+/**
+ * طلب واحد لنموذج معين، مع إعادة محاولة عند الإلغاء فقط (timeout).
+ */
+async function fetchNvidiaForModel(apiKey, url, body, timeoutMs) {
   const maxAttempts = 2;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -82,12 +105,7 @@ async function answerWithNvidia(question, role) {
       const answer = data?.choices?.[0]?.message?.content?.trim();
       if (!answer) throw new Error('NVIDIA: empty choices[0].message.content');
 
-      return {
-        answer,
-        role,
-        category: 'nvidia-llm',
-        source: 'nvidia',
-      };
+      return { answer };
     } catch (e) {
       if (isAbortError(e)) {
         if (attempt < maxAttempts - 1) {
@@ -104,6 +122,43 @@ async function answerWithNvidia(question, role) {
       clearTimeout(timer);
     }
   }
+}
+
+async function answerWithNvidia(question, role) {
+  const apiKey = process.env.NVIDIA_API_KEY?.trim();
+  if (!apiKey) return null;
+
+  const chain = resolveModelChain();
+  if (chain.length === 0) return null;
+
+  const base = (process.env.NVIDIA_API_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/$/, '');
+  const url = `${base}/chat/completions`;
+
+  const rawTimeout = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 120000);
+  const timeoutMs = Math.min(Math.max(Number.isFinite(rawTimeout) ? rawTimeout : 120000, 20000), 480000);
+
+  let lastErr = null;
+  for (let i = 0; i < chain.length; i++) {
+    const { model, source } = chain[i];
+    const body = buildRequestBody(model, role, question);
+    try {
+      const { answer } = await fetchNvidiaForModel(apiKey, url, body, timeoutMs);
+      return {
+        answer,
+        role,
+        category: 'nvidia-llm',
+        source,
+      };
+    } catch (e) {
+      lastErr = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      if (i < chain.length - 1) {
+        console.warn(`[ai] model "${model}" failed (${msg}); trying fallback model…`);
+      } else {
+        throw lastErr;
+      }
+    }
+  }
 
   return null;
 }
@@ -116,11 +171,13 @@ router.post('/ask', authenticate, async (req, res) => {
 
     const role = req.userRole === 'contractor' ? 'contractor' : 'client';
 
-    if (!process.env.NVIDIA_API_KEY?.trim() || !process.env.NVIDIA_CHAT_MODEL?.trim()) {
+    const fast = process.env.NVIDIA_CHAT_MODEL_FAST?.trim();
+    const main = process.env.NVIDIA_CHAT_MODEL?.trim();
+    if (!process.env.NVIDIA_API_KEY?.trim() || !(fast || main)) {
       return res.status(503).json({
         error: 'AI unavailable',
         message:
-          'مساعد بنيان غير مهيأ على الخادم. أضف NVIDIA_API_KEY و NVIDIA_CHAT_MODEL في متغيرات البيئة (Render) ثم أعد النشر.',
+          'مساعد بنيان غير مهيأ على الخادم. أضف NVIDIA_API_KEY و (NVIDIA_CHAT_MODEL_FAST أو NVIDIA_CHAT_MODEL) في متغيرات البيئة (Render) ثم أعد النشر.',
         source: 'unconfigured',
       });
     }
@@ -133,11 +190,14 @@ router.post('/ask', authenticate, async (req, res) => {
       console.error('[ai] NVIDIA failed (no knowledge fallback):', detail);
       const timeoutHint =
         /timeout after \d+ms/i.test(detail) || /NVIDIA: timeout/i.test(detail)
-          ? ' انتهت مهلة الطلب (محاولتان على الخادم). جرّب بعد تحريك الخدمة من طلب آخر، أو راجع مفتاح/نموذج NVIDIA.'
+          ? ' انتهت مهلة الطلب (محاولتان لكل نموذج). جرّب بعد قليل، أو راجع NVIDIA_CHAT_TIMEOUT_MS.'
           : '';
+      const rateHint = /429|too many requests/i.test(detail)
+        ? ' تجاوزت حد الطلبات لدى NVIDIA (429)؛ انتظر دقيقتين أو راجع خطة الاستخدام.'
+        : '';
       return res.status(502).json({
         error: 'AI provider error',
-        message: `تعذر الحصول على إجابة من NVIDIA.${timeoutHint} تحقق من المفتاح والنموذج في Render، أو راجع سجلات الخادم.`,
+        message: `تعذر الحصول على إجابة من NVIDIA.${timeoutHint}${rateHint} تحقق من المفتاح والنماذج في Render، أو راجع سجلات الخادم.`,
         source: 'nvidia-error',
       });
     }

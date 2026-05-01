@@ -63,7 +63,9 @@ See [`server/.env.example`](./.env.example) for server variables. For the Expo a
 ### بنيان AI (NVIDIA)
 
 - `NVIDIA_API_KEY` — from [NVIDIA Build](https://build.nvidia.com) / API catalog.
-- `NVIDIA_CHAT_MODEL` — exact model id for the Chat Completions API (example shape: `meta/llama-3.1-8b-instruct`).
+- **At least one of** `NVIDIA_CHAT_MODEL_FAST` **or** `NVIDIA_CHAT_MODEL` — exact model id for the Chat Completions API (example: `meta/llama-3.1-8b-instruct`).
+- `NVIDIA_CHAT_MODEL_FAST` — optional; if set, tried **first** (often a smaller/faster model).
+- `NVIDIA_CHAT_MODEL_FALLBACK` — optional second model when the first fails (429, errors, etc.). If unset but both `FAST` and `NVIDIA_CHAT_MODEL` are set and differ, `NVIDIA_CHAT_MODEL` is used as the automatic fallback.
 - Optional: `NVIDIA_API_BASE_URL` (default `https://integrate.api.nvidia.com/v1`), `NVIDIA_CHAT_TIMEOUT_MS`, `NVIDIA_MAX_TOKENS`, `NVIDIA_TEMPERATURE`.
 
 If the model or key is wrong, the server logs a line like `[ai] NVIDIA failed (no knowledge fallback):` with the error detail.

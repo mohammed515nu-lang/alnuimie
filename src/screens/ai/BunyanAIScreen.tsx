@@ -306,13 +306,15 @@ export function BunyanAIScreen() {
                     <Text style={styles.answerSource}>
                       {answerSource === 'nvidia'
                         ? 'المصدر: NVIDIA'
-                        : answerSource === 'knowledge'
-                          ? 'المصدر: قاعدة المعرفة (خادم قديم — أعد نشر الخادم)'
-                          : answerSource === 'unconfigured'
-                            ? 'المصدر: غير مهيأ على الخادم'
-                            : answerSource === 'nvidia-error'
-                              ? 'المصدر: خطأ NVIDIA'
-                              : 'المصدر: إجابة احتياطية'}
+                        : answerSource === 'nvidia-fallback'
+                          ? 'المصدر: نموذج احتياطي (NVIDIA)'
+                          : answerSource === 'knowledge'
+                            ? 'المصدر: قاعدة المعرفة (خادم قديم — أعد نشر الخادم)'
+                            : answerSource === 'unconfigured'
+                              ? 'المصدر: غير مهيأ على الخادم'
+                              : answerSource === 'nvidia-error'
+                                ? 'المصدر: خطأ NVIDIA'
+                                : 'المصدر: إجابة احتياطية'}
                     </Text>
                   ) : null}
                 </View>

@@ -49,3 +49,29 @@ Server runs on `http://localhost:4000`
 - `GET /api/requests` - Requests
 - `GET /api/reports` - Reports
 
+## Production checklist (Render / hosting)
+
+Set these in the host **Environment** UI, then redeploy.
+
+### Stripe (wallet / cards)
+
+- `STRIPE_SECRET_KEY` — required for SetupIntent, customers, payment methods.
+- `STRIPE_PUBLISHABLE_KEY` — same value as the Stripe **publishable** key (`pk_live_...` / `pk_test_...`); returned to the app with wallet setup payloads.
+
+See [`server/.env.example`](./.env.example) for server variables. For the Expo app, use a root `.env` file (not committed) with `EXPO_PUBLIC_*` variables.
+
+### بنيان AI (NVIDIA)
+
+- `NVIDIA_API_KEY` — from [NVIDIA Build](https://build.nvidia.com) / API catalog.
+- `NVIDIA_CHAT_MODEL` — exact model id for the Chat Completions API (example shape: `meta/llama-3.1-8b-instruct`).
+- Optional: `NVIDIA_API_BASE_URL` (default `https://integrate.api.nvidia.com/v1`), `NVIDIA_CHAT_TIMEOUT_MS`, `NVIDIA_MAX_TOKENS`, `NVIDIA_TEMPERATURE`.
+
+If the model or key is wrong, the server logs a line like `[ai] NVIDIA failed (no knowledge fallback):` with the error detail.
+
+## Expo app (EAS) — Stripe publishable key
+
+The native app embeds the Stripe **publishable** key at **build** time. It is **not** read from Render.
+
+1. In Expo: [Environment variables / EAS Secrets](https://docs.expo.dev/eas/environment-variables/) for the same EAS project as `app.config.ts` → `extra.eas.projectId`.
+2. Add **`EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`** (same value as `STRIPE_PUBLISHABLE_KEY` / Dashboard publishable key) for the **`production`** (and `production-apk` if used) build profile.
+3. Run a new build, e.g. `eas build --profile production` — changing `EXPO_PUBLIC_*` requires a new binary; updating only the server is not enough for the client-side key.

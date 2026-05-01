@@ -3,9 +3,10 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'بنيان',
-  slug: 'bunyan-construction',
+  // يجب أن يطابق slug مشروع Expo على لوحة المشروع المرتبط بـ extra.eas.projectId (eas init مع مشروع banyan1)
+  slug: 'banyan1',
   scheme: 'bunyan-construction',
-  version: '1.0.2',
+  version: '1.0.3',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
   icon: './assets-png/icon.png',
@@ -26,7 +27,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.bunyan.construction',
-    versionCode: 3,
+    versionCode: 4,
+    /** يضبط windowSoftInputMode — يقلل تغطية الكيبورد لحقول الإدخال السفلية */
+    softwareKeyboardLayoutMode: 'resize',
     permissions: ['RECORD_AUDIO'],
     adaptiveIcon: {
       foregroundImage: './assets-png/adaptive-icon.png',
@@ -70,9 +73,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      projectId: '38176dd0-cae7-4073-9624-e57579e5e885',
+      // مشروع Expo المرتبط بحسابك (eas init --id …) — مطلوب لـ eas build بدون خطأ الصلاحيات
+      projectId: '65a97044-5719-4c54-a41b-2094584289b1',
     },
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://alnuimie.onrender.com/api',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://construction-backend-2xi2.onrender.com/api',
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '',
     enableGoogleAuth: (process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH ?? 'false') === 'true',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -25,6 +24,7 @@ import { useStore } from '../../store/useStore';
 import { pressableRipple, space, touch, useAppTheme } from '../../theme';
 import { DASHBOARD_RADIUS as R, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticLight, hapticSuccess } from '../../utils/haptics';
+import { useKeyboardHeight } from '../../utils/useKeyboardHeight';
 
 const SUGGESTIONS_CONTRACTOR: { text: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { text: 'كيف أحسب هامش الربح لكل مشروع؟', icon: 'cash-outline' },
@@ -58,17 +58,20 @@ function apiHostLabel(): string {
 export function BunyanAIScreen() {
   const [q, setQ] = useState('');
   const [answer, setAnswer] = useState('');
+  const [answerSource, setAnswerSource] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
   const user = useStore((s) => s.user);
   const role = useStore((s) => s.user?.role);
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const { resolved } = useAppTheme();
   const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
   const styles = useMemo(() => createStyles(dash), [dash]);
 
   const tabReserve = DASHBOARD_TAB_BAR_SCROLL_BASE + insets.bottom + 8;
+  const bottomPad = tabReserve + keyboardHeight;
 
   const isClient = role === 'client';
   const suggestions = useMemo(() => (isClient ? SUGGESTIONS_CLIENT : SUGGESTIONS_CONTRACTOR), [isClient]);
@@ -131,6 +134,7 @@ export function BunyanAIScreen() {
     }
     setQ('');
     setAnswer('');
+    setAnswerSource(undefined);
   };
 
   const sendQuestion = async () => {
@@ -155,6 +159,7 @@ export function BunyanAIScreen() {
     try {
       const res = await aiAPI.ask(t);
       setAnswer(res.answer);
+      setAnswerSource(res.source);
       hapticSuccess();
     } catch (e) {
       Alert.alert('تعذر إرسال السؤال', getApiErrorMessage(e));
@@ -202,11 +207,7 @@ export function BunyanAIScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
+      <View style={[styles.flex, { paddingBottom: bottomPad }]}>
         <View style={styles.flex}>
           <View style={styles.topBar}>
             <View style={styles.brandBlock}>
@@ -301,12 +302,25 @@ export function BunyanAIScreen() {
                 <View style={styles.answerCard}>
                   <Text style={styles.answerTitle}>رد بنيان AI</Text>
                   <Text style={styles.answerText}>{answer}</Text>
+                  {answerSource ? (
+                    <Text style={styles.answerSource}>
+                      {answerSource === 'nvidia'
+                        ? 'المصدر: NVIDIA'
+                        : answerSource === 'knowledge'
+                          ? 'المصدر: قاعدة المعرفة (خادم قديم — أعد نشر الخادم)'
+                          : answerSource === 'unconfigured'
+                            ? 'المصدر: غير مهيأ على الخادم'
+                            : answerSource === 'nvidia-error'
+                              ? 'المصدر: خطأ NVIDIA'
+                              : 'المصدر: إجابة احتياطية'}
+                    </Text>
+                  ) : null}
                 </View>
               ) : null}
             </View>
           </ScrollView>
 
-          <View style={[styles.inputBar, { marginBottom: tabReserve, paddingBottom: 10 }]}>
+          <View style={[styles.inputBar, { paddingBottom: 10 }]}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="إرسال السؤال"
@@ -346,7 +360,7 @@ export function BunyanAIScreen() {
             </Pressable>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -487,6 +501,13 @@ function createStyles(dash: DashboardPalette) {
     },
     answerTitle: { color: dash.gold, fontWeight: '900', textAlign: 'right', fontSize: 15 },
     answerText: { color: dash.muted, textAlign: 'right', lineHeight: 22, fontSize: 14 },
+    answerSource: {
+      marginTop: 10,
+      color: dash.muted,
+      textAlign: 'right',
+      fontSize: 11,
+      opacity: 0.85,
+    },
     inputBar: {
       flexDirection: 'row-reverse',
       alignItems: 'center',

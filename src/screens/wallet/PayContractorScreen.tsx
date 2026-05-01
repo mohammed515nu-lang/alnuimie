@@ -24,6 +24,7 @@ import { pressableRipple, space, touch, useAppTheme } from '../../theme';
 import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '../../theme/dashboardLight';
 import { hapticSuccess } from '../../utils/haptics';
 import { isIOS } from '../../utils/platformEnv';
+import { useKeyboardHeight } from '../../utils/useKeyboardHeight';
 
 export function PayContractorScreen() {
   const user = useStore((s) => s.user);
@@ -31,6 +32,7 @@ export function PayContractorScreen() {
   const addTransferLocal = useStore((s) => s.addTransferLocal);
   const updateTransferLocal = useStore((s) => s.updateTransferLocal);
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const { resolved } = useAppTheme();
   const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
   const styles = useMemo(() => createStyles(dash), [dash]);
@@ -144,7 +146,7 @@ export function PayContractorScreen() {
       >
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom }]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom + keyboardHeight }]}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           contentInsetAdjustmentBehavior="automatic"

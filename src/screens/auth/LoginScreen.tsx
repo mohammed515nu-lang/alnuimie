@@ -333,7 +333,11 @@ export function LoginScreen() {
     }
     try {
       const res = await authAPI.forgotPassword(forgotEmail.trim());
-      Alert.alert('تم', res.message || 'تم إرسال رابط إعادة التعيين إذا كان البريد مسجلاً.');
+      const devExtra = res.resetUrl ? `\n\n(وضع التطوير)\n${res.resetUrl}` : '';
+      const body =
+        (res.message && String(res.message).trim()) ||
+        'إذا وُجد حساب مرتبط بهذا البريد، ستصلك تعليمات إعادة تعيين كلمة المرور عند توفر خدمة الإرسال.';
+      Alert.alert('تم', `${body}${devExtra}`);
       setForgotOpen(false);
     } catch (e) {
       Alert.alert('تعذر الإرسال', getApiErrorMessage(e));

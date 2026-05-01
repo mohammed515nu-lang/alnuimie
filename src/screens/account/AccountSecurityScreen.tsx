@@ -43,7 +43,10 @@ export function AccountSecurityScreen() {
     try {
       const res = await authAPI.forgotPassword(email);
       const extra = res.resetUrl ? `\n\n(وضع التطوير) رابط الاستعادة:\n${res.resetUrl}` : '';
-      Alert.alert('تم الطلب', `${res.message ?? 'تحقق من بريدك إن وُجد حساب بهذا العنوان.'}${extra}`);
+      const body =
+        (res.message && String(res.message).trim()) ||
+        'إذا وُجد حساب مرتبط بهذا البريد، ستصلك تعليمات إعادة تعيين كلمة المرور عند توفر خدمة الإرسال.';
+      Alert.alert('تم الطلب', `${body}${extra}`);
     } catch (e) {
       Alert.alert('تعذر الطلب', getApiErrorMessage(e));
     }

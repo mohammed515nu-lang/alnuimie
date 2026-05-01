@@ -23,6 +23,7 @@ import type { ChatMessage, UserRole } from '../../api/types';
 import { getApiErrorMessage } from '../../api/http';
 import { socialAPI } from '../../api/services/social';
 import { isIOS } from '../../utils/platformEnv';
+import { useKeyboardHeight } from '../../utils/useKeyboardHeight';
 import { touch, useAppTheme, type ResolvedScheme, hitSlop } from '../../theme';
 
 /** مرجع ثابت لمحدد Zustand — `?? []` داخل المحدد يُنشئ مصفوفة جديدة كل مرة ويسبب حلقة تصيير لا نهائية. */
@@ -551,6 +552,7 @@ export function ChatRoomScreen() {
   const data = useMemo(() => messages, [messages]);
 
   const composerBottom = Math.max(insets.bottom, 8) + 6;
+  const keyboardHeight = useKeyboardHeight();
   const canSend = text.trim().length > 0 && !sending;
 
   const renderMessage = useCallback(
@@ -635,7 +637,10 @@ export function ChatRoomScreen() {
           ref={listRef}
           data={data}
           keyExtractor={(m) => m.id}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 72 + composerBottom }]}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: 72 + composerBottom + keyboardHeight },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
           contentInsetAdjustmentBehavior="automatic"
@@ -654,7 +659,7 @@ export function ChatRoomScreen() {
           }
         />
 
-        <View style={[styles.composer, { paddingBottom: composerBottom }]}>
+        <View style={[styles.composer, { paddingBottom: composerBottom, bottom: keyboardHeight }]}>
           <View style={styles.inputPill}>
             <TextInput
               value={text}

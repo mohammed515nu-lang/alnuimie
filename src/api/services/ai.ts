@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import { api } from '../http';
 
 export type AskBunyanAIResponse = {
@@ -5,25 +7,20 @@ export type AskBunyanAIResponse = {
   matchedQuestion?: string;
   category?: string;
   role?: string;
+  /** مصدر الإجابة من الخادم: nvidia | knowledge | fallback */
+  source?: string;
 };
 
 export const aiAPI = {
   async ask(question: string): Promise<AskBunyanAIResponse> {
+    const opts = { timeout: 60_000 as const };
     try {
-      const { data } = await api.post<AskBunyanAIResponse>(
-        '/ai/ask',
-        { question },
-        // Render may cold-start; give AI endpoint more time.
-        { timeout: 60000 }
-      );
+      const { data } = await api.post<AskBunyanAIResponse>('/ai/ask', { question }, opts);
       return data;
-    } catch {
-      // Retry once on transient network/cold-start failures.
-      const { data } = await api.post<AskBunyanAIResponse>(
-        '/ai/ask',
-        { question },
-        { timeout: 60000 }
-      );
+    } catch (e) {
+      // لا تعيد المحاولة عند رد HTTP (مثل 502 NVIDIA أو 503 غير مهيأ) حتى تظهر الرسالة للمستخدم.
+      if (axios.isAxiosError(e) && e.response) throw e;
+      const { data } = await api.post<AskBunyanAIResponse>('/ai/ask', { question }, opts);
       return data;
     }
   },

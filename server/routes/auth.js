@@ -493,8 +493,9 @@ router.post('/forgot-password', async (req, res) => {
     
     if (!user) {
       // Don't reveal if user exists for security
-      return res.json({ 
-        message: 'If an account with that email exists, a password reset link has been sent.' 
+      return res.json({
+        message:
+          'إذا وُجد حساب مرتبط بهذا البريد، ستصلك تعليمات إعادة تعيين كلمة المرور على البريد المسجل عند توفر خدمة الإرسال.',
       });
     }
 
@@ -515,13 +516,17 @@ router.post('/forgot-password', async (req, res) => {
     // TODO: Send email with resetUrl using nodemailer
     // For now, we'll return it in development mode
     if (process.env.NODE_ENV !== 'production') {
-      res.json({ 
-        message: 'Password reset token generated',
-        resetUrl: resetUrl // Only in development
+      res.json({
+        message: 'تم إنشاء رابط إعادة التعيين (وضع التطوير).',
+        resetUrl, // Only in development
       });
     } else {
-      res.json({ 
-        message: 'If an account with that email exists, a password reset link has been sent to your email.' 
+      console.warn(
+        '[auth] forgot-password: reset token saved; outbound email (nodemailer) is not wired — user must use a configured mailer or support channel.'
+      );
+      res.json({
+        message:
+          'إذا وُجد حساب مرتبط بهذا البريد، ستصلك تعليمات إعادة تعيين كلمة المرور على البريد المسجل عند توفر خدمة الإرسال.',
       });
     }
   } catch (error) {

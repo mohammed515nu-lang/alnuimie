@@ -23,8 +23,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',') 
   : [
       'http://localhost:3000',
+      'http://localhost:8081', // Expo web (dev)
       'http://localhost:19006', // Expo web
-      'https://alnuimie.onrender.com', // Production API
+      'https://alnuimie.onrender.com', // Legacy API host
+      'https://construction-backend-2xi2.onrender.com',
       'https://alnuimie515.vercel.app', // Production frontend
     ];
 

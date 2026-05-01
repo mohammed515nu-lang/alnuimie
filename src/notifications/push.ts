@@ -9,20 +9,51 @@ export const ANDROID_DEFAULT_CHANNEL_ID = 'default';
 
 export type NotificationPermissionStatus = 'granted' | 'denied' | 'undetermined';
 
-/** قناة أندرويد الافتراضية — مطلوبة لعرض الإشعارات على 8+ */
+const ANDROID_CHANNELS: {
+  id: string;
+  name: string;
+  description: string;
+}[] = [
+  {
+    id: ANDROID_DEFAULT_CHANNEL_ID,
+    name: 'بنيان — عام',
+    description: 'تنبيهات عامة من التطبيق.',
+  },
+  {
+    id: 'bunyan-messages',
+    name: 'بنيان — المحادثات',
+    description: 'رسائل ومحادثات.',
+  },
+  {
+    id: 'bunyan-projects',
+    name: 'بنيان — المشاريع',
+    description: 'مشاريع ومهام ومستندات.',
+  },
+  {
+    id: 'bunyan-wallet',
+    name: 'بنيان — الدفعات والمحفظة',
+    description: 'دفعات وبطاقات ومحفظة.',
+  },
+];
+
+/** قنوات أندرويد — أهمية عالية وتنبيه كامل (صوت + اهتزاز + شارة) لكل الفئات */
 export async function ensureAndroidNotificationChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   const Notifications = await loadExpoNotifications();
   if (!Notifications) return;
-  await Notifications.setNotificationChannelAsync(ANDROID_DEFAULT_CHANNEL_ID, {
-    name: 'بنيان',
-    description: 'محادثات، مشاريع، دفعات، وتنبيهات عامة من التطبيق.',
-    importance: Notifications.AndroidImportance.DEFAULT,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#E8A838',
-    sound: 'default',
-    showBadge: true,
-  });
+  for (const ch of ANDROID_CHANNELS) {
+    await Notifications.setNotificationChannelAsync(ch.id, {
+      name: ch.name,
+      description: ch.description,
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#E8A838',
+      sound: 'default',
+      showBadge: true,
+      enableLights: true,
+      enableVibrate: true,
+    });
+  }
 }
 
 function resolveProjectId(): string | undefined {

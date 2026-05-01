@@ -9,7 +9,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_ENABLE_GOOGLE_AUTH": "true"
       }
     },
     "production-apk": {
@@ -17,7 +18,8 @@
         "buildType": "apk"
       },
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_ENABLE_GOOGLE_AUTH": "true"
       }
     },
     "development": {

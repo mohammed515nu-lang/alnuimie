@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // يجب أن يطابق slug مشروع Expo على لوحة المشروع المرتبط بـ extra.eas.projectId (eas init مع مشروع banyan1)
   slug: 'banyan1',
   scheme: 'bunyan-construction',
-  version: '1.0.3',
+  version: '1.0.4',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
   icon: './assets-png/icon.png',
@@ -27,7 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.bunyan.construction',
-    versionCode: 4,
+    versionCode: 5,
     /** يضبط windowSoftInputMode — يقلل تغطية الكيبورد لحقول الإدخال السفلية */
     softwareKeyboardLayoutMode: 'resize',
     permissions: ['RECORD_AUDIO'],
@@ -78,7 +78,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://construction-backend-2xi2.onrender.com/api',
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '',
-    enableGoogleAuth: (process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH ?? 'false') === 'true',
+    /** افتراضي: مفعّل — عطّل بـ EXPO_PUBLIC_ENABLE_GOOGLE_AUTH=false في EAS إن لزم */
+    enableGoogleAuth: (process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH ?? 'true') === 'true',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
     googleOauthRedirectUri:
       process.env.EXPO_PUBLIC_GOOGLE_OAUTH_REDIRECT_URI ??

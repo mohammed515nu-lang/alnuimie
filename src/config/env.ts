@@ -18,8 +18,14 @@ export const API_URL =
 export const STRIPE_PUBLISHABLE_KEY =
   process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? extra.stripePublishableKey ?? '';
 
-export const ENABLE_GOOGLE_AUTH =
-  (process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH ?? String(extra.enableGoogleAuth ?? false)) === 'true';
+/** تسجيل الدخول بـ Google — يُعطّل فقط بـ EXPO_PUBLIC_ENABLE_GOOGLE_AUTH=false أو extra.enableGoogleAuth=false */
+export const ENABLE_GOOGLE_AUTH = (() => {
+  const envFlag = process.env.EXPO_PUBLIC_ENABLE_GOOGLE_AUTH;
+  if (typeof envFlag === 'string' && envFlag.trim() !== '') {
+    return envFlag.trim().toLowerCase() === 'true' || envFlag.trim() === '1';
+  }
+  return (extra.enableGoogleAuth as boolean | undefined) !== false;
+})();
 
 /** OAuth 2.0 Web client ID (نفس GOOGLE_CLIENT_ID على السيرفر تقريبًا) */
 export const GOOGLE_WEB_CLIENT_ID =

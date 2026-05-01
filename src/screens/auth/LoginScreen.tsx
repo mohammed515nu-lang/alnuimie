@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { authAPI } from '../../api/services';
 import { getApiErrorMessage } from '../../api/http';
-import { ENABLE_GOOGLE_AUTH, GOOGLE_WEB_CLIENT_ID } from '../../config/env';
+import { ENABLE_GOOGLE_AUTH } from '../../config/env';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
 import { useStore } from '../../store/useStore';
 import { useAppTheme, font, space, touch } from '../../theme';
@@ -576,19 +576,17 @@ export function LoginScreen() {
                 </Text>
               </Pressable>
 
-              {/* Divider */}
-              {isLogin && ENABLE_GOOGLE_AUTH && GOOGLE_WEB_CLIENT_ID.trim() && (
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerTxt}>أو سجل الدخول باستخدام</Text>
-                  <View style={styles.dividerLine} />
-                </View>
+              {/* Google OAuth — زر حقيقي؛ يظهر عند تفعيل الميزة في app.config / EAS */}
+              {isLogin && ENABLE_GOOGLE_AUTH && (
+                <GoogleSignInButton onSignedIn={(u) => setUser(u)} disabled={loading} />
               )}
 
-              {/* Social Buttons */}
+              {/* Social Buttons — بدون تكرار زر Google عند تفعيل OAuth */}
               {isLogin && (
                 <View style={styles.socialRow}>
-                  <SocialButton icon="logo-google" onPress={() => onSocialPress('google')} />
+                  {!ENABLE_GOOGLE_AUTH ? (
+                    <SocialButton icon="logo-google" onPress={() => onSocialPress('google')} />
+                  ) : null}
                   <SocialButton icon="logo-apple" onPress={() => onSocialPress('apple')} />
                   <SocialButton icon="logo-facebook" onPress={() => onSocialPress('facebook')} />
                 </View>

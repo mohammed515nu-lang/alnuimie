@@ -66,15 +66,44 @@ function transferDto(t) {
   };
 }
 
+function isMissingStripeCustomer(err) {
+  return Boolean(
+    err &&
+      (err.code === 'resource_missing' ||
+        (err.type === 'StripeInvalidRequestError' && err.param === 'customer'))
+  );
+}
+
+/**
+ * يعيد معرف عميل Stripe صالحاً. إذا كان المخزّن في Mongo قديماً (مفتاح test جديد، حذف من لوحة Stripe، إلخ)
+ * يُزال ويُنشأ عميل جديد، ويُنظّف سجل البطاقات المرتبط بالعميل القديم.
+ */
 async function ensureCustomerId(user) {
-  if (user.stripeCustomerId) return user.stripeCustomerId;
   if (!stripe) {
     throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
   }
+
+  if (user.stripeCustomerId) {
+    try {
+      await stripe.customers.retrieve(user.stripeCustomerId);
+      return user.stripeCustomerId;
+    } catch (e) {
+      if (isMissingStripeCustomer(e)) {
+        const stale = user.stripeCustomerId;
+        console.warn(`[wallet] Stale stripeCustomerId ${stale} for user ${user._id}; recreating Stripe customer.`);
+        await PaymentCard.deleteMany({ owner: user._id, stripeCustomerId: stale });
+        user.stripeCustomerId = undefined;
+        await user.save();
+      } else {
+        throw e;
+      }
+    }
+  }
+
   const customer = await stripe.customers.create({
     email: user.email,
     name: user.name,
-    metadata: { userId: user._id.toString(), role: user.role }
+    metadata: { userId: user._id.toString(), role: user.role },
   });
   user.stripeCustomerId = customer.id;
   await user.save();
@@ -129,11 +158,10 @@ router.post('/sync-cards', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    if (!user.stripeCustomerId) return res.json({ synced: 0, cards: [] });
+    const customerId = await ensureCustomerId(user);
 
-    // جلب جميع بطاقات المستخدم من Stripe
     const pmList = await stripe.paymentMethods.list({
-      customer: user.stripeCustomerId,
+      customer: customerId,
       type: 'card',
     });
 
@@ -146,7 +174,7 @@ router.post('/sync-cards', authenticate, async (req, res) => {
       const count = await PaymentCard.countDocuments({ owner: req.userId });
       await PaymentCard.create({
         owner: req.userId,
-        stripeCustomerId: user.stripeCustomerId,
+        stripeCustomerId: customerId,
         stripePaymentMethodId: pm.id,
         brand: (pm.card.brand || 'other').toLowerCase(),
         last4: pm.card.last4,

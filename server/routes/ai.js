@@ -20,7 +20,15 @@ function systemPromptForRole(role) {
  *   NVIDIA_API_KEY
  *   NVIDIA_CHAT_MODEL  (مثال شكل المعرف: meta/llama-3.1-8b-instruct — انسخ المعرف من كتالوج نماذج NVIDIA)
  *   NVIDIA_API_BASE_URL (اختياري، الافتراضي https://integrate.api.nvidia.com/v1)
+ *   NVIDIA_CHAT_TIMEOUT_MS (افتراضي 120000، حتى 480000)
  */
+function isAbortError(e) {
+  return (
+    (e && typeof e === 'object' && 'name' in e && e.name === 'AbortError') ||
+    /aborted/i.test(e instanceof Error ? e.message : String(e))
+  );
+}
+
 async function answerWithNvidia(question, role) {
   const apiKey = process.env.NVIDIA_API_KEY?.trim();
   const model = process.env.NVIDIA_CHAT_MODEL?.trim();
@@ -29,12 +37,24 @@ async function answerWithNvidia(question, role) {
   const base = (process.env.NVIDIA_API_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/$/, '');
   const url = `${base}/chat/completions`;
 
-  const controller = new AbortController();
   const rawTimeout = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 120000);
-  const timeoutMs = Math.min(Math.max(Number.isFinite(rawTimeout) ? rawTimeout : 120000, 20000), 300000);
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutMs = Math.min(Math.max(Number.isFinite(rawTimeout) ? rawTimeout : 120000, 20000), 480000);
 
-  try {
+  const body = JSON.stringify({
+    model,
+    messages: [
+      { role: 'system', content: systemPromptForRole(role) },
+      { role: 'user', content: question },
+    ],
+    max_tokens: Math.min(Math.max(Number(process.env.NVIDIA_MAX_TOKENS || 480), 64), 2048),
+    temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
+  });
+
+  const maxAttempts = 2;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -43,15 +63,7 @@ async function answerWithNvidia(question, role) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPromptForRole(role) },
-            { role: 'user', content: question },
-          ],
-          max_tokens: Math.min(Math.max(Number(process.env.NVIDIA_MAX_TOKENS || 480), 64), 2048),
-          temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
-        }),
+        body,
       });
 
       const rawText = await res.text();
@@ -77,19 +89,23 @@ async function answerWithNvidia(question, role) {
         source: 'nvidia',
       };
     } catch (e) {
-      const aborted =
-        (e && typeof e === 'object' && 'name' in e && e.name === 'AbortError') ||
-        /aborted/i.test(e instanceof Error ? e.message : String(e));
-      if (aborted) {
+      if (isAbortError(e)) {
+        if (attempt < maxAttempts - 1) {
+          console.warn('[ai] NVIDIA timeout/aborted; retrying once after short delay…');
+          await new Promise((r) => setTimeout(r, 2500));
+          continue;
+        }
         throw new Error(
-          `NVIDIA: timeout after ${timeoutMs}ms (سبات Render أو بطء واجهة NVIDIA). زد NVIDIA_CHAT_TIMEOUT_MS على Render (حتى 300000) أو أعد المحاولة.`
+          `NVIDIA: timeout after ${timeoutMs}ms per attempt (${maxAttempts} attempts). سبات Render أو بطء/طابور NVIDIA. جرّب لاحقاً أو عيّن NVIDIA_CHAT_TIMEOUT_MS حتى 480000 على Render.`
         );
       }
       throw e;
+    } finally {
+      clearTimeout(timer);
     }
-  } finally {
-    clearTimeout(timer);
   }
+
+  return null;
 }
 
 router.post('/ask', authenticate, async (req, res) => {
@@ -117,7 +133,7 @@ router.post('/ask', authenticate, async (req, res) => {
       console.error('[ai] NVIDIA failed (no knowledge fallback):', detail);
       const timeoutHint =
         /timeout after \d+ms/i.test(detail) || /NVIDIA: timeout/i.test(detail)
-          ? ' انتهت مهلة الطلب؛ جرّب مرة ثانية بعد بضع ثوانٍ أو زد NVIDIA_CHAT_TIMEOUT_MS على الخادم.'
+          ? ' انتهت مهلة الطلب (محاولتان على الخادم). جرّب بعد تحريك الخدمة من طلب آخر، أو راجع مفتاح/نموذج NVIDIA.'
           : '';
       return res.status(502).json({
         error: 'AI provider error',

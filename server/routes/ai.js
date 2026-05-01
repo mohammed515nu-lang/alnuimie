@@ -29,50 +29,63 @@ async function answerWithNvidia(question, role) {
   const url = `${base}/chat/completions`;
 
   const controller = new AbortController();
-  const timeoutMs = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 55000);
+  const rawTimeout = Number(process.env.NVIDIA_CHAT_TIMEOUT_MS || 120000);
+  const timeoutMs = Math.min(Math.max(Number.isFinite(rawTimeout) ? rawTimeout : 120000, 20000), 300000);
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPromptForRole(role) },
-          { role: 'user', content: question },
-        ],
-        max_tokens: Math.min(Number(process.env.NVIDIA_MAX_TOKENS || 900), 4096),
-        temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
-      }),
-    });
-
-    const rawText = await res.text();
-    let data;
     try {
-      data = JSON.parse(rawText);
-    } catch {
-      throw new Error(`NVIDIA: non-JSON response (${res.status})`);
+      const res = await fetch(url, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPromptForRole(role) },
+            { role: 'user', content: question },
+          ],
+          max_tokens: Math.min(Number(process.env.NVIDIA_MAX_TOKENS || 900), 4096),
+          temperature: Math.min(Math.max(Number(process.env.NVIDIA_TEMPERATURE || 0.35), 0), 2),
+        }),
+      });
+
+      const rawText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error(`NVIDIA: non-JSON response (${res.status})`);
+      }
+
+      if (!res.ok) {
+        const msg = data?.error?.message || data?.message || rawText.slice(0, 300);
+        throw new Error(`NVIDIA ${res.status}: ${msg}`);
+      }
+
+      const answer = data?.choices?.[0]?.message?.content?.trim();
+      if (!answer) throw new Error('NVIDIA: empty choices[0].message.content');
+
+      return {
+        answer,
+        role,
+        category: 'nvidia-llm',
+        source: 'nvidia',
+      };
+    } catch (e) {
+      const aborted =
+        (e && typeof e === 'object' && 'name' in e && e.name === 'AbortError') ||
+        /aborted/i.test(e instanceof Error ? e.message : String(e));
+      if (aborted) {
+        throw new Error(
+          `NVIDIA: timeout after ${timeoutMs}ms (سبات Render أو بطء واجهة NVIDIA). زد NVIDIA_CHAT_TIMEOUT_MS على Render (حتى 300000) أو أعد المحاولة.`
+        );
+      }
+      throw e;
     }
-
-    if (!res.ok) {
-      const msg = data?.error?.message || data?.message || rawText.slice(0, 300);
-      throw new Error(`NVIDIA ${res.status}: ${msg}`);
-    }
-
-    const answer = data?.choices?.[0]?.message?.content?.trim();
-    if (!answer) throw new Error('NVIDIA: empty choices[0].message.content');
-
-    return {
-      answer,
-      role,
-      category: 'nvidia-llm',
-      source: 'nvidia',
-    };
   } finally {
     clearTimeout(timer);
   }
@@ -101,9 +114,13 @@ router.post('/ask', authenticate, async (req, res) => {
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e);
       console.error('[ai] NVIDIA failed (no knowledge fallback):', detail);
+      const timeoutHint =
+        /timeout after \d+ms/i.test(detail) || /NVIDIA: timeout/i.test(detail)
+          ? ' انتهت مهلة الطلب؛ جرّب مرة ثانية بعد بضع ثوانٍ أو زد NVIDIA_CHAT_TIMEOUT_MS على الخادم.'
+          : '';
       return res.status(502).json({
         error: 'AI provider error',
-        message: 'تعذر الحصول على إجابة من NVIDIA. تحقق من المفتاح والنموذج في الخادم، أو حاول لاحقاً.',
+        message: `تعذر الحصول على إجابة من NVIDIA.${timeoutHint} تحقق من المفتاح والنموذج في Render، أو راجع سجلات الخادم.`,
         source: 'nvidia-error',
       });
     }

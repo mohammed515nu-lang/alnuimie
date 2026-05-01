@@ -13,7 +13,8 @@ export type AskBunyanAIResponse = {
 
 export const aiAPI = {
   async ask(question: string): Promise<AskBunyanAIResponse> {
-    const opts = { timeout: 60_000 as const };
+    // أطول من مهلة الخادم الافتراضية لـ NVIDIA (cold start + واجهة NVIDIA)
+    const opts = { timeout: 130_000 as const };
     try {
       const { data } = await api.post<AskBunyanAIResponse>('/ai/ask', { question }, opts);
       return data;

@@ -53,13 +53,13 @@ export const authAPI = {
       const res = await api.post<AuthResponseRaw>(
         '/auth/login',
         { email, password },
-        { timeout: 60000 }
+        { timeout: 120_000 }
       );
       data = normalizeAuthResponse(res.data);
     } catch (e) {
       if (!shouldRetryAuthRequest(e)) throw e;
       // Retry once for transient cold-start/network failures.
-      const res = await api.post<AuthResponseRaw>('/auth/login', { email, password }, { timeout: 60000 });
+      const res = await api.post<AuthResponseRaw>('/auth/login', { email, password }, { timeout: 120_000 });
       data = normalizeAuthResponse(res.data);
     }
     await setAuthToken(data.token);
@@ -78,12 +78,12 @@ export const authAPI = {
       const res = await api.post<AuthResponseRaw>(
         '/auth/register',
         payload,
-        { timeout: 60000 }
+        { timeout: 120_000 }
       );
       data = normalizeAuthResponse(res.data);
     } catch (e) {
       if (!shouldRetryAuthRequest(e)) throw e;
-      const res = await api.post<AuthResponseRaw>('/auth/register', payload, { timeout: 60000 });
+      const res = await api.post<AuthResponseRaw>('/auth/register', payload, { timeout: 120_000 });
       data = normalizeAuthResponse(res.data);
     }
     await setAuthToken(data.token);
@@ -91,7 +91,7 @@ export const authAPI = {
   },
 
   async me(): Promise<AuthUser> {
-    const { data } = await api.get<{ user: unknown }>('/auth/me', { timeout: 60000 });
+    const { data } = await api.get<{ user: unknown }>('/auth/me', { timeout: 120_000 });
     return normalizeUser(data.user);
   },
 
@@ -105,7 +105,7 @@ export const authAPI = {
   },
 
   async changePassword(payload: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
-    const { data } = await api.post<{ message: string }>('/auth/change-password', payload, { timeout: 60000 });
+    const { data } = await api.post<{ message: string }>('/auth/change-password', payload, { timeout: 120_000 });
     return data;
   },
 
@@ -113,7 +113,7 @@ export const authAPI = {
    * تسجيل دخول Google: رمز التفويض من OAuth يُرسل للخادم ليستبدله بـ JWT (نفس مسار الويب).
    */
   async loginWithGoogleAuthorizationCode(code: string): Promise<LoginResponse> {
-    const res = await api.post<AuthResponseRaw>('/auth/google/callback', { code }, { timeout: 60000 });
+    const res = await api.post<AuthResponseRaw>('/auth/google/callback', { code }, { timeout: 120_000 });
     const data = normalizeAuthResponse(res.data);
     await setAuthToken(data.token);
     return data;
@@ -124,6 +124,6 @@ export const authAPI = {
    * يتوقع الخادم: `POST /auth/push-token` مع جسم JSON يحتوي `expoPushToken` و`platform` (`ios` | `android`).
    */
   async registerPushToken(payload: { expoPushToken: string; platform: 'ios' | 'android' }): Promise<void> {
-    await api.post('/auth/push-token', payload, { timeout: 30000 });
+    await api.post('/auth/push-token', payload, { timeout: 60_000 });
   },
 };

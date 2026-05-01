@@ -87,7 +87,7 @@ export function BunyanAIScreen() {
   const checkBackendHealth = useCallback(async (fromUser = false) => {
     if (fromUser) setBackendStatus('checking');
     try {
-      const { data } = await api.get<{ status?: string }>('/health', { timeout: 28_000 });
+      const { data } = await api.get<{ status?: string }>('/health', { timeout: 90_000 });
       setBackendStatus(data?.status === 'healthy' ? 'online' : 'offline');
     } catch {
       setBackendStatus('offline');

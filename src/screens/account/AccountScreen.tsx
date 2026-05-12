@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { SyriaFlag } from '../../components/SyriaFlag';
@@ -13,6 +14,7 @@ import { DASHBOARD_RADIUS, getDashboardPalette, type DashboardPalette } from '..
 import { hapticLight } from '../../utils/haptics';
 
 export function AccountScreen() {
+  const router = useRouter();
   const user = useStore((s) => s.user);
   const logout = useStore((s) => s.logout);
   const appearance = useStore((s) => s.appearance);
@@ -23,7 +25,14 @@ export function AccountScreen() {
   const dash = useMemo(() => getDashboardPalette(resolved), [resolved]);
   const styles = useMemo(() => createStyles(dash), [dash]);
 
-  const roleLabel = user?.role === 'contractor' ? 'مقاول' : user?.role === 'client' ? 'صاحب مشروع' : '';
+  const roleLabel =
+    user?.role === 'contractor'
+      ? 'مقاول'
+      : user?.role === 'client'
+        ? 'صاحب مشروع'
+        : user?.role === 'admin'
+          ? 'مدير النظام'
+          : '';
   const isContractor = user?.role === 'contractor';
 
   const go = (route: keyof import('../../navigation/types').RootStackParamList) => {
@@ -85,7 +94,13 @@ export function AccountScreen() {
             </View>
             <View style={styles.chipRole}>
               <Ionicons
-                name={user?.role === 'contractor' ? 'construct-outline' : 'person-outline'}
+                name={
+                  user?.role === 'contractor'
+                    ? 'construct-outline'
+                    : user?.role === 'admin'
+                      ? 'shield-checkmark-outline'
+                      : 'person-outline'
+                }
                 size={14}
                 color={dash.navy}
                 style={{ marginLeft: 4 }}
@@ -121,6 +136,27 @@ export function AccountScreen() {
             );
           })}
         </View>
+
+        {user?.role === 'admin' ? (
+          <>
+            <Text style={styles.sectionLabel}>إدارة النظام</Text>
+            <Pressable
+              style={styles.adminCard}
+              onPress={() => {
+                hapticLight();
+                router.push('/admin');
+              }}
+              {...pressableRipple(dash.goldTint)}
+            >
+              <Ionicons name="shield-checkmark-outline" size={26} color={dash.gold} style={{ marginLeft: 12 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.adminTitle}>لوحة المدير</Text>
+                <Text style={styles.adminSub}>مستخدمون، محتوى، بلاغات، مالية</Text>
+              </View>
+              <Ionicons name="chevron-back" size={20} color={dash.muted} />
+            </Pressable>
+          </>
+        ) : null}
 
         <Text style={styles.sectionLabel}>إحصائيات سريعة</Text>
         <View style={styles.statsGrid}>
@@ -416,6 +452,18 @@ function createStyles(dash: DashboardPalette) {
       borderColor: dash.gold,
     },
     chipRoleText: { color: dash.navy, fontWeight: '800', fontSize: 13 },
+    adminCard: {
+      flexDirection: 'row-reverse',
+      alignItems: 'center',
+      backgroundColor: dash.white,
+      borderRadius: DASHBOARD_RADIUS,
+      borderWidth: 1,
+      borderColor: dash.border,
+      padding: 14,
+      marginBottom: 16,
+    },
+    adminTitle: { fontSize: 16, fontWeight: '900', color: dash.darkText, textAlign: 'right' },
+    adminSub: { fontSize: 12, color: dash.muted, textAlign: 'right', marginTop: 4 },
     sectionLabel: {
       color: dash.navy,
       fontWeight: '900',

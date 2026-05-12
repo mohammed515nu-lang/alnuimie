@@ -29,9 +29,20 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: { type: Date },
   role: {
     type: String,
-    enum: ['client', 'contractor'],
-    default: 'client'
+    enum: ['client', 'contractor', 'admin'],
+    default: 'client',
+    index: true
   },
+  /** active: عادي | suspended: ممنوع الدخول والواجهات | pending: بانتظار تفعيل يدوي */
+  accountStatus: {
+    type: String,
+    enum: ['active', 'suspended', 'pending'],
+    default: 'active',
+    index: true
+  },
+  suspendedReason: { type: String, trim: true },
+  /** تجميد التحويلات والمدفوعات عبر المحفظة (إدارة) */
+  walletFrozen: { type: Boolean, default: false },
   phone: { type: String, trim: true },
   address: { type: String, trim: true },
   companyName: { type: String, trim: true },

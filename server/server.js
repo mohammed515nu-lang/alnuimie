@@ -102,13 +102,33 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/construction-management';
 
+const User = require('./models/User');
+
 mongoose.connect(MONGODB_URI, {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   bufferCommands: false, // تعطيل Buffering لأخطاء أسرع
 })
-  .then(() => console.log('MongoDB connected'))
+  .then(async () => {
+    console.log('MongoDB connected');
+    const bootEmail = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase();
+    if (bootEmail) {
+      try {
+        const r = await User.updateOne(
+          { email: bootEmail },
+          { $set: { role: 'admin', accountStatus: 'active' } }
+        );
+        if (r.matchedCount === 0) {
+          console.warn(`[admin] INITIAL_ADMIN_EMAIL=${bootEmail}: user not found — register account first`);
+        } else if (r.modifiedCount > 0) {
+          console.log(`[admin] Promoted ${bootEmail} to admin`);
+        }
+      } catch (e) {
+        console.warn('[admin] INITIAL_ADMIN_EMAIL bootstrap failed:', e.message);
+      }
+    }
+  })
   .catch((error) => {
     console.error('MongoDB connection error:', error.message);
     process.exit(1); // توقف السيرفر إذا لم يتصل بقاعدة البيانات
@@ -166,6 +186,7 @@ const ratingRoutes = require('./routes/ratings');
 const chatRoutes = require('./routes/chats');
 const walletRoutes = require('./routes/wallet');
 const aiRoutes = require('./routes/ai');
+const adminRoutes = require('./routes/admin');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -185,6 +206,7 @@ app.use('/api/ratings', ratingRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler - يجب أن يكون بعد جميع routes
 app.use((req, res) => {

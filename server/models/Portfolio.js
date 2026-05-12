@@ -12,7 +12,14 @@ const portfolioSchema = new mongoose.Schema({
   imageUris: { type: [String], default: [] }, // base64 or URLs
   location: { type: String, trim: true },
   completedAt: { type: String, trim: true },
-  category: { type: String, trim: true }
+  category: { type: String, trim: true },
+  moderationStatus: {
+    type: String,
+    enum: ['approved', 'pending_review', 'hidden'],
+    default: 'approved',
+    index: true
+  },
+  moderationNote: { type: String, trim: true }
 }, { timestamps: true });
 
 portfolioSchema.index({ user: 1, createdAt: -1 });

@@ -49,6 +49,16 @@ Server runs on `http://localhost:4000`
 - `GET /api/requests` - Requests
 - `GET /api/reports` - Reports
 
+## Admin API (role `admin` only)
+
+- Set `INITIAL_ADMIN_EMAIL` in the host environment to the **existing** user’s email, then deploy once so that account is promoted to `admin` (or update `role` in MongoDB manually).
+- All routes are under `GET/POST/PATCH/DELETE /api/admin/...` and require `Authorization: Bearer` for a user with `role: admin`.
+- **Users:** `GET /api/admin/users`, `PATCH /api/admin/users/:id` (role, `accountStatus`, `walletFrozen`, …), `POST /api/admin/users/:id/reset-password` (returns a temporary password).
+- **Moderation:** ratings delete, portfolio moderation, chat reports, disputes, optional `GET /api/admin/chats/:conversationId/messages`.
+- **Finance:** `GET /api/admin/finance/summary`, transfer list/cancel, optional Stripe refund when `STRIPE_SECRET_KEY` is set.
+
+Users with `accountStatus` **suspended** or **pending** cannot call authenticated APIs (JWT middleware rejects).
+
 ## Production checklist (Render / hosting)
 
 Set these in the host **Environment** UI, then redeploy.

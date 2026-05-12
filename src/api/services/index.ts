@@ -5,3 +5,4 @@ export * from './wallet';
 export * from './ai';
 export * from './projects';
 export * from './accounting';
+export * from './admin';

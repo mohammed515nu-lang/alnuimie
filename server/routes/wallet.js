@@ -340,6 +340,12 @@ async function createTransferIntent(req, res, type, extra) {
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.walletFrozen) {
+      return res.status(403).json({
+        error: 'Wallet frozen',
+        message: 'تم تجميد المحفظة إدارياً. تواصل مع الدعم.',
+      });
+    }
     const customerId = await ensureCustomerId(user);
 
     let toUser;

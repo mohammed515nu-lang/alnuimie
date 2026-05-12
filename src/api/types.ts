@@ -6,6 +6,8 @@ export type AuthUser = {
   email: string;
   role: UserRole;
   phone?: string;
+  accountStatus?: 'active' | 'suspended' | 'pending';
+  walletFrozen?: boolean;
 };
 
 export type PublicProfile = {

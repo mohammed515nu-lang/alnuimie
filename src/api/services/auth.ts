@@ -18,13 +18,26 @@ function idToString(raw: unknown): string {
 }
 
 function normalizeUser(u: unknown): AuthUser {
-  const anyU = u as { _id?: unknown; id?: unknown; name?: string; email?: string; role?: string; phone?: string };
+  const anyU = u as {
+    _id?: unknown;
+    id?: unknown;
+    name?: string;
+    email?: string;
+    role?: string;
+    phone?: string;
+    accountStatus?: string;
+    walletFrozen?: unknown;
+  };
+  const st = anyU.accountStatus;
   return {
     _id: idToString(anyU._id ?? anyU.id),
     name: String(anyU.name ?? ''),
     email: String(anyU.email ?? ''),
     role: String(anyU.role ?? 'client'),
     phone: anyU.phone,
+    accountStatus:
+      st === 'active' || st === 'suspended' || st === 'pending' ? st : undefined,
+    walletFrozen: typeof anyU.walletFrozen === 'boolean' ? anyU.walletFrozen : undefined,
   };
 }
 

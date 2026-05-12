@@ -18,13 +18,28 @@ router.get('/me', optionalAuth, async (req, res) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
+    const st = req.user.accountStatus || 'active';
+    if (st === 'suspended') {
+      return res.status(403).json({
+        error: 'Account suspended',
+        message: req.user.suspendedReason || 'تم تعليق حسابك.',
+      });
+    }
+    if (st === 'pending') {
+      return res.status(403).json({
+        error: 'Account pending',
+        message: 'حسابك بانتظار التفعيل من الإدارة.',
+      });
+    }
     res.json({
       user: {
         id: req.user._id,
         _id: req.user._id,
         name: req.user.name,
         email: req.user.email,
-        role: req.user.role
+        role: req.user.role,
+        accountStatus: st,
+        walletFrozen: !!req.user.walletFrozen,
       },
       userId: req.userId,
       userRole: req.userRole
@@ -48,11 +63,14 @@ router.post('/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    let safeRole = role === 'contractor' ? 'contractor' : 'client';
+    if (role === 'admin') safeRole = 'client';
+
     const user = new User({
       name,
       email,
       password: hashedPassword,
-      role: role || 'client',
+      role: safeRole,
       lastActiveAt: new Date(),
     });
 
@@ -103,6 +121,17 @@ router.post('/login', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const acct = user.accountStatus || 'active';
+    if (acct === 'suspended') {
+      return res.status(403).json({
+        error: 'Account suspended',
+        message: user.suspendedReason || 'تم تعليق حسابك. تواصل مع الدعم.',
+      });
+    }
+    if (acct === 'pending') {
+      return res.status(403).json({ error: 'Account pending', message: 'حسابك بانتظار التفعيل من الإدارة.' });
     }
 
     const token = jwt.sign(
@@ -427,11 +456,12 @@ router.post('/google/callback', async (req, res) => {
       } else {
         // Create new user
         try {
+          const googleRole = role === 'contractor' ? 'contractor' : 'client';
           user = new User({
             name: googleUser.name,
             email: googleUser.email.toLowerCase().trim(),
             googleId: googleUser.id,
-            role: role || 'client',
+            role: googleRole,
             lastActiveAt: new Date(),
           });
           await user.save();
@@ -452,6 +482,17 @@ router.post('/google/callback', async (req, res) => {
           }
         }
       }
+    }
+
+    const acct = user.accountStatus || 'active';
+    if (acct === 'suspended') {
+      return res.status(403).json({
+        error: 'Account suspended',
+        message: user.suspendedReason || 'تم تعليق حسابك.',
+      });
+    }
+    if (acct === 'pending') {
+      return res.status(403).json({ error: 'Account pending', message: 'حسابك بانتظار التفعيل من الإدارة.' });
     }
 
     // Generate JWT token

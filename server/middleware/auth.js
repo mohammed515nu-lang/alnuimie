@@ -24,6 +24,20 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
+    const status = user.accountStatus || 'active';
+    if (status === 'suspended') {
+      return res.status(403).json({
+        error: 'Account suspended',
+        message: user.suspendedReason || 'تم تعليق حسابك. تواصل مع الدعم.',
+      });
+    }
+    if (status === 'pending') {
+      return res.status(403).json({
+        error: 'Account pending',
+        message: 'حسابك بانتظار التفعيل من الإدارة.',
+      });
+    }
+
     req.user = user;
     req.userId = user._id;
     req.userRole = user.role;

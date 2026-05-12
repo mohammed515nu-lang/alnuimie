@@ -36,7 +36,14 @@ router.get('/user/:userId', optionalAuth, async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
       return res.status(400).json({ error: 'Invalid user id' });
     }
-    const items = await Portfolio.find({ user: req.params.userId }).sort({ createdAt: -1 });
+    const viewerId = req.userId ? String(req.userId) : '';
+    const isSelf = viewerId === req.params.userId;
+    const isAdmin = req.userRole === 'admin';
+    const filter = { user: req.params.userId };
+    if (!isSelf && !isAdmin) {
+      filter.$or = [{ moderationStatus: 'approved' }, { moderationStatus: { $exists: false } }];
+    }
+    const items = await Portfolio.find(filter).sort({ createdAt: -1 });
     res.json(items.map(toDto));
   } catch (error) {
     res.status(500).json({ error: 'Failed to load portfolio', message: error.message });
